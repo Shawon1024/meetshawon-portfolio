@@ -1,28 +1,52 @@
 import Container from "../Container";
+import SectionHeading from "../SectionHeading";
+import ProjectCard from "../ProjectCard";
+
+const projects = [
+  {
+    title: "Self-Hosted Private Cloud Infrastructure",
+
+    description:
+      "Building a production-style private cloud using TrueNAS SCALE, ZFS, Nextcloud, Cloudflare DNS, and secure remote access.",
+
+    technologies: [
+      "TrueNAS SCALE",
+      "ZFS",
+      "Nextcloud",
+      "Cloudflare",
+    ],
+  },
+];
+
 
 export default function ProjectsPreview() {
   return (
-    <section className="px-8 py-20">
+    <section className="py-24">
+
       <Container>
-        <h2>Featured Projects</h2>
 
-        <article>
-          <h3>
-            Self-Hosted Private Cloud Infrastructure
-          </h3>
+        <SectionHeading
+          number="03"
+          title="Featured Projects"
+          description="Practical projects demonstrating my technical skills."
+        />
 
-          <p>
-            Designing a production-style private cloud using
-            TrueNAS SCALE, ZFS, Nextcloud, Cloudflare DNS,
-            and secure remote access.
-          </p>
 
-        </article>
+        <div className="grid md:grid-cols-2 gap-6">
 
-        <a href="/projects">
-          View All Projects
-        </a>
+          {projects.map((project) => (
+
+            <ProjectCard
+              key={project.title}
+              {...project}
+            />
+
+          ))}
+
+        </div>
+
       </Container>
+
     </section>
   );
 }

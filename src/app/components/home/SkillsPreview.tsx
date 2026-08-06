@@ -1,29 +1,32 @@
 import Container from "../Container";
+import SectionHeading from "../SectionHeading";
+
+
+const skills = [
+  "Cybersecurity",
+  "Ethical Hacking",
+  "Linux",
+  "Python",
+  "Networking",
+  "Cloud Infrastructure",
+  "TrueNAS SCALE",
+  "Nextcloud",
+];
 
 export default function SkillsPreview() {
-  const skills = [
-    "Cybersecurity",
-    "Ethical Hacking",
-    "Linux",
-    "Python",
-    "Networking",
-    "Cloud Infrastructure",
-    "TrueNAS SCALE",
-    "Nextcloud",
-  ];
-
   return (
     <section className="px-8 py-20">
       <Container>
-        <h2>Skills</h2>
+        <SectionHeading number="02" title="Skills" description="Here are some of the skills I have developed in the field of cybersecurity and related technologies." />
 
-        <ul>
+        <div className=" grid grid-cols-2 md:grid-cols-4 gap-4">
           {skills.map((skill) => (
-            <li key={skill}>
+            <div key={skill} className="rounded-xl border border-white/10 bg-[var(--surface)] p-4 text-center hover:border-green-400 transition">
               {skill}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
+
       </Container>
     </section>
   );

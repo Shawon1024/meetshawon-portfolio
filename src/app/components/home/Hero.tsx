@@ -10,7 +10,7 @@ export default function Hero() {
         <div className="max-w-3xl space-y-8">
 
           <p className="text-blue-500 text-lg">
-            Hello, I'm
+            Hello, I am
           </p>
 
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight">

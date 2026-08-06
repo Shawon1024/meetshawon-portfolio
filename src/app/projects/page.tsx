@@ -1,13 +1,9 @@
-export default function Projects() {
+import ProjectsPreview from "../components/home/ProjectsPreview";
+
+export default function ProjectsPage() {
   return (
     <main>
-      <h1>Projects</h1>
-    </main>
-  );
-}export default function Contact() {
-  return (
-    <main>
-      <h1>Contact</h1>
+      <ProjectsPreview />
     </main>
   );
 }
