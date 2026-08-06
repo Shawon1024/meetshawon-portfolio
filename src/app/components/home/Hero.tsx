@@ -20,7 +20,7 @@ export default function Hero() {
             </h1>
 
             <p className="max-w-2xl text-lg leading-8 text-gray-300">
-              I'm Shawon, an MSc Cyber Security Management student passionate about ethical hacking, enterprise infrastructure, self-hosted coud solutions, and modern web technologies. I enjoy building secure, scalable systems while continuously expanding my knowledge through hands-on projects.
+              I&apos;m Shawon, an MSc Cyber Security Management student passionate about ethical hacking, enterprise infrastructure, self-hosted coud solutions, and modern web technologies. I enjoy building secure, scalable systems while continuously expanding my knowledge through hands-on projects.
             </p>
 
             <div className="flex flex-wrap gap-4">
