@@ -1,23 +1,28 @@
+
+import Container from "../Container";
+
 export default function AboutPreview() {
   return (
     <section className="px-8 py-20">
-      <h2>About Me</h2>
+      <Container>
+        <h2>About Me</h2>
 
-      <p>
-        I am a Cybersecurity student with a background in Computer Science,
-        passionate about ethical hacking, secure infrastructure, and
-        cybersecurity research.
-      </p>
+        <p>
+          I am a Cybersecurity student with a background in Computer Science,
+          passionate about ethical hacking, secure infrastructure, and
+          cybersecurity research.
+        </p>
 
-      <p>
-        My goal is to develop practical security skills by building
-        real-world projects, exploring vulnerabilities, and creating
-        secure systems.
-      </p>
+        <p>
+          My goal is to develop practical security skills by building
+          real-world projects, exploring vulnerabilities, and creating
+          secure systems.
+        </p>
 
-      <a href="/about">
-        Learn More
-      </a>
+        <a href="/about">
+          Learn More
+        </a>
+      </Container>
     </section>
   );
 }

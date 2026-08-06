@@ -1,24 +1,28 @@
+import Container from "../Container";
+
 export default function ProjectsPreview() {
   return (
     <section className="px-8 py-20">
-      <h2>Featured Projects</h2>
+      <Container>
+        <h2>Featured Projects</h2>
 
-      <article>
-        <h3>
-          Self-Hosted Private Cloud Infrastructure
-        </h3>
+        <article>
+          <h3>
+            Self-Hosted Private Cloud Infrastructure
+          </h3>
 
-        <p>
-          Designing a production-style private cloud using
-          TrueNAS SCALE, ZFS, Nextcloud, Cloudflare DNS,
-          and secure remote access.
-        </p>
+          <p>
+            Designing a production-style private cloud using
+            TrueNAS SCALE, ZFS, Nextcloud, Cloudflare DNS,
+            and secure remote access.
+          </p>
 
-      </article>
+        </article>
 
-      <a href="/projects">
-        View All Projects
-      </a>
+        <a href="/projects">
+          View All Projects
+        </a>
+      </Container>
     </section>
   );
 }
