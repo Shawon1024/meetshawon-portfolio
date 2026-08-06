@@ -1,6 +1,6 @@
 
 import Container from "../Container";
-import SectionHeading from "../SectionHeading";
+import SectionHeading from "../ui/SectionHeading";
 
 export default function AboutPreview() {
   return (

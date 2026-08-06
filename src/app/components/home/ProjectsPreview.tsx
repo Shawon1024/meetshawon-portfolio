@@ -1,5 +1,5 @@
 import Container from "../Container";
-import SectionHeading from "../SectionHeading";
+import SectionHeading from "../ui/SectionHeading";
 import ProjectCard from "../ProjectCard";
 
 const projects = [

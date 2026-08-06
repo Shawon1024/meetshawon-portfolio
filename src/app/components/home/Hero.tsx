@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Code2, BriefcaseBusiness, Mail } from "lucide-react";
 import Container from "../Container";
+import IconButton from "../ui/IconButton";
 
 export default function Hero() {
   return (
@@ -44,9 +45,15 @@ export default function Hero() {
         </div>
 
         <div className="flex gap-5 pt-4">
-          <a href="https://github.com/Shawon1024" aria-label="GitHub" target="_blank"><Code2 size={28} /></a>
-          <a href="https://www.linkedin.com/in/shawon1024/" aria-label="LinkedIn" target="_blank"><BriefcaseBusiness size={28} /></a>
-          <a href="mailto:contact@meetshawon.com" aria-label="Mail" target="_blank"><Mail size={28} /></a>
+          <IconButton href="https://github.com/Shawon1024" label="GitHub">
+            <Code2 size={28} />
+          </IconButton>
+          <IconButton href="https://www.linkedin.com/in/shawon1024/" label="LinkedIn">
+            <BriefcaseBusiness size={28} />
+          </IconButton>
+          <IconButton href="mailto:contact@meetshawon.com" label="Mail">
+            <Mail size={28} />
+          </IconButton>
         </div>
 
         </div>
