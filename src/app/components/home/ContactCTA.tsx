@@ -1,8 +1,8 @@
 export default function ContactCTA() {
   return (
-    <section>
+    <section className="px-8 py-20">
       <h2>
-        Let's Connect
+        Let us Connect
       </h2>
 
       <p>

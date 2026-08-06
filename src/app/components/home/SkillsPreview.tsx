@@ -11,7 +11,7 @@ export default function SkillsPreview() {
   ];
 
   return (
-    <section>
+    <section className="px-8 py-20">
       <h2>Skills</h2>
 
       <ul>

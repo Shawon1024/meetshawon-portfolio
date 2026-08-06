@@ -1,6 +1,6 @@
 export default function ProjectsPreview() {
   return (
-    <section>
+    <section className="px-8 py-20">
       <h2>Featured Projects</h2>
 
       <article>

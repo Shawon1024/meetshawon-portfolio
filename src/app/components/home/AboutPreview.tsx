@@ -1,6 +1,6 @@
 export default function AboutPreview() {
   return (
-    <section>
+    <section className="px-8 py-20">
       <h2>About Me</h2>
 
       <p>
