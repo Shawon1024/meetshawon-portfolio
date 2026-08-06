@@ -15,38 +15,22 @@ const projects = [
       "Nextcloud",
       "Cloudflare",
     ],
+    image: "/projects/placeholder.jpg",
+    href: "/projects",
   },
 ];
-
 
 export default function ProjectsPreview() {
   return (
     <section className="py-24">
-
       <Container>
-
-        <SectionHeading
-          number="03"
-          title="Featured Projects"
-          description="Practical projects demonstrating my technical skills."
-        />
-
-
+        <SectionHeading number="03" title="Featured Projects" description="Practical projects demonstrating my technical skills."/>
         <div className="grid md:grid-cols-2 gap-6">
-
           {projects.map((project) => (
-
-            <ProjectCard
-              key={project.title}
-              {...project}
-            />
-
+            <ProjectCard key={project.title} {...project}/>
           ))}
-
         </div>
-
       </Container>
-
     </section>
   );
 }
