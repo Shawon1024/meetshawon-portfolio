@@ -1,4 +1,6 @@
 import Journey from "../components/about/Journey";
+import InterestsValues from "../components/about/InterestsValues";
+import AboutCTA from "../components/about/AboutCTA";
 
 export default function About() {
   return (
@@ -38,6 +40,10 @@ export default function About() {
       </section>
 
       <Journey />
+
+      <InterestsValues />
+
+      <AboutCTA />
     </main>
   );
 }
