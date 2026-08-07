@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { keyframes } from "framer-motion";
+import "highlight.js/styles/github-dark.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,10 +17,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
-  title: "Shawon | Cybersecurity Portfolio",
-  description:
-    "Cybersecurity student, ethical hacking enthusiast, and infrastructure builder.",
+export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ??
+      "http://localhost:3000",
+  ),
+
+  title: "Shawon",
+  description:"Cybersecurity portfolio, projects, technical writing, and professional development.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

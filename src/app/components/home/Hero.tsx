@@ -41,7 +41,7 @@ export default function Hero() {
                 View My Projects
               </Button>
 
-              <Button href="#">
+              <Button href="/Shawon-CV.pdf">
                 Download CV
               </Button>
             </div>
