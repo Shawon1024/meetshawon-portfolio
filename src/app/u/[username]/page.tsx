@@ -2,10 +2,13 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import {
   ArrowLeft,
+  Ban,
+  Clock3,
   ExternalLink,
   Globe2,
+  HardDrive,
   MapPin,
-  ShieldCheck,
+  Pencil,
   UserRound,
 } from "lucide-react";
 import {
@@ -14,6 +17,7 @@ import {
 } from "next/navigation";
 
 import Container from "../../components/Container";
+import RoleBadge from "../../components/ui/RoleBadge";
 import VerifiedBadge from "../../components/ui/VerifiedBadge";
 import { createClient } from "../../lib/supabase/server";
 
@@ -30,8 +34,9 @@ interface PublicProfilePageProps {
 export async function generateMetadata({
   params,
 }: PublicProfilePageProps): Promise<Metadata> {
-  const { username } =
-    await params;
+  const {
+    username,
+  } = await params;
 
   const cleanUsername =
     username
@@ -41,15 +46,15 @@ export async function generateMetadata({
   const supabase =
     await createClient();
 
-  // Check auth before trying to read the profile.
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } =
+    await supabase.auth.getUser();
 
   if (!user) {
     return {
       title:
-        "User Profile | Shawon",
+        "User Profile",
       description:
         "Sign in to view this user profile.",
     };
@@ -73,7 +78,7 @@ export async function generateMetadata({
   if (!profile) {
     return {
       title:
-        "Profile Not Found | Shawon",
+        "Profile Not Found",
     };
   }
 
@@ -88,7 +93,7 @@ export async function generateMetadata({
 
   return {
     title:
-      `${name} (@${profile.username}) | Shawon`,
+      `${name} (@${profile.username})`,
 
     description,
 
@@ -98,18 +103,25 @@ export async function generateMetadata({
     },
 
     openGraph: {
-      type: "profile",
+      type:
+        "profile",
+
       title:
         `${name} (@${profile.username})`,
+
       description,
+
       url:
         `/u/${profile.username}`,
     },
 
     twitter: {
-      card: "summary",
+      card:
+        "summary",
+
       title:
         `${name} (@${profile.username})`,
+
       description,
     },
   };
@@ -122,8 +134,9 @@ export async function generateMetadata({
 export default async function PublicProfilePage({
   params,
 }: PublicProfilePageProps) {
-  const { username } =
-    await params;
+  const {
+    username,
+  } = await params;
 
   const cleanUsername =
     username
@@ -134,12 +147,13 @@ export default async function PublicProfilePage({
     await createClient();
 
   // --------------------------------------------------
-  // AUTH CHECK
+  // AUTH
   // --------------------------------------------------
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } =
+    await supabase.auth.getUser();
 
   if (!user) {
     redirect(
@@ -148,7 +162,7 @@ export default async function PublicProfilePage({
   }
 
   // --------------------------------------------------
-  // LOAD PROFILE
+  // PROFILE
   // --------------------------------------------------
 
   const {
@@ -181,12 +195,87 @@ export default async function PublicProfilePage({
     notFound();
   }
 
+  // --------------------------------------------------
+  // VIEWER ROLE
+  // --------------------------------------------------
+
+  const {
+    data: viewerProfile,
+  } = await supabase
+    .from("profiles")
+    .select(`
+      role
+    `)
+    .eq(
+      "id",
+      user.id,
+    )
+    .maybeSingle();
+
+  // --------------------------------------------------
+  // ACCOUNT RESTRICTION
+  // --------------------------------------------------
+
+  const {
+    data: restriction,
+    error: restrictionError,
+  } = await supabase
+    .from("account_restrictions")
+    .select(`
+      status,
+      public_reason,
+      expires_at
+    `)
+    .eq(
+      "user_id",
+      profile.id,
+    )
+    .maybeSingle();
+
+  if (restrictionError) {
+    console.error(
+      "Profile restriction could not be loaded:",
+      restrictionError,
+    );
+  }
+
   const displayName =
     profile.display_name ??
     profile.username;
 
   const profileUrl =
     `/u/${profile.username}`;
+
+  const isOwnProfile =
+    user.id ===
+    profile.id;
+
+  const canUseDrive =
+    isOwnProfile &&
+    (
+      profile.role ===
+        "admin" ||
+      profile.role ===
+        "partner"
+    );
+
+  const viewerIsStaff =
+    viewerProfile?.role ===
+      "admin" ||
+    viewerProfile?.role ===
+      "moderator";
+
+  const canSeeRestriction =
+    isOwnProfile ||
+    viewerIsStaff;
+
+  const effectiveRestrictionStatus =
+    restriction?.status ??
+    "active";
+
+  // --------------------------------------------------
+  // PAGE
+  // --------------------------------------------------
 
   return (
     <main>
@@ -222,10 +311,14 @@ export default async function PublicProfilePage({
               <div className="h-28 border-b border-white/5 bg-gradient-to-r from-green-400/10 via-transparent to-blue-400/10 md:h-36" />
 
               <div className="px-6 pb-8 md:px-10 md:pb-10">
-                {/* Avatar + Role */}
+                {/* =================================================
+                    AVATAR + PROFILE ACTIONS
+                ================================================= */}
 
-                <div className="-mt-14 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-                  <div className="flex items-end gap-5">
+                <div className="-mt-14 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                  {/* Avatar */}
+
+                  <div>
                     {profile.avatar_url ? (
                       <img
                         src={
@@ -243,19 +336,46 @@ export default async function PublicProfilePage({
                     )}
                   </div>
 
-                  {profile.role ===
-                    "admin" && (
-                    <div className="inline-flex items-center gap-2 self-start rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-300 sm:self-auto">
-                      <ShieldCheck
-                        size={14}
-                      />
+                  {/* Own-profile actions */}
 
-                      Admin
+                  {isOwnProfile && (
+                    <div className="flex flex-wrap items-center gap-3 sm:pb-1">
+                      <Link
+                        href="/account"
+                        className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-gray-100 transition hover:border-green-400/30 hover:bg-white/[0.08] hover:text-white"
+                      >
+                        <Pencil
+                          size={16}
+                        />
+
+                        Edit Profile
+                      </Link>
+
+                      {canUseDrive && (
+                        <a
+                          href="https://drive.meetshawon.com"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-xl border border-sky-400/20 bg-sky-400/10 px-4 py-2.5 text-sm font-medium text-sky-300 transition hover:border-sky-400/40 hover:bg-sky-400/15"
+                        >
+                          <HardDrive
+                            size={16}
+                          />
+
+                          Drive
+
+                          <ExternalLink
+                            size={13}
+                          />
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>
 
-                {/* Identity */}
+                {/* =================================================
+                    IDENTITY
+                ================================================= */}
 
                 <div className="mt-6">
                   <div className="flex flex-wrap items-center gap-2">
@@ -270,6 +390,14 @@ export default async function PublicProfilePage({
                         size={22}
                       />
                     )}
+
+                    <RoleBadge
+                      role={
+                        profile.role
+                      }
+                      showUser
+                      size="md"
+                    />
                   </div>
 
                   <p className="mt-2 text-lg text-gray-400">
@@ -278,9 +406,82 @@ export default async function PublicProfilePage({
                       profile.username
                     }
                   </p>
+
+                  {canSeeRestriction &&
+                    effectiveRestrictionStatus ===
+                      "restricted" && (
+                      <div className="mt-4">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1.5 text-sm font-medium text-amber-300">
+                          <Clock3
+                            size={15}
+                          />
+
+                          Restricted
+
+                          {restriction?.expires_at && (
+                            <span>
+                              {" until "}
+                              {new Intl.DateTimeFormat(
+                                "en-GB",
+                                {
+                                  day:
+                                    "numeric",
+                                  month:
+                                    "short",
+                                  year:
+                                    "numeric",
+                                  hour:
+                                    "2-digit",
+                                  minute:
+                                    "2-digit",
+                                },
+                              ).format(
+                                new Date(
+                                  restriction.expires_at,
+                                ),
+                              )}
+                            </span>
+                          )}
+                        </div>
+
+                        {restriction?.public_reason && (
+                          <p className="mt-2 max-w-2xl text-sm leading-6 text-amber-200/70">
+                            Reason:{" "}
+                            {
+                              restriction.public_reason
+                            }
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                  {canSeeRestriction &&
+                    effectiveRestrictionStatus ===
+                      "blocked" && (
+                      <div className="mt-4">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-red-400/20 bg-red-400/10 px-3 py-1.5 text-sm font-medium text-red-300">
+                          <Ban
+                            size={15}
+                          />
+
+                          Blocked
+                        </div>
+
+                        {restriction?.public_reason && (
+                          <p className="mt-2 max-w-2xl text-sm leading-6 text-red-200/70">
+                            Reason:{" "}
+                            {
+                              restriction.public_reason
+                            }
+                          </p>
+                        )}
+                      </div>
+                    )}
                 </div>
 
-                {/* Bio */}
+                {/* =================================================
+                    BIO
+                ================================================= */}
 
                 {profile.bio && (
                   <p className="mt-6 max-w-2xl whitespace-pre-wrap leading-8 text-gray-300">
@@ -290,7 +491,9 @@ export default async function PublicProfilePage({
                   </p>
                 )}
 
-                {/* Details */}
+                {/* =================================================
+                    DETAILS
+                ================================================= */}
 
                 {(profile.location ||
                   profile.website_url) && (
@@ -333,7 +536,9 @@ export default async function PublicProfilePage({
                   </div>
                 )}
 
-                {/* Profile URL */}
+                {/* =================================================
+                    PROFILE URL
+                ================================================= */}
 
                 <div className="mt-8 border-t border-white/10 pt-6">
                   <div className="flex items-center gap-2 text-xs text-gray-600">

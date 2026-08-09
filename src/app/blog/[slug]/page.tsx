@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import BookmarkButton from "../../components/blog/BookmarkButton";
+import RoleBadge from "../../components/ui/RoleBadge";
 import {
   ArrowLeft,
   CalendarDays,
@@ -350,7 +351,8 @@ const {
       display_name,
       username,
       avatar_url,
-      verified
+      verified,
+      role
     `)
     .eq(
       "id",
@@ -557,6 +559,10 @@ const {
                       size={18}
                     />
                   )}
+                  <RoleBadge
+  role={author?.role}
+  showUser={false}
+/>
                   </div>
                   {author?.username && (
                     <Link href={`/u/${author.username}`}

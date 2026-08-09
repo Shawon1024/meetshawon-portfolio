@@ -7,7 +7,7 @@ import {
   Reply,
 } from "lucide-react";
 import { redirect } from "next/navigation";
-
+import { requireAccountNotBlocked } from "../../lib/accountRestriction";
 import Container from "../../components/Container";
 import { createClient } from "../../lib/supabase/server";
 
@@ -56,6 +56,8 @@ function getReactionEmoji(
 }
 
 export default async function AccountActivityPage() {
+    await requireAccountNotBlocked();
+    
   const supabase =
     await createClient();
 

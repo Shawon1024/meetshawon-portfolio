@@ -23,8 +23,13 @@ export const metadata: Metadata = {
       "http://localhost:3000",
   ),
 
-  title: "Shawon",
-  description:"Cybersecurity portfolio, projects, technical writing, and professional development.",
+  title: {
+    default: "Meet Shawon | Cybersecurity & Software Portfolio",
+    template: "%s — Meet Shawon",
+  },
+
+  description:
+    "Personal portfolio of Shawon, featuring cybersecurity, ethical hacking, software development, projects, certifications, technical articles, and professional experience.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

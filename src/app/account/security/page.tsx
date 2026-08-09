@@ -4,12 +4,14 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { redirect } from "next/navigation";
-
+import { requireAccountNotBlocked } from "../../lib/accountRestriction";
 import AccountSecurity from "../../components/account/AccountSecurity";
 import Container from "../../components/Container";
 import { createClient } from "../../lib/supabase/server";
 
 export default async function AccountSecurityPage() {
+    await requireAccountNotBlocked();
+    
   const supabase =
     await createClient();
 

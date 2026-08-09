@@ -12,7 +12,7 @@ import {
   FormEvent,
   useState,
 } from "react";
-
+import RoleBadge from "../ui/RoleBadge";
 import AvatarUploader from "./AvatarUploader";
 import VerifiedBadge from "../ui/VerifiedBadge";
 import { createClient } from "../../lib/supabase/client";
@@ -363,13 +363,10 @@ export default function ProfileEditor({
                   </span>
                 )}
 
-              {initialProfile.role && (
-                <span className="rounded-full border border-white/10 bg-black/10 px-3 py-1 text-xs uppercase tracking-wider text-gray-400">
-                  {
-                    initialProfile.role
-                  }
-                </span>
-              )}
+              <RoleBadge
+  role={initialProfile.role}
+  showUser
+/>
 
               {initialProfile.verified && (
                 <span className="inline-flex items-center gap-1.5 text-blue-300">

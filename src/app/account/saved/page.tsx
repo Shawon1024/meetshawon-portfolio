@@ -7,7 +7,7 @@ import {
   Eye,
 } from "lucide-react";
 import { redirect } from "next/navigation";
-
+import { requireAccountNotBlocked } from "../../lib/accountRestriction";
 import Container from "../../components/Container";
 import { createClient } from "../../lib/supabase/server";
 
@@ -31,6 +31,8 @@ function formatDate(
 }
 
 export default async function SavedArticlesPage() {
+    await requireAccountNotBlocked();
+
   const supabase =
     await createClient();
 
@@ -107,6 +109,12 @@ export default async function SavedArticlesPage() {
         ) {
           return false;
         }
+
+        if (
+        !post.published_at
+      ) {
+        return false;
+      }
 
         if (
           post.published_at &&

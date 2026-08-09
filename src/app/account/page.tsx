@@ -6,12 +6,14 @@ import {
   UserRound,
 } from "lucide-react";
 import { redirect } from "next/navigation";
-
+import { requireAccountNotBlocked } from "../lib/accountRestriction";
 import Container from "../components/Container";
 import ProfileEditor from "../components/account/ProfileEditor";
 import { createClient } from "../lib/supabase/server";
 
 export default async function AccountPage() {
+  await requireAccountNotBlocked();
+  
   const supabase =
     await createClient();
 
@@ -21,8 +23,7 @@ export default async function AccountPage() {
 
   const {
     data: { user },
-  } =
-    await supabase.auth.getUser();
+  } = await supabase.auth.getUser();
 
   if (!user) {
     redirect(
@@ -36,7 +37,7 @@ export default async function AccountPage() {
 
   const {
     data: profile,
-    error,
+    error: profileError,
   } = await supabase
     .from("profiles")
     .select(`
@@ -57,19 +58,58 @@ export default async function AccountPage() {
     .single();
 
   if (
-    error ||
+    profileError ||
     !profile
   ) {
     return (
       <main>
         <section className="px-6 py-24">
           <div className="mx-auto max-w-3xl rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-300">
-            Your profile could not be loaded.
+            <p className="font-medium">
+              Your profile could not be loaded.
+            </p>
+
+            <p className="mt-2 text-sm">
+              {profileError?.message ??
+                "Profile data was not found."}
+            </p>
           </div>
         </section>
       </main>
     );
   }
+
+  // --------------------------------------------------
+  // SAVED ARTICLE COUNT
+  // --------------------------------------------------
+
+  const {
+    count: savedArticleCount,
+    error: savedCountError,
+  } = await supabase
+    .from("bookmarks")
+    .select("id", {
+      count: "exact",
+      head: true,
+    })
+    .eq(
+      "user_id",
+      user.id,
+    );
+
+  if (savedCountError) {
+    console.error(
+      "Saved article count could not be loaded:",
+      savedCountError,
+    );
+  }
+
+  const savedCount =
+    savedArticleCount ?? 0;
+
+  // --------------------------------------------------
+  // PAGE
+  // --------------------------------------------------
 
   return (
     <main>
@@ -124,65 +164,75 @@ export default async function AccountPage() {
               </p>
             </div>
 
-            {/* Saved */}
+            {/* Saved Articles */}
 
             <Link
               href="/account/saved"
               className="group rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-5 transition hover:border-green-400/30"
             >
-              <Bookmark
-                size={21}
-                className="text-gray-400 transition group-hover:text-green-300"
-              />
+              <div className="flex items-start justify-between gap-4">
+                <Bookmark
+                  size={21}
+                  className="text-gray-400 transition group-hover:text-green-300"
+                />
+
+                <span className="rounded-full border border-green-400/20 bg-green-400/10 px-2.5 py-1 text-xs font-semibold text-green-300">
+                  {savedCount}
+                </span>
+              </div>
 
               <p className="mt-4 font-medium text-white">
                 Saved Articles
               </p>
 
               <p className="mt-2 text-sm text-gray-400">
-                Articles saved for later.
+                {savedCount === 0
+                  ? "No articles saved yet."
+                  : savedCount === 1
+                    ? "1 article saved for later."
+                    : `${savedCount} articles saved for later.`}
               </p>
             </Link>
 
-            {/* Comments */}
+            {/* My Activity */}
 
-<Link
-  href="/account/activity"
-  className="group rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-5 transition hover:border-green-400/30"
->
-  <MessageCircle
-    size={21}
-    className="text-gray-400 transition group-hover:text-green-300"
-  />
+            <Link
+              href="/account/activity"
+              className="group rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-5 transition hover:border-green-400/30"
+            >
+              <MessageCircle
+                size={21}
+                className="text-gray-400 transition group-hover:text-green-300"
+              />
 
-  <p className="mt-4 font-medium text-white">
-    My Activity
-  </p>
+              <p className="mt-4 font-medium text-white">
+                My Activity
+              </p>
 
-  <p className="mt-2 text-sm text-gray-400">
-    View your comments, replies, and reactions.
-  </p>
-</Link>
+              <p className="mt-2 text-sm text-gray-400">
+                View your comments, replies, and reactions.
+              </p>
+            </Link>
 
             {/* Security */}
 
             <Link
-  href="/account/security"
-  className="group rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-5 transition hover:border-green-400/30"
->
-  <ShieldCheck
-    size={21}
-    className="text-gray-400 transition group-hover:text-green-300"
-  />
+              href="/account/security"
+              className="group rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-5 transition hover:border-green-400/30"
+            >
+              <ShieldCheck
+                size={21}
+                className="text-gray-400 transition group-hover:text-green-300"
+              />
 
-  <p className="mt-4 font-medium text-white">
-    Security
-  </p>
+              <p className="mt-4 font-medium text-white">
+                Security
+              </p>
 
-  <p className="mt-2 text-sm text-gray-400">
-    Manage your password and sign-in sessions.
-  </p>
-</Link>
+              <p className="mt-2 text-sm text-gray-400">
+                Manage your password and sign-in sessions.
+              </p>
+            </Link>
           </div>
         </Container>
       </section>

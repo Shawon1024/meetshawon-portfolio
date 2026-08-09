@@ -438,7 +438,7 @@ if (popularPostsError) {
   return (
     <main>
       {/* =================================================
-          HERO
+          HERO + SEARCH
       ================================================= */}
 
       <section className="px-6 pb-16 pt-16 md:pb-20 md:pt-24">
@@ -461,33 +461,10 @@ if (popularPostsError) {
             documentation, experiments, and reflections from my development
             journey.
           </p>
-        </div>
-      </section>
 
-      {/* Popular articles */}
+          {/* Search */}
 
-{popularPosts &&
-  popularPosts.length > 0 && (
-    <section className="border-t border-white/5 py-16">
-      <Container>
-        <div className="mx-auto max-w-6xl">
-          <PopularArticles
-            posts={popularPosts}
-          />
-        </div>
-      </Container>
-    </section>
-  )}
-
-{/* SEARCH */}
-
-      {/* =================================================
-          SEARCH
-      ================================================= */}
-
-      <section className="border-t border-white/5 py-10">
-        <Container>
-          <div className="mx-auto max-w-6xl">
+          <div className="mx-auto mt-9 max-w-3xl">
             <form
               action="/blog"
               method="get"
@@ -515,7 +492,7 @@ if (popularPostsError) {
 
               <Search
                 size={20}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
               />
 
               <input
@@ -525,7 +502,8 @@ if (popularPostsError) {
                   searchQuery
                 }
                 placeholder="Search articles..."
-                className="w-full rounded-2xl border border-white/10 bg-[var(--surface)]/70 py-4 pl-12 pr-28 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400"
+                aria-label="Search articles"
+                className="w-full rounded-2xl border border-white/10 bg-[var(--surface)]/70 py-4 pl-12 pr-28 text-white shadow-lg shadow-black/10 outline-none transition placeholder:text-gray-500 focus:border-green-400/50"
               />
 
               <button
@@ -537,20 +515,61 @@ if (popularPostsError) {
             </form>
 
             {searchQuery && (
-              <p className="mt-4 text-sm text-gray-500">
-                Search results for{" "}
-                <span className="font-medium text-gray-300">
-                  “
-                  {
-                    searchQuery
-                  }
-                  ”
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm text-gray-400">
+                <span>
+                  Search results for{" "}
+                  <span className="font-medium text-white">
+                    “{searchQuery}”
+                  </span>
                 </span>
-              </p>
+
+                <span className="text-gray-600">
+                  •
+                </span>
+
+                <span>
+                  {totalResults}{" "}
+                  {totalResults === 1
+                    ? "article"
+                    : "articles"}{" "}
+                  found
+                </span>
+
+                <Link
+                  href={buildBlogUrl({
+                    category:
+                      selectedCategory ||
+                      undefined,
+                    tag:
+                      selectedTag ||
+                      undefined,
+                  })}
+                  className="ml-1 font-medium text-green-400 transition hover:text-green-300"
+                >
+                  Clear search
+                </Link>
+              </div>
             )}
           </div>
-        </Container>
+        </div>
       </section>
+
+      {/* Popular articles */}
+
+{popularPosts &&
+  popularPosts.length > 0 && (
+    <section className="border-t border-white/5 py-16">
+      <Container>
+        <div className="mx-auto max-w-6xl">
+          <PopularArticles
+            posts={popularPosts}
+          />
+        </div>
+      </Container>
+    </section>
+  )}
+
+{/* SEARCH */}
 
       {/* =================================================
           FILTERS
@@ -559,6 +578,135 @@ if (popularPostsError) {
       <section className="border-t border-white/5 py-10">
         <Container>
           <div className="mx-auto max-w-6xl space-y-7">
+
+            {/* =================================================
+    ACTIVE FILTERS
+================================================= */}
+
+{hasActiveFilters && (
+  <div className="rounded-2xl border border-white/10 bg-[var(--surface)]/50 p-5">
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <p className="text-sm font-medium text-white">
+          Active filters
+        </p>
+
+        <p className="mt-1 text-sm text-gray-500">
+          Remove individual filters or clear everything.
+        </p>
+      </div>
+
+      <Link
+        href="/blog"
+        className="inline-flex items-center gap-2 text-sm font-medium text-green-400 transition hover:text-green-300"
+      >
+        <RotateCcw
+          size={15}
+        />
+
+        Clear all
+      </Link>
+    </div>
+
+    <div className="mt-4 flex flex-wrap gap-2">
+      {/* Search chip */}
+
+      {searchQuery && (
+        <Link
+          href={buildBlogUrl({
+            category:
+              selectedCategory ||
+              undefined,
+            tag:
+              selectedTag ||
+              undefined,
+          })}
+          className="group inline-flex items-center gap-2 rounded-full border border-green-400/20 bg-green-400/10 px-3 py-1.5 text-sm text-green-300 transition hover:border-green-400/40 hover:bg-green-400/15"
+        >
+          <span>
+            Search: “{searchQuery}”
+          </span>
+
+          <span className="text-green-300/60 transition group-hover:text-green-200">
+            ×
+          </span>
+        </Link>
+      )}
+
+      {/* Category chip */}
+
+      {selectedCategory &&
+        categoryRecord && (
+          <Link
+            href={buildBlogUrl({
+              tag:
+                selectedTag ||
+                undefined,
+              q:
+                searchQuery ||
+                undefined,
+            })}
+            className="group inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-400/10 px-3 py-1.5 text-sm text-blue-300 transition hover:border-blue-400/40 hover:bg-blue-400/15"
+          >
+            <span>
+              {categoryRecord.name}
+            </span>
+
+            <span className="text-blue-300/60 transition group-hover:text-blue-200">
+              ×
+            </span>
+          </Link>
+        )}
+
+      {/* Tag chip */}
+
+      {selectedTag && (
+        <>
+          {(() => {
+            const selectedTagRecord =
+              tags?.find(
+                (tag) =>
+                  tag.slug ===
+                  selectedTag,
+              );
+
+            if (
+              !selectedTagRecord
+            ) {
+              return null;
+            }
+
+            return (
+              <Link
+                href={buildBlogUrl({
+                  category:
+                    selectedCategory ||
+                    undefined,
+                  q:
+                    searchQuery ||
+                    undefined,
+                })}
+                className="group inline-flex items-center gap-2 rounded-full border border-purple-400/20 bg-purple-400/10 px-3 py-1.5 text-sm text-purple-300 transition hover:border-purple-400/40 hover:bg-purple-400/15"
+              >
+                <span>
+                  #
+                  {
+                    selectedTagRecord.name
+                  }
+                </span>
+
+                <span className="text-purple-300/60 transition group-hover:text-purple-200">
+                  ×
+                </span>
+              </Link>
+            );
+          })()}
+        </>
+      )}
+    </div>
+  </div>
+)}
+
             {/* Category */}
 
             <div>

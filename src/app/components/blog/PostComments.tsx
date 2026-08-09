@@ -1,5 +1,6 @@
 "use client";
 
+import RoleBadge from "../ui/RoleBadge";
 import Link from "next/link";
 import {
   FormEvent,
@@ -40,6 +41,7 @@ interface CommentProfile {
   username: string | null;
   avatar_url: string | null;
   verified: boolean;
+  role: string | null;
 }
 
 interface CommentReaction {
@@ -77,6 +79,15 @@ interface CommentRow {
 
 interface CommentNode extends CommentRow {
   replies: CommentNode[];
+}
+
+interface ModerationSkeleton {
+  id: string;
+  parent_id: string | null;
+  status:
+    | "rejected"
+    | "spam";
+  created_at: string;
 }
 
 interface PostCommentsProps {
@@ -274,7 +285,8 @@ export default function PostComments({
               display_name,
               username,
               avatar_url,
-              verified
+              verified,
+              role
             ),
             comment_reactions (
               id,
@@ -302,12 +314,91 @@ export default function PostComments({
           throw commentsError;
         }
 
+        const {
+          data: skeletonRows,
+          error: skeletonError,
+        } = await supabase.rpc(
+          "get_comment_moderation_skeletons",
+          {
+            target_post_id:
+              postId,
+          },
+        );
+
+        if (skeletonError) {
+          throw skeletonError;
+        }
+
         if (cancelled) {
           return;
         }
 
+        const approvedComments =
+          (data ?? []) as CommentRow[];
+
+        const moderationSkeletons:
+          CommentRow[] =
+          (
+            skeletonRows ??
+            []
+          ).map(
+            (
+              skeleton:
+                ModerationSkeleton,
+            ) => ({
+              id:
+                skeleton.id,
+
+              post_id:
+                postId,
+
+              user_id:
+                "",
+
+              parent_id:
+                skeleton.parent_id,
+
+              content:
+                "",
+
+              status:
+                skeleton.status,
+
+              created_at:
+                skeleton.created_at,
+
+              updated_at:
+                skeleton.created_at,
+
+              edited:
+                false,
+
+              profile:
+                null,
+
+              comment_reactions:
+                [],
+            }),
+          );
+
+        const mergedComments = [
+          ...approvedComments,
+          ...moderationSkeletons,
+        ].sort(
+          (
+            a,
+            b,
+          ) =>
+            new Date(
+              a.created_at,
+            ).getTime() -
+            new Date(
+              b.created_at,
+            ).getTime(),
+        );
+
         setComments(
-          (data ?? []) as CommentRow[],
+          mergedComments,
         );
       } catch (error) {
         if (cancelled) {
@@ -489,26 +580,45 @@ export default function PostComments({
           display_name,
           username,
           avatar_url,
-          verified
+          verified,
+          role
         )
       `)
       .single();
 
-    if (error) {
-      if (
-        error.message
-          .toLowerCase()
-          .includes(
-            "row-level security",
-          )
-      ) {
-        throw new Error(
-          "Your comment was blocked by the content filter.",
-        );
-      }
+if (error) {
+  const errorDetails = [
+    error.code
+      ? `Code: ${error.code}`
+      : null,
 
-      throw error;
-    }
+    error.message
+      ? `Message: ${error.message}`
+      : null,
+
+    error.details
+      ? `Details: ${error.details}`
+      : null,
+
+    error.hint
+      ? `Hint: ${error.hint}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" | ");
+
+  console.error(
+    `Comment insert failed: ${
+      errorDetails ||
+      "Unknown Supabase error"
+    }`,
+  );
+
+  throw new Error(
+    errorDetails ||
+      "Your comment could not be posted.",
+  );
+}
 
     return {
       ...(data as Omit<
@@ -529,6 +639,10 @@ export default function PostComments({
     event.preventDefault();
 
     if (!userId) {
+      setError(
+        "Your session could not be verified. Please sign in again.",
+      );
+
       return;
     }
 
@@ -562,11 +676,27 @@ export default function PostComments({
 
       setCommentText("");
     } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Your comment could not be posted.",
+      console.error(
+        "Comment submission failed:",
+        error,
       );
+
+      if (
+        error &&
+        typeof error ===
+          "object" &&
+        "message" in error &&
+        typeof error.message ===
+          "string"
+      ) {
+        setError(
+          error.message,
+        );
+      } else {
+        setError(
+          "Your comment could not be posted.",
+        );
+      }
     } finally {
       setSubmitting(false);
     }
@@ -583,6 +713,10 @@ export default function PostComments({
     event.preventDefault();
 
     if (!userId) {
+      setReplyError(
+        "Your session could not be verified. Please sign in again.",
+      );
+
       return;
     }
 
@@ -622,11 +756,27 @@ export default function PostComments({
       setReplyText("");
       setReplyingTo(null);
     } catch (error) {
-      setReplyError(
-        error instanceof Error
-          ? error.message
-          : "Your reply could not be posted.",
+      console.error(
+        "Comment reply submission failed:",
+        error,
       );
+
+      if (
+        error &&
+        typeof error ===
+          "object" &&
+        "message" in error &&
+        typeof error.message ===
+          "string"
+      ) {
+        setReplyError(
+          error.message,
+        );
+      } else {
+        setReplyError(
+          "Your reply could not be posted.",
+        );
+      }
     } finally {
       setSubmittingReply(
         false,
@@ -1212,6 +1362,81 @@ export default function PostComments({
     comment: CommentNode,
     depth = 0,
   ) => {
+    // --------------------------------------------------------
+    // SPAM
+    // --------------------------------------------------------
+
+    if (
+      comment.status ===
+      "spam"
+    ) {
+      return null;
+    }
+
+    // --------------------------------------------------------
+    // MODERATION PLACEHOLDER
+    // --------------------------------------------------------
+
+    if (
+      comment.status ===
+      "rejected"
+    ) {
+      if (
+        comment.replies.length ===
+        0
+      ) {
+        return null;
+      }
+
+      return (
+        <div
+          key={
+            comment.id
+          }
+          className={
+            depth > 0
+              ? "ml-4 border-l border-white/10 pl-4 md:ml-8 md:pl-6"
+              : ""
+          }
+        >
+          <article className="rounded-xl border border-amber-400/15 bg-amber-400/[0.04] p-5">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300">
+                <TriangleAlert
+                  size={18}
+                />
+              </div>
+
+              <div>
+                <p className="font-medium text-amber-200">
+                  Comment removed
+                </p>
+
+                <p className="mt-1 text-sm leading-6 text-gray-500">
+                  This comment was removed by moderation.
+                </p>
+              </div>
+            </div>
+          </article>
+
+          {comment.replies.length >
+            0 && (
+            <div className="mt-4 space-y-4">
+              {comment.replies.map(
+                (
+                  reply,
+                ) =>
+                  renderComment(
+                    reply,
+                    depth + 1,
+                  ),
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
     const profile =
       getProfile(comment);
 
@@ -1310,6 +1535,10 @@ export default function PostComments({
       size={17}
     />
   )}
+  <RoleBadge
+    role={profile?.role}
+    showUser={false}
+  />
   {profile?.username && (
   <Link
     href={`/u/${profile.username}`}
@@ -1854,8 +2083,22 @@ export default function PostComments({
             </h2>
 
             <p className="mt-2 text-sm text-gray-500">
-              {comments.length}{" "}
-              {comments.length ===
+              {
+                comments.filter(
+                  (
+                    comment,
+                  ) =>
+                    comment.status ===
+                    "approved",
+                ).length
+              }{" "}
+              {comments.filter(
+                (
+                  comment,
+                ) =>
+                  comment.status ===
+                  "approved",
+              ).length ===
               1
                 ? "comment"
                 : "comments"}
