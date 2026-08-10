@@ -1,6 +1,32 @@
 import SkillsGrid from "../skills/SkillsGrid";
 import SkillsCTA from "../skills/SkillsCTA";
 import CurrentLearning from "../skills/CurrentLearning";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Skills & Technologies",
+  description:
+    "Explore Shawon's cybersecurity, ethical hacking, networking, Linux, secure infrastructure, software development, and technical skills.",
+
+  alternates: {
+    canonical: "/skills",
+  },
+
+  openGraph: {
+    title: "Skills & Technologies",
+    description:
+      "Cybersecurity, ethical hacking, networking, Linux, secure infrastructure, software development, and technical skills.",
+    url: "/skills",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Skills & Technologies",
+    description:
+      "Cybersecurity, ethical hacking, networking, Linux, infrastructure, and software development skills.",
+  },
+};
 
 export default function SkillsPage() {
   return (

@@ -1,4 +1,30 @@
 import ProjectsGrid from "../projects/ProjectsGrid";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Projects",
+  description:
+    "Explore Shawon's cybersecurity, secure infrastructure, self-hosting, networking, software development, and technical projects.",
+
+  alternates: {
+    canonical: "/projects",
+  },
+
+  openGraph: {
+    title: "Cybersecurity & Technical Projects",
+    description:
+      "Explore cybersecurity, secure infrastructure, self-hosting, networking, software development, and technical projects by Shawon.",
+    url: "/projects",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Cybersecurity & Technical Projects",
+    description:
+      "Cybersecurity, infrastructure, networking, self-hosting, software development, and technical projects by Shawon.",
+  },
+};
 
 export default function ProjectsPage() {
   return (

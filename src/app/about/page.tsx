@@ -1,6 +1,32 @@
 import Journey from "../components/about/Journey";
 import InterestsValues from "../components/about/InterestsValues";
 import AboutCTA from "../components/about/AboutCTA";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About",
+  description:
+    "Learn about Shawon's cybersecurity journey, ethical hacking interests, secure infrastructure projects, technical development, and professional goals.",
+
+  alternates: {
+    canonical: "/about",
+  },
+
+  openGraph: {
+    title: "About Shawon",
+    description:
+      "Learn about Shawon's cybersecurity journey, ethical hacking interests, secure infrastructure projects, technical development, and professional goals.",
+    url: "/about",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "About Shawon",
+    description:
+      "Cybersecurity, ethical hacking, secure infrastructure, technical development, and professional goals.",
+  },
+};
 
 export default function About() {
   return (

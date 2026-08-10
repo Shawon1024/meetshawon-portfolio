@@ -114,39 +114,46 @@ function buildBlogUrl({
 }
 
 export const metadata: Metadata = {
-  title:
-    "Cybersecurity Blog | Shawon",
+  title: "Cybersecurity Blog",
 
   description:
-    "Cybersecurity articles, ethical hacking notes, technical projects, infrastructure documentation, and security research.",
+    "Cybersecurity articles, ethical hacking notes, technical projects, infrastructure documentation, and security research by Shawon.",
 
   alternates: {
     canonical: "/blog",
   },
 
   openGraph: {
-    title:
-      "Cybersecurity Blog | Shawon",
+    title: "Cybersecurity Blog — Meet Shawon",
 
     description:
       "Cybersecurity articles, ethical hacking notes, technical projects, infrastructure documentation, and security research.",
 
-    url:
-      "/blog",
+    url: "/blog",
 
-    type:
-      "website",
+    type: "website",
+
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Meet Shawon Cybersecurity Blog",
+      },
+    ],
   },
 
   twitter: {
-    card:
-      "summary",
+    card: "summary_large_image",
 
-    title:
-      "Cybersecurity Blog | Shawon",
+    title: "Cybersecurity Blog — Meet Shawon",
 
     description:
       "Cybersecurity articles, ethical hacking notes, projects, and technical documentation.",
+
+    images: [
+      "/opengraph-image.png",
+    ],
   },
 };
 

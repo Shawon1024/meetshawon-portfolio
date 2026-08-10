@@ -12,9 +12,28 @@ import {
 import Container from "../components/Container";
 
 export const metadata: Metadata = {
-  title: "Resume | Shawon",
+  title: "Resume",
   description:
-    "Shawon's resume, education, cybersecurity skills, technical projects, and professional development.",
+    "View Shawon's resume, education, cybersecurity skills, technical projects, professional development, and career direction.",
+
+  alternates: {
+    canonical: "/resume",
+  },
+
+  openGraph: {
+    title: "Resume & Career Overview",
+    description:
+      "Shawon's education, cybersecurity skills, technical projects, professional development, and career direction.",
+    url: "/resume",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Resume & Career Overview",
+    description:
+      "Education, cybersecurity skills, technical projects, professional development, and career direction.",
+  },
 };
 
 const education = [

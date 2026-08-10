@@ -95,7 +95,7 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: "Article Not Found | Shawon",
+      title: "Article Not Found",
     };
   }
 
@@ -111,7 +111,8 @@ export async function generateMetadata({
     `/blog/${post.slug}`;
 
   return {
-    title: `${post.title} | Shawon`,
+    title:
+      post.title,
 
     description,
 
@@ -132,37 +133,43 @@ export async function generateMetadata({
         post.published_at ??
         undefined,
 
-      images:
-        post.cover_image_url
-          ? [
-              {
-                url:
-                  post.cover_image_url,
+      images: [
+  {
+    url:
+      post.cover_image_url ||
+      "/opengraph-image.png",
 
-                alt:
-                  post.cover_image_alt ??
-                  post.title,
-              },
-            ]
-          : undefined,
+    width:
+      post.cover_image_url
+        ? undefined
+        : 1200,
+
+    height:
+      post.cover_image_url
+        ? undefined
+        : 630,
+
+    alt:
+      post.cover_image_url
+        ? post.cover_image_alt ??
+          post.title
+        : `${post.title} — Meet Shawon`,
+  },
+],
     },
 
     twitter: {
-      card:
-        post.cover_image_url
-          ? "summary_large_image"
-          : "summary",
+     card:
+      "summary_large_image",
 
       title: post.title,
 
       description,
 
-      images:
-        post.cover_image_url
-          ? [
-              post.cover_image_url,
-            ]
-          : undefined,
+      images: [
+        post.cover_image_url ||
+          "/opengraph-image.png",
+      ],
     },
   };
 }

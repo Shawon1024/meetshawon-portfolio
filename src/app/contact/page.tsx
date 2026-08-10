@@ -1,5 +1,31 @@
 import ContactForm from "../contact/ContactForm";
 import ContactMethods from "../contact/ContactMethods";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contact",
+  description:
+    "Contact Shawon about cybersecurity opportunities, professional networking, technical projects, software development, or collaboration.",
+
+  alternates: {
+    canonical: "/contact",
+  },
+
+  openGraph: {
+    title: "Contact Shawon",
+    description:
+      "Get in touch about cybersecurity opportunities, professional networking, technical projects, or collaboration.",
+    url: "/contact",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact Shawon",
+    description:
+      "Get in touch about cybersecurity opportunities, technical projects, networking, or collaboration.",
+  },
+};
 
 export default function ContactPage() {
   return (

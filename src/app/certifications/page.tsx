@@ -2,6 +2,33 @@ import CertificationsGrid from "../certifications/CertificationsGrid";
 import EducationSection from "../certifications/EducationSection";
 import CertificationProgress from "../certifications/CertificationProgress";
 import CertificationsCTA from "../certifications/CertificationsCTA";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Education & Certifications",
+  description:
+    "Explore Shawon's academic background, cybersecurity education, professional certifications, and ongoing technical development.",
+
+  alternates: {
+    canonical: "/certifications",
+  },
+
+  openGraph: {
+    title: "Education & Certifications",
+    description:
+      "Academic background, cybersecurity education, professional certifications, and ongoing technical development.",
+    url: "/certifications",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Education & Certifications",
+    description:
+      "Cybersecurity education, academic background, certifications, and professional development.",
+  },
+};
+
 export default function CertificationsPage() {
   return (
     <main>
