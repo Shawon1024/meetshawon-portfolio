@@ -5,8 +5,10 @@ import {
   Heart,
   MessageCircle,
   MessageCircleReply,
+  Sparkles,
   X,
 } from "lucide-react";
+
 import {
   useCallback,
   useEffect,
@@ -14,6 +16,7 @@ import {
   useRef,
   useState,
 } from "react";
+
 import {
   useRouter,
 } from "next/navigation";
@@ -39,9 +42,11 @@ interface FloatingNotification
 
 interface FloatingNotificationCardProps {
   notification: FloatingNotification;
+
   onDismiss: (
     id: string,
   ) => void;
+
   onOpen: (
     notification: FloatingNotification,
   ) => void;
@@ -58,7 +63,12 @@ const FLOATING_TYPES =
     "post_comment",
     "comment_activity",
     "reply_activity",
+    "profile_completion",
   ]);
+
+// --------------------------------------------------
+// NOTIFICATION ICON
+// --------------------------------------------------
 
 function NotificationIcon({
   type,
@@ -67,9 +77,20 @@ function NotificationIcon({
 }) {
   if (
     type ===
-    "comment_reaction" ||
+    "profile_completion"
+  ) {
+    return (
+      <Sparkles
+        size={19}
+      />
+    );
+  }
+
+  if (
     type ===
-    "post_reaction"
+      "comment_reaction" ||
+    type ===
+      "post_reaction"
   ) {
     return (
       <Heart
@@ -80,9 +101,9 @@ function NotificationIcon({
 
   if (
     type ===
-    "comment_reply" ||
+      "comment_reply" ||
     type ===
-    "reply_activity"
+      "reply_activity"
   ) {
     return (
       <MessageCircleReply
@@ -93,9 +114,9 @@ function NotificationIcon({
 
   if (
     type ===
-    "post_comment" ||
+      "post_comment" ||
     type ===
-    "comment_activity"
+      "comment_activity"
   ) {
     return (
       <MessageCircle
@@ -110,6 +131,10 @@ function NotificationIcon({
     />
   );
 }
+
+// --------------------------------------------------
+// FLOATING NOTIFICATION CARD
+// --------------------------------------------------
 
 function FloatingNotificationCard({
   notification,
@@ -128,10 +153,10 @@ function FloatingNotificationCard({
       DISPLAY_TIME_MS,
     );
 
-  const startedAtRef =
-    useRef<number>(
-      0,
-    );
+const startedAtRef =
+  useRef<number>(
+    0,
+  );
 
   const clearTimer =
     useCallback(
@@ -236,6 +261,10 @@ function FloatingNotificationCard({
       );
     };
 
+  const isProfileCompletion =
+    notification.type ===
+    "profile_completion";
+
   return (
     <div
       role="button"
@@ -297,7 +326,9 @@ function FloatingNotificationCard({
 
         <div className="min-w-0 flex-1">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-green-400">
-            New activity
+            {isProfileCompletion
+              ? "Profile Complete"
+              : "New activity"}
           </p>
 
           <p className="mt-1.5 text-sm leading-6 text-gray-100">
@@ -306,7 +337,9 @@ function FloatingNotificationCard({
           </p>
 
           <p className="mt-2 text-xs text-gray-500">
-            Click to view
+            {isProfileCompletion
+              ? "Click to view your profile"
+              : "Click to view"}
           </p>
         </div>
       </div>
@@ -315,6 +348,10 @@ function FloatingNotificationCard({
     </div>
   );
 }
+
+// --------------------------------------------------
+// FLOATING NOTIFICATIONS
+// --------------------------------------------------
 
 export default function FloatingNotifications() {
   const supabase =
@@ -334,6 +371,10 @@ export default function FloatingNotifications() {
     useState<
       FloatingNotification[]
     >([]);
+
+  // --------------------------------------------------
+  // DISMISS
+  // --------------------------------------------------
 
   const dismissNotification =
     useCallback(
@@ -355,6 +396,10 @@ export default function FloatingNotifications() {
       },
       [],
     );
+
+  // --------------------------------------------------
+  // REALTIME NOTIFICATION SUBSCRIPTION
+  // --------------------------------------------------
 
   useEffect(() => {
     let cancelled =
@@ -509,46 +554,19 @@ export default function FloatingNotifications() {
                 );
               },
             )
-             .subscribe(
+            .subscribe(
               (
                 status,
                 error,
               ) => {
                 if (
-                  cancelled
-                ) {
-                  return;
-                }
-
-                if (
                   status ===
-                  "CHANNEL_ERROR"
+                    "CHANNEL_ERROR" &&
+                  error
                 ) {
                   console.warn(
-                    "Floating notification realtime temporarily disconnected.",
-                    error ?? "",
-                  );
-
-                  return;
-                }
-
-                if (
-                  status ===
-                  "TIMED_OUT"
-                ) {
-                  console.warn(
-                    "Floating notification realtime connection timed out temporarily.",
-                  );
-
-                  return;
-                }
-
-                if (
-                  status ===
-                  "CLOSED"
-                ) {
-                  console.debug(
-                    "Floating notification realtime channel closed.",
+                    "Floating notification realtime temporarily disconnected:",
+                    error,
                   );
                 }
               },
@@ -573,12 +591,20 @@ export default function FloatingNotifications() {
     supabase,
   ]);
 
+  // --------------------------------------------------
+  // OPEN NOTIFICATION
+  // --------------------------------------------------
+
   const openNotification =
     useCallback(
       async (
         notification:
           FloatingNotification,
       ) => {
+        // ----------------------------------------------
+        // MARK AS READ
+        // ----------------------------------------------
+
         if (
           !notification.read_at
         ) {
@@ -624,6 +650,63 @@ export default function FloatingNotifications() {
           notification.id,
         );
 
+        // ----------------------------------------------
+        // PROFILE COMPLETION
+        // ----------------------------------------------
+
+        if (
+          notification.type ===
+          "profile_completion"
+        ) {
+          const {
+            data:
+              profile,
+            error:
+              profileError,
+          } =
+            await supabase
+              .from(
+                "profiles",
+              )
+              .select(
+                "username",
+              )
+              .eq(
+                "id",
+                notification.recipient_id,
+              )
+              .maybeSingle();
+
+          if (
+            profileError
+          ) {
+            console.error(
+              "Profile completion notification profile could not be loaded:",
+              profileError,
+            );
+          }
+
+          if (
+            profile?.username
+          ) {
+            router.push(
+              `/u/${profile.username}`,
+            );
+
+            return;
+          }
+
+          router.push(
+            "/account",
+          );
+
+          return;
+        }
+
+        // ----------------------------------------------
+        // BLOG NOTIFICATIONS
+        // ----------------------------------------------
+
         if (
           notification.post_slug
         ) {
@@ -639,6 +722,10 @@ export default function FloatingNotifications() {
           return;
         }
 
+        // ----------------------------------------------
+        // DEFAULT
+        // ----------------------------------------------
+
         router.push(
           "/account/notifications",
         );
@@ -650,12 +737,20 @@ export default function FloatingNotifications() {
       ],
     );
 
+  // --------------------------------------------------
+  // NOTHING TO DISPLAY
+  // --------------------------------------------------
+
   if (
     notifications.length ===
     0
   ) {
     return null;
   }
+
+  // --------------------------------------------------
+  // UI
+  // --------------------------------------------------
 
   return (
     <div

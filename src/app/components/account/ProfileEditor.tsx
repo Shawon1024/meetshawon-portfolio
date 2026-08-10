@@ -20,6 +20,7 @@ import RoleBadge from "../ui/RoleBadge";
 import AvatarUploader from "./AvatarUploader";
 import VerifiedBadge from "../ui/VerifiedBadge";
 import { createClient } from "../../lib/supabase/client";
+import ProfileCompletionCard from "./ProfileCompletionCard";
 
 interface ProfileEditorProps {
   userId: string;
@@ -91,6 +92,15 @@ export default function ProfileEditor({
     createClient();
 
   const [
+  profileCompletionRewarded,
+  setProfileCompletionRewarded,
+] =
+  useState(
+    initialProfile
+      .profile_completion_rewarded,
+  );
+
+    const [
     firstName,
     setFirstName,
   ] =
@@ -697,18 +707,24 @@ export default function ProfileEditor({
         return;
       }
 
-      const {
-        error:
-          updateError,
-      } = await supabase
-        .from("profiles")
-        .update(
-          updateData,
-        )
-        .eq(
-          "id",
-          userId,
-        );
+const {
+  data:
+    updatedProfile,
+  error:
+    updateError,
+} = await supabase
+  .from("profiles")
+  .update(
+    updateData,
+  )
+  .eq(
+    "id",
+    userId,
+  )
+  .select(`
+    profile_completion_rewarded
+  `)
+  .single();
 
       if (
         updateError
@@ -757,6 +773,15 @@ export default function ProfileEditor({
         throw new Error(
           errorDetails ||
             "Your profile could not be updated.",
+        );
+      }
+
+      if (
+        updatedProfile
+          ?.profile_completion_rewarded
+      ) {
+        setProfileCompletionRewarded(
+          true,
         );
       }
 
@@ -962,6 +987,51 @@ export default function ProfileEditor({
       }
       className="space-y-8"
     >
+
+            {/* PROFILE COMPLETION */}
+
+      <ProfileCompletionCard
+        firstName={
+          firstName
+        }
+        lastName={
+          lastName
+        }
+        username={
+          username
+        }
+        avatarUrl={
+          avatarUrl
+        }
+        bio={
+          bio
+        }
+        jobTitle={
+          jobTitle
+        }
+        gender={
+          gender
+        }
+        location={
+          location
+        }
+        phoneNumber={
+          phoneNumber
+        }
+        websiteUrl={
+          websiteUrl
+        }
+        githubUrl={
+          githubUrl
+        }
+        linkedinUrl={
+          linkedinUrl
+        }
+        rewarded={
+          profileCompletionRewarded
+        }
+      />
+
       {/* PROFILE HEADER */}
 
       <section className="rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-6 md:p-8">
