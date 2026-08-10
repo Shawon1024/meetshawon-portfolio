@@ -408,7 +408,7 @@ export default function NotificationPreferences() {
   // --------------------------------------------------
 
   return (
-    <section className="mt-10 rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-6 md:p-8">
+    <section className="w-full rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-6 md:p-8">
       <div>
         <p className="text-sm font-medium uppercase tracking-[0.22em] text-green-400">
           Preferences

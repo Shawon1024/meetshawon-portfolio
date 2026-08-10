@@ -5,7 +5,6 @@ import {
 } from "lucide-react";
 import { redirect } from "next/navigation";
 
-import NotificationPreferences from "../../components/account/NotificationPreferences";
 import Container from "../../components/Container";
 import NotificationManager from "../../components/account/NotificationManager";
 import { createClient } from "../../lib/supabase/server";
@@ -329,18 +328,6 @@ export default async function NotificationsPage() {
                 }
               />
             )}
-          </div>
-        </Container>
-      </section>
-
-      {/* =================================================
-          NOTIFICATION PREFERENCES
-      ================================================= */}
-
-      <section className="border-t border-white/5 pb-20">
-        <Container>
-          <div className="mx-auto max-w-5xl">
-            <NotificationPreferences />
           </div>
         </Container>
       </section>

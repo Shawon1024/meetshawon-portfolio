@@ -32,8 +32,45 @@ export default function AccountSecurity({
     createClient();
 
   // ==================================================
+  // EMAIL STATE
+  // ==================================================
+
+  const [
+    emailFormOpen,
+    setEmailFormOpen,
+  ] = useState(false);
+
+  const [
+    newEmail,
+    setNewEmail,
+  ] = useState("");
+
+  const [
+    emailPassword,
+    setEmailPassword,
+  ] = useState("");
+
+  const [
+    changingEmail,
+    setChangingEmail,
+  ] = useState(false);
+
+  const [
+    emailNotice,
+    setEmailNotice,
+  ] = useState<{
+    type: "error" | "success";
+    message: string;
+  } | null>(null);
+
+  // ==================================================
   // PASSWORD STATE
   // ==================================================
+
+  const [
+    currentPassword,
+    setCurrentPassword,
+  ] = useState("");
 
   const [
     newPassword,
@@ -50,6 +87,19 @@ export default function AccountSecurity({
     setChangingPassword,
   ] = useState(false);
 
+  const [
+    sendingResetEmail,
+    setSendingResetEmail,
+  ] = useState(false);
+
+  const [
+    passwordNotice,
+    setPasswordNotice,
+  ] = useState<{
+    type: "error" | "success";
+    message: string;
+  } | null>(null);
+
   // ==================================================
   // SESSION STATE
   // ==================================================
@@ -63,6 +113,14 @@ export default function AccountSecurity({
     signingOutEverywhere,
     setSigningOutEverywhere,
   ] = useState(false);
+
+  const [
+    sessionNotice,
+    setSessionNotice,
+  ] = useState<{
+    type: "error" | "success";
+    message: string;
+  } | null>(null);
 
   // ==================================================
   // DELETE ACCOUNT STATE
@@ -89,18 +147,234 @@ export default function AccountSecurity({
   ] = useState("");
 
   // ==================================================
-  // GENERAL MESSAGES
+  // CHANGE EMAIL
   // ==================================================
 
-  const [
-    error,
-    setError,
-  ] = useState("");
+  const handleEmailChange =
+    async (
+      event: FormEvent<HTMLFormElement>,
+    ) => {
+      event.preventDefault();
 
-  const [
-    success,
-    setSuccess,
-  ] = useState("");
+      setEmailNotice(null);
+
+      const currentEmail =
+        email
+          ?.trim()
+          .toLowerCase() ??
+        "";
+
+      const cleanNewEmail =
+        newEmail
+          .trim()
+          .toLowerCase();
+
+      if (!currentEmail) {
+        setEmailNotice({
+          type: "error",
+          message:
+            "Your current email address could not be determined. Refresh the page and try again.",
+        });
+
+        return;
+      }
+
+      if (!cleanNewEmail) {
+        setEmailNotice({
+          type: "error",
+          message:
+            "Enter the new email address you want to use.",
+        });
+
+        return;
+      }
+
+      if (
+        cleanNewEmail ===
+        currentEmail
+      ) {
+        setEmailNotice({
+          type: "error",
+          message:
+            "This is already your current email address. Enter a different email address.",
+        });
+
+        return;
+      }
+
+      if (
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+          cleanNewEmail,
+        )
+      ) {
+        setEmailNotice({
+          type: "error",
+          message:
+            "Enter a valid email address before continuing.",
+        });
+
+        return;
+      }
+
+      if (!emailPassword) {
+        setEmailNotice({
+          type: "error",
+          message:
+            "Enter your current password to confirm this email change.",
+        });
+
+        return;
+      }
+
+      try {
+        setChangingEmail(
+          true,
+        );
+
+        const {
+          data:
+            signInData,
+          error:
+            signInError,
+        } =
+          await supabase.auth.signInWithPassword(
+            {
+              email:
+                currentEmail,
+
+              password:
+                emailPassword,
+            },
+          );
+
+        if (
+          signInError ||
+          !signInData.user
+        ) {
+          setEmailNotice({
+            type: "error",
+            message:
+              "The current password you entered is incorrect. Your email address has not been changed.",
+          });
+
+          return;
+        }
+
+        const {
+          error:
+            updateError,
+        } =
+          await supabase.auth.updateUser(
+            {
+              email:
+                cleanNewEmail,
+            },
+          );
+
+        if (updateError) {
+          const authError =
+            updateError as {
+              code?: string;
+              message?: string;
+            };
+
+          const code =
+            authError.code ??
+            "";
+
+          const message =
+            (
+              authError.message ??
+              ""
+            ).toLowerCase();
+
+          const emailAlreadyExists =
+            code ===
+              "email_exists" ||
+            code ===
+              "user_already_exists" ||
+            code ===
+              "identity_already_exists" ||
+            message.includes(
+              "already registered",
+            ) ||
+            message.includes(
+              "already exists",
+            ) ||
+            message.includes(
+              "already been registered",
+            );
+
+          if (
+            emailAlreadyExists
+          ) {
+            setEmailNotice({
+              type: "error",
+              message:
+                "An account with this email address already exists. Please use a different email address.",
+            });
+
+            return;
+          }
+
+          if (
+            code ===
+            "over_email_send_rate_limit"
+          ) {
+            setEmailNotice({
+              type: "error",
+              message:
+                "Too many verification emails were requested. Please wait a little while before trying again.",
+            });
+
+            return;
+          }
+
+          console.warn(
+            "Email change request failed:",
+            updateError,
+          );
+
+          setEmailNotice({
+            type: "error",
+            message:
+              updateError.message ||
+              "Your email address could not be changed. Please try again.",
+          });
+
+          return;
+        }
+
+        setNewEmail("");
+        setEmailPassword("");
+        setEmailFormOpen(
+          false,
+        );
+
+        setEmailNotice({
+          type: "success",
+          message:
+            "Email change requested. Check your new email address and verify it to complete the change. Your current email remains active for sign-in until the new address is verified.",
+        });
+      } catch (error) {
+        console.warn(
+          "Unexpected email change error:",
+          error,
+        );
+
+        setEmailNotice({
+          type: "error",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Your email address could not be changed. Please try again.",
+        });
+      } finally {
+        setChangingEmail(
+          false,
+        );
+      }
+    };
 
   // ==================================================
   // CHANGE PASSWORD
@@ -112,16 +386,43 @@ export default function AccountSecurity({
     ) => {
       event.preventDefault();
 
-      setError("");
-      setSuccess("");
+      setPasswordNotice(null);
+
+      const currentEmail =
+        email
+          ?.trim()
+          .toLowerCase() ??
+        "";
+
+      if (!currentEmail) {
+        setPasswordNotice({
+          type: "error",
+          message:
+            "Your account email could not be determined. Refresh the page and try again.",
+        });
+
+        return;
+      }
+
+      if (!currentPassword) {
+        setPasswordNotice({
+          type: "error",
+          message:
+            "Enter your current password.",
+        });
+
+        return;
+      }
 
       if (
         newPassword.length <
         8
       ) {
-        setError(
-          "Password must be at least 8 characters long.",
-        );
+        setPasswordNotice({
+          type: "error",
+          message:
+            "Your new password must be at least 8 characters long.",
+        });
 
         return;
       }
@@ -130,9 +431,24 @@ export default function AccountSecurity({
         newPassword !==
         confirmPassword
       ) {
-        setError(
-          "The passwords do not match.",
-        );
+        setPasswordNotice({
+          type: "error",
+          message:
+            "The new passwords do not match.",
+        });
+
+        return;
+      }
+
+      if (
+        currentPassword ===
+        newPassword
+      ) {
+        setPasswordNotice({
+          type: "error",
+          message:
+            "Your new password must be different from your current password.",
+        });
 
         return;
       }
@@ -143,7 +459,37 @@ export default function AccountSecurity({
         );
 
         const {
-          error,
+          data:
+            signInData,
+          error:
+            signInError,
+        } =
+          await supabase.auth.signInWithPassword(
+            {
+              email:
+                currentEmail,
+
+              password:
+                currentPassword,
+            },
+          );
+
+        if (
+          signInError ||
+          !signInData.user
+        ) {
+          setPasswordNotice({
+            type: "error",
+            message:
+              "Your current password is incorrect.",
+          });
+
+          return;
+        }
+
+        const {
+          error:
+            updateError,
         } =
           await supabase.auth.updateUser(
             {
@@ -152,24 +498,145 @@ export default function AccountSecurity({
             },
           );
 
-        if (error) {
-          throw error;
+        if (updateError) {
+          console.warn(
+            "Password update failed:",
+            updateError,
+          );
+
+          setPasswordNotice({
+            type: "error",
+            message:
+              updateError.message ||
+              "Your password could not be updated.",
+          });
+
+          return;
         }
 
+        setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
 
-        setSuccess(
-          "Your password has been updated successfully.",
-        );
+        setPasswordNotice({
+          type: "success",
+          message:
+            "Your password has been updated successfully.",
+        });
       } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Your password could not be updated.",
+        console.warn(
+          "Unexpected password update error:",
+          error,
         );
+
+        setPasswordNotice({
+          type: "error",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Your password could not be updated.",
+        });
       } finally {
         setChangingPassword(
+          false,
+        );
+      }
+    };
+
+  // ==================================================
+  // FORGOT PASSWORD
+  // ==================================================
+
+  const sendPasswordReset =
+    async () => {
+      setPasswordNotice(null);
+
+      if (!email) {
+        setPasswordNotice({
+          type: "error",
+          message:
+            "Your account email could not be determined.",
+        });
+
+        return;
+      }
+
+      try {
+        setSendingResetEmail(
+          true,
+        );
+
+        const redirectTo =
+          `${window.location.origin}/auth/reset-password`;
+
+        const {
+          error:
+            resetError,
+        } =
+          await supabase.auth.resetPasswordForEmail(
+            email,
+            {
+              redirectTo,
+            },
+          );
+
+        if (resetError) {
+          const code =
+            (
+              resetError as {
+                code?: string;
+              }
+            ).code ??
+            "";
+
+          if (
+            code ===
+            "over_email_send_rate_limit"
+          ) {
+            setPasswordNotice({
+              type: "error",
+              message:
+                "Too many reset emails were requested. Please wait a little while before trying again.",
+            });
+
+            return;
+          }
+
+          console.warn(
+            "Password reset request failed:",
+            resetError,
+          );
+
+          setPasswordNotice({
+            type: "error",
+            message:
+              resetError.message ||
+              "The password reset email could not be sent.",
+          });
+
+          return;
+        }
+
+        setPasswordNotice({
+          type: "success",
+          message:
+            "Password reset email sent. Check your inbox and follow the link to choose a new password.",
+        });
+      } catch (error) {
+        console.warn(
+          "Unexpected password reset error:",
+          error,
+        );
+
+        setPasswordNotice({
+          type: "error",
+          message:
+            error instanceof Error
+              ? error.message
+              : "The password reset email could not be sent.",
+        });
+      } finally {
+        setSendingResetEmail(
           false,
         );
       }
@@ -181,8 +648,7 @@ export default function AccountSecurity({
 
   const signOutCurrent =
     async () => {
-      setError("");
-      setSuccess("");
+      setSessionNotice(null);
 
       try {
         setSigningOut(
@@ -208,11 +674,13 @@ export default function AccountSecurity({
 
         router.refresh();
       } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "You could not be signed out.",
-        );
+        setSessionNotice({
+          type: "error",
+          message:
+            error instanceof Error
+              ? error.message
+              : "You could not be signed out.",
+        });
       } finally {
         setSigningOut(
           false,
@@ -226,8 +694,7 @@ export default function AccountSecurity({
 
   const signOutEverywhere =
     async () => {
-      setError("");
-      setSuccess("");
+      setSessionNotice(null);
 
       try {
         setSigningOutEverywhere(
@@ -253,11 +720,13 @@ export default function AccountSecurity({
 
         router.refresh();
       } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Your sessions could not be signed out.",
-        );
+        setSessionNotice({
+          type: "error",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Your sessions could not be signed out.",
+        });
       } finally {
         setSigningOutEverywhere(
           false,
@@ -398,30 +867,194 @@ export default function AccountSecurity({
               />
             </div>
 
-            <div>
-              <p className="text-sm font-medium uppercase tracking-[0.2em] text-green-400">
-                Account
+            <div className="flex-1">
+              <p className="text-sm font-medium uppercase tracking-[0.2em] text-blue-300">
+                Email
               </p>
 
               <h2 className="mt-2 text-2xl font-semibold text-white">
                 Email Address
               </h2>
+
+              <p className="mt-3 max-w-2xl leading-7 text-gray-400">
+                Manage the email address used to sign in to your account.
+              </p>
             </div>
           </div>
 
           <div className="mt-7 rounded-xl border border-white/10 bg-black/10 p-4">
             <p className="text-sm text-gray-500">
-              Signed-in email
+              Current email
             </p>
 
-            <p className="mt-1 break-all font-medium text-white">
-              {email ??
-                "Unknown"}
-            </p>
+            <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="break-all font-medium text-white">
+                {email ??
+                  "Unknown"}
+              </p>
+
+              {!emailFormOpen && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmailNotice(null);
+
+                    setEmailFormOpen(
+                      true,
+                    );
+                  }}
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-blue-400/20 bg-blue-400/10 px-4 py-2.5 text-sm font-medium text-blue-300 transition hover:bg-blue-400/15"
+                >
+                  <Mail
+                    size={16}
+                  />
+
+                  Change Email
+                </button>
+              )}
+            </div>
           </div>
 
-          <p className="mt-4 text-sm leading-6 text-gray-500">
-            Your login email is private and is not displayed on your profile.
+          {emailFormOpen && (
+            <form
+              onSubmit={
+                handleEmailChange
+              }
+              className="mt-7 space-y-5"
+            >
+              <label className="block text-sm font-medium text-gray-300">
+                New email address
+
+                <input
+                  type="email"
+                  value={
+                    newEmail
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    setNewEmail(
+                      event.target
+                        .value,
+                    )
+                  }
+                  disabled={
+                    changingEmail
+                  }
+                  autoComplete="email"
+                  maxLength={254}
+                  placeholder="new@example.com"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+                  required
+                />
+              </label>
+
+              <label className="block text-sm font-medium text-gray-300">
+                Current password
+
+                <input
+                  type="password"
+                  value={
+                    emailPassword
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    setEmailPassword(
+                      event.target
+                        .value,
+                    )
+                  }
+                  disabled={
+                    changingEmail
+                  }
+                  autoComplete="current-password"
+                  placeholder="Enter your current password"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+                  required
+                />
+              </label>
+
+              <div className="rounded-xl border border-blue-400/10 bg-blue-400/[0.04] p-4">
+                <p className="text-sm leading-6 text-gray-400">
+                  A verification link will be sent to your new email address. Your current
+                  email remains active until the new address is verified. The new
+                  email also cannot already belong to another account.
+                </p>
+              </div>
+
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  disabled={
+                    changingEmail
+                  }
+                  onClick={() => {
+                    setEmailFormOpen(
+                      false,
+                    );
+
+                    setNewEmail("");
+                    setEmailPassword("");
+                    setEmailNotice(null);
+                  }}
+                  className="rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-gray-300 transition hover:border-white/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={
+                    changingEmail
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-5 py-3 font-medium text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {changingEmail ? (
+                    <Loader2
+                      size={17}
+                      className="animate-spin"
+                    />
+                  ) : (
+                    <Mail
+                      size={17}
+                    />
+                  )}
+
+                  {changingEmail
+                    ? "Requesting Change..."
+                    : "Confirm Email Change"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {emailNotice && (
+            <p
+              role={
+                emailNotice.type ===
+                "error"
+                  ? "alert"
+                  : "status"
+              }
+              className={`mt-5 rounded-xl border px-4 py-3 text-sm leading-6 ${
+                emailNotice.type ===
+                "error"
+                  ? "border-red-400/20 bg-red-400/10 text-red-300"
+                  : "border-green-400/20 bg-green-400/10 text-green-300"
+              }`}
+            >
+              {
+                emailNotice.message
+              }
+            </p>
+          )}
+
+          <p className="mt-5 text-xs leading-5 text-gray-500">
+            Your login email is private and is not displayed on your public
+            profile. After the change is completed, your previous email address
+            can receive a security notification if Email address changed
+            notifications are enabled in Supabase.
           </p>
         </section>
 
@@ -455,6 +1088,32 @@ export default function AccountSecurity({
             className="mt-8 space-y-5"
           >
             <label className="block text-sm font-medium text-gray-300">
+              Current password
+
+              <input
+                type="password"
+                value={
+                  currentPassword
+                }
+                onChange={(
+                  event,
+                ) =>
+                  setCurrentPassword(
+                    event.target
+                      .value,
+                  )
+                }
+                disabled={
+                  changingPassword
+                }
+                autoComplete="current-password"
+                placeholder="Enter your current password"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400 disabled:cursor-not-allowed disabled:opacity-60"
+                required
+              />
+            </label>
+
+            <label className="block text-sm font-medium text-gray-300">
               New password
 
               <input
@@ -470,8 +1129,12 @@ export default function AccountSecurity({
                       .value,
                   )
                 }
+                disabled={
+                  changingPassword
+                }
                 autoComplete="new-password"
                 placeholder="Enter a new password"
+                required
                 className="mt-2 w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400"
               />
             </label>
@@ -492,22 +1155,65 @@ export default function AccountSecurity({
                       .value,
                   )
                 }
+                disabled={
+                  changingPassword
+                }
                 autoComplete="new-password"
                 placeholder="Enter the password again"
+                required
                 className="mt-2 w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400"
               />
             </label>
 
-            <p className="text-xs leading-5 text-gray-500">
-              Use at least 8 characters. A longer, unique password is
-              recommended.
-            </p>
+            <div className="flex flex-col gap-3 text-xs leading-5 text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                Use at least 8 characters. A longer, unique password is
+                recommended.
+              </p>
+
+              <button
+                type="button"
+                disabled={
+                  sendingResetEmail
+                }
+                onClick={() => {
+                  void sendPasswordReset();
+                }}
+                className="w-fit font-medium text-green-400 transition hover:text-green-300 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {sendingResetEmail
+                  ? "Sending reset email..."
+                  : "Forgot your password?"}
+              </button>
+            </div>
+
+            {passwordNotice && (
+              <p
+                role={
+                  passwordNotice.type ===
+                  "error"
+                    ? "alert"
+                    : "status"
+                }
+                className={`rounded-xl border px-4 py-3 text-sm leading-6 ${
+                  passwordNotice.type ===
+                  "error"
+                    ? "border-red-400/20 bg-red-400/10 text-red-300"
+                    : "border-green-400/20 bg-green-400/10 text-green-300"
+                }`}
+              >
+                {
+                  passwordNotice.message
+                }
+              </p>
+            )}
 
             <div className="flex justify-end">
               <button
                 type="submit"
                 disabled={
-                  changingPassword
+                  changingPassword ||
+                  sendingResetEmail
                 }
                 className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-5 py-3 font-medium text-black transition hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -638,29 +1344,28 @@ export default function AccountSecurity({
               </button>
             </div>
           </div>
+
+          {sessionNotice && (
+            <p
+              role={
+                sessionNotice.type ===
+                "error"
+                  ? "alert"
+                  : "status"
+              }
+              className={`mt-6 rounded-xl border px-4 py-3 text-sm leading-6 ${
+                sessionNotice.type ===
+                "error"
+                  ? "border-red-400/20 bg-red-400/10 text-red-300"
+                  : "border-green-400/20 bg-green-400/10 text-green-300"
+              }`}
+            >
+              {
+                sessionNotice.message
+              }
+            </p>
+          )}
         </section>
-
-        {/* =================================================
-            GENERAL MESSAGES
-        ================================================= */}
-
-        {error && (
-          <p
-            role="alert"
-            className="rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-300"
-          >
-            {error}
-          </p>
-        )}
-
-        {success && (
-          <p
-            role="status"
-            className="rounded-xl border border-green-400/20 bg-green-400/10 px-4 py-3 text-sm text-green-300"
-          >
-            {success}
-          </p>
-        )}
 
         {/* =================================================
             DANGER ZONE

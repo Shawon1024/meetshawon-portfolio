@@ -11,7 +11,7 @@ import { createClient } from "../../lib/supabase/server";
 
 export default async function AccountSecurityPage() {
     await requireAccountNotBlocked();
-    
+
   const supabase =
     await createClient();
 
@@ -56,7 +56,7 @@ export default async function AccountSecurityPage() {
           </h1>
 
           <p className="mt-4 max-w-2xl leading-7 text-gray-400">
-            Manage your password and active sign-in sessions.
+            Manage your email address, password, and active sign-in sessions.
           </p>
         </div>
       </section>

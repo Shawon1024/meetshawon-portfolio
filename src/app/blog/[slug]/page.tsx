@@ -348,7 +348,8 @@ const {
     .from("profiles")
     .select(`
       id,
-      display_name,
+      first_name,
+      last_name,
       username,
       avatar_url,
       verified,
@@ -359,6 +360,17 @@ const {
       post.author_id,
     )
     .single();
+
+  const authorFullName =
+    [
+      author?.first_name,
+      author?.last_name,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim() ||
+    author?.username ||
+    "Shawon";
 
   // --------------------------------------------------
   // CATEGORY
@@ -417,8 +429,7 @@ const {
       "Person",
 
     name:
-      author?.display_name ??
-      "Shawon",
+      authorFullName,
   },
 
   publisher: {
@@ -426,8 +437,7 @@ const {
       "Person",
 
     name:
-      author?.display_name ??
-      "Shawon",
+      authorFullName,
   },
 
   mainEntityOfPage: {
@@ -523,8 +533,7 @@ const {
                     author.avatar_url
                   }
                   alt={
-                    author.display_name ??
-                    "Author"
+                    authorFullName
                   }
                   className="h-11 w-11 rounded-full border border-white/10 object-cover"
                 />
@@ -546,11 +555,11 @@ const {
                     {author?.username ? (
                       <Link href={`/u/${author.username}`}
                       className="font-medium text-white transition hover:text-green-300">
-                        {author.display_name ?? author.username}
+                        {authorFullName}
                       </Link>
                     ) : (
                       <p className="font-medium text-white">
-                        {author?.display_name ?? "Shawon"}
+                        {authorFullName}
                       </p>
                     )}
 

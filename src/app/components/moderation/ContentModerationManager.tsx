@@ -439,11 +439,39 @@ export default function ContentModerationManager({
             },
           );
 
-        if (
-          rpcError
-        ) {
-          throw rpcError;
-        }
+        if (rpcError) {
+  const errorDetails = [
+    rpcError.code
+      ? `Code: ${rpcError.code}`
+      : null,
+
+    rpcError.message
+      ? `Message: ${rpcError.message}`
+      : null,
+
+    rpcError.details
+      ? `Details: ${rpcError.details}`
+      : null,
+
+    rpcError.hint
+      ? `Hint: ${rpcError.hint}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" | ");
+
+  console.error(
+    `Comment moderation failed: ${
+      errorDetails ||
+      "Unknown Supabase error"
+    }`,
+  );
+
+  throw new Error(
+    errorDetails ||
+      "The moderation action could not be completed.",
+  );
+}
 
         const nextStatus:
           CommentStatus =

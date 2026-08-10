@@ -37,7 +37,8 @@ type ReactionType =
   | "angry";
 
 interface CommentProfile {
-  display_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   username: string | null;
   avatar_url: string | null;
   verified: boolean;
@@ -282,7 +283,8 @@ export default function PostComments({
             updated_at,
             edited,
             profile:profiles (
-              display_name,
+              first_name,
+              last_name,
               username,
               avatar_url,
               verified,
@@ -577,7 +579,8 @@ export default function PostComments({
         updated_at,
         edited,
         profile:profiles (
-          display_name,
+          first_name,
+          last_name,
           username,
           avatar_url,
           verified,
@@ -1440,8 +1443,17 @@ if (error) {
     const profile =
       getProfile(comment);
 
+    const fullName = [
+      profile?.first_name,
+      profile?.last_name,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+
     const name =
-      profile?.display_name ??
+      fullName ||
+      profile?.username ||
       "User";
 
     const isOwner =
@@ -1488,7 +1500,10 @@ if (error) {
             : ""
         }
       >
-        <article className="rounded-xl border border-white/10 bg-black/10 p-5">
+        <article
+          id={`comment-${comment.id}`}
+          className="scroll-mt-28 rounded-xl border border-white/10 bg-black/10 p-5"
+        >
           <div className="flex items-start gap-4">
             {/* ===========================================
                 AVATAR
@@ -2054,6 +2069,62 @@ if (error) {
       </div>
     );
   };
+
+
+  // ========================================================
+  // SCROLL TO COMMENT FROM NOTIFICATION LINK
+  // ========================================================
+
+  useEffect(() => {
+    if (
+      loading ||
+      comments.length ===
+        0
+    ) {
+      return;
+    }
+
+    const hash =
+      window.location.hash;
+
+    if (
+      !hash.startsWith(
+        "#comment-",
+      )
+    ) {
+      return;
+    }
+
+    const elementId =
+      hash.slice(1);
+
+    const timer =
+      window.setTimeout(
+        () => {
+          const element =
+            document.getElementById(
+              elementId,
+            );
+
+          element?.scrollIntoView({
+            behavior:
+              "smooth",
+            block:
+              "center",
+          });
+        },
+        100,
+      );
+
+    return () => {
+      window.clearTimeout(
+        timer,
+      );
+    };
+  }, [
+    loading,
+    comments,
+  ]);
 
   // ========================================================
   // PAGE

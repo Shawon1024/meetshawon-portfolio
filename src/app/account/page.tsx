@@ -6,6 +6,9 @@ import {
   UserRound,
 } from "lucide-react";
 import { redirect } from "next/navigation";
+
+import CoverThemeSelector from "../components/account/CoverThemeSelector";
+import NotificationPreferences from "../components/account/NotificationPreferences";
 import { requireAccountNotBlocked } from "../lib/accountRestriction";
 import Container from "../components/Container";
 import ProfileEditor from "../components/account/ProfileEditor";
@@ -13,7 +16,7 @@ import { createClient } from "../lib/supabase/server";
 
 export default async function AccountPage() {
   await requireAccountNotBlocked();
-  
+
   const supabase =
     await createClient();
 
@@ -23,7 +26,8 @@ export default async function AccountPage() {
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } =
+    await supabase.auth.getUser();
 
   if (!user) {
     redirect(
@@ -41,13 +45,22 @@ export default async function AccountPage() {
   } = await supabase
     .from("profiles")
     .select(`
-      display_name,
       username,
       username_set,
+      first_name,
+      last_name,
       bio,
       avatar_url,
+      cover_theme,
       location,
+      job_title,
+      gender,
       website_url,
+      github_url,
+      linkedin_url,
+      phone_country_code,
+      phone_number,
+      profile_completion_rewarded,
       role,
       verified
     `)
@@ -63,7 +76,7 @@ export default async function AccountPage() {
   ) {
     return (
       <main>
-        <section className="px-6 py-24">
+        <section className="px-6 py-20">
           <div className="mx-auto max-w-3xl rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-300">
             <p className="font-medium">
               Your profile could not be loaded.
@@ -88,16 +101,21 @@ export default async function AccountPage() {
     error: savedCountError,
   } = await supabase
     .from("bookmarks")
-    .select("id", {
-      count: "exact",
-      head: true,
-    })
+    .select(
+      "id",
+      {
+        count: "exact",
+        head: true,
+      },
+    )
     .eq(
       "user_id",
       user.id,
     );
 
-  if (savedCountError) {
+  if (
+    savedCountError
+  ) {
     console.error(
       "Saved article count could not be loaded:",
       savedCountError,
@@ -134,8 +152,8 @@ export default async function AccountPage() {
           </h1>
 
           <p className="mt-4 max-w-2xl leading-7 text-gray-400">
-            Manage your public identity, profile photo, username, bio, and
-            account details.
+            Manage your identity, professional details, contact information,
+            public profile, and account settings.
           </p>
         </div>
       </section>
@@ -147,8 +165,6 @@ export default async function AccountPage() {
       <section className="border-t border-white/5 py-10">
         <Container>
           <div className="mx-auto grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Profile */}
-
             <div className="rounded-2xl border border-green-400/20 bg-green-400/10 p-5">
               <UserRound
                 size={21}
@@ -163,8 +179,6 @@ export default async function AccountPage() {
                 Edit your public profile.
               </p>
             </div>
-
-            {/* Saved Articles */}
 
             <Link
               href="/account/saved"
@@ -194,8 +208,6 @@ export default async function AccountPage() {
               </p>
             </Link>
 
-            {/* My Activity */}
-
             <Link
               href="/account/activity"
               className="group rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-5 transition hover:border-green-400/30"
@@ -214,8 +226,6 @@ export default async function AccountPage() {
               </p>
             </Link>
 
-            {/* Security */}
-
             <Link
               href="/account/security"
               className="group rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-5 transition hover:border-green-400/30"
@@ -230,7 +240,7 @@ export default async function AccountPage() {
               </p>
 
               <p className="mt-2 text-sm text-gray-400">
-                Manage your password and sign-in sessions.
+                Manage your password, email address, and sign-in sessions.
               </p>
             </Link>
           </div>
@@ -238,12 +248,12 @@ export default async function AccountPage() {
       </section>
 
       {/* =================================================
-          PROFILE EDITOR
+          PROFILE + COVER + NOTIFICATION SETTINGS
       ================================================= */}
 
       <section className="border-t border-white/5 py-16">
         <Container>
-          <div className="mx-auto max-w-5xl">
+          <div className="mx-auto w-full max-w-5xl space-y-8">
             <ProfileEditor
               userId={
                 user.id
@@ -256,6 +266,17 @@ export default async function AccountPage() {
                 profile
               }
             />
+
+            <CoverThemeSelector
+              userId={
+                user.id
+              }
+              initialTheme={
+                profile.cover_theme
+              }
+            />
+
+            <NotificationPreferences />
           </div>
         </Container>
       </section>

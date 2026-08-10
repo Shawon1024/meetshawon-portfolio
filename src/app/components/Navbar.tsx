@@ -33,7 +33,8 @@ import { createClient } from "../lib/supabase/client";
 
 interface ProfileData {
   id: string;
-  display_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   username: string | null;
   avatar_url: string | null;
   role: string | null;
@@ -42,7 +43,8 @@ interface ProfileData {
 
 interface NotificationActor {
   id: string;
-  display_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   username: string | null;
   avatar_url: string | null;
   verified: boolean;
@@ -307,7 +309,8 @@ export default function Navbar() {
               )
               .select(`
                 id,
-                display_name,
+                first_name,
+                last_name,
                 username,
                 avatar_url,
                 verified
@@ -458,7 +461,8 @@ export default function Navbar() {
             .from("profiles")
             .select(`
               id,
-              display_name,
+              first_name,
+              last_name,
               username,
               avatar_url,
               role,
@@ -529,7 +533,8 @@ export default function Navbar() {
             .from("profiles")
             .select(`
               id,
-              display_name,
+              first_name,
+              last_name,
               username,
               avatar_url,
               role,
@@ -1151,15 +1156,38 @@ export default function Navbar() {
   // PROFILE DISPLAY
   // --------------------------------------------------
 
-  const displayName =
-    profile?.display_name ??
-    profile?.username ??
+  const firstName =
+    profile?.first_name?.trim() ??
+    "";
+
+  const lastName =
+    profile?.last_name?.trim() ??
+    "";
+
+  const greetingName =
+    firstName
+      .split(/\s+/)
+      .filter(Boolean)[0] ??
+    "there";
+
+  const fullName =
+    [
+      firstName,
+      lastName,
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    profile?.username ||
     "Account";
 
   const initial =
-    displayName
+    firstName
       .charAt(0)
-      .toUpperCase();
+      .toUpperCase() ||
+    fullName
+      .charAt(0)
+      .toUpperCase() ||
+    "U";
 
   // --------------------------------------------------
   // PAGE
@@ -1175,15 +1203,15 @@ export default function Navbar() {
         <Link
           href="/"
           className="flex shrink-0 items-center"
-          aria-label="Home"
+          aria-label="Meet Shawon Home"
         >
           <Image
             src="/logo.png"
-            alt="Shawon"
-            width={170}
-            height={55}
+            alt="Meet Shawon"
+            width={220}
+            height={80}
             priority
-            className="h-11 w-auto object-contain md:h-12"
+            className="h-20 w-auto object-contain md:h-12"
           />
         </Link>
 
@@ -1377,10 +1405,15 @@ export default function Navbar() {
 
                               const actorName =
                                 notification.actor
-                                  ?.display_name ??
-                                notification.actor
-                                  ?.username ??
-                                null;
+                                  ? [
+                                      notification.actor.first_name,
+                                      notification.actor.last_name,
+                                    ]
+                                      .filter(Boolean)
+                                      .join(" ") ||
+                                    notification.actor.username ||
+                                    null
+                                  : null;
 
                               const notificationText =
                                 notification.message ??
@@ -1518,7 +1551,7 @@ export default function Navbar() {
                       src={
                         profile.avatar_url
                       }
-                      alt={`${displayName} profile`}
+                      alt={`${fullName} profile`}
                       className="h-8 w-8 rounded-full object-cover"
                     />
                   ) : (
@@ -1529,10 +1562,8 @@ export default function Navbar() {
                     </div>
                   )}
 
-                  <span className="max-w-32 truncate text-sm font-medium text-white">
-                    {
-                      displayName
-                    }
+                  <span className="max-w-36 truncate text-sm font-medium text-white">
+                    Hello, {greetingName}
                   </span>
 
                   <ChevronDown
@@ -1566,7 +1597,7 @@ export default function Navbar() {
                           src={
                             profile.avatar_url
                           }
-                          alt={`${displayName} profile`}
+                          alt={`${fullName} profile`}
                           className="h-11 w-11 rounded-full object-cover"
                         />
                       ) : (
@@ -1581,7 +1612,7 @@ export default function Navbar() {
                         <div className="flex flex-wrap items-center gap-1.5">
                           <p className="truncate font-medium text-white">
                             {
-                              displayName
+                              fullName
                             }
                           </p>
 
@@ -1655,7 +1686,7 @@ export default function Navbar() {
                         }
                       />
 
-                      Account
+                      Edit Profile
                     </Link>
 
                     <Link
@@ -2047,10 +2078,15 @@ export default function Navbar() {
 
                                   const actorName =
                                     notification.actor
-                                      ?.display_name ??
-                                    notification.actor
-                                      ?.username ??
-                                    null;
+                                      ? [
+                                          notification.actor.first_name,
+                                          notification.actor.last_name,
+                                        ]
+                                          .filter(Boolean)
+                                          .join(" ") ||
+                                        notification.actor.username ||
+                                        null
+                                      : null;
 
                                   return (
                                     <Link
@@ -2149,7 +2185,7 @@ export default function Navbar() {
                             src={
                               profile.avatar_url
                             }
-                            alt={`${displayName} profile`}
+                            alt={`${fullName} profile`}
                             className="h-11 w-11 shrink-0 rounded-full object-cover"
                           />
                         ) : (
@@ -2164,7 +2200,7 @@ export default function Navbar() {
                           <div className="flex flex-wrap items-center gap-1.5">
                             <p className="truncate font-medium text-white">
                               {
-                                displayName
+                                fullName
                               }
                             </p>
 
@@ -2246,7 +2282,7 @@ export default function Navbar() {
                             }
                           />
 
-                          Account
+                          Edit Profile
                         </Link>
 
                         <Link

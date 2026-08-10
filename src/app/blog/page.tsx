@@ -951,23 +951,24 @@ if (popularPostsError) {
                         >
                           {/* Cover */}
 
-                          {post.cover_image_url && (
-                            <Link
-                              href={`/blog/${post.slug}`}
-                              className="-mx-6 -mt-6 mb-6 block overflow-hidden"
-                            >
-                              <img
-                                src={
-                                  post.cover_image_url
-                                }
-                                alt={
-                                  post.cover_image_alt ??
-                                  post.title
-                                }
-                                className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-                              />
-                            </Link>
-                          )}
+                          <Link
+                            href={`/blog/${post.slug}`}
+                            className="-mx-6 -mt-6 mb-6 block overflow-hidden"
+                          >
+                            <img
+                              src={
+                                post.cover_image_url ||
+                                "/default-blog-cover.png"
+                              }
+                              alt={
+                                post.cover_image_url
+                                  ? post.cover_image_alt ??
+                                    post.title
+                                  : "Default article cover"
+                              }
+                              className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                            />
+                          </Link>
 
                           {/* Category */}
 

@@ -3,13 +3,20 @@ import type { Metadata } from "next";
 import {
   ArrowLeft,
   Ban,
+  BriefcaseBusiness,
   Clock3,
   ExternalLink,
   Globe2,
   HardDrive,
   MapPin,
+  Mars,
+  Phone,
   Pencil,
+  ShieldQuestion,
+  Sparkles,
+  Transgender,
   UserRound,
+  Venus,
 } from "lucide-react";
 import {
   notFound,
@@ -17,6 +24,7 @@ import {
 } from "next/navigation";
 
 import Container from "../../components/Container";
+import ProfileAvatar from "../../components/ui/ProfileAvatar";
 import RoleBadge from "../../components/ui/RoleBadge";
 import VerifiedBadge from "../../components/ui/VerifiedBadge";
 import { createClient } from "../../lib/supabase/server";
@@ -65,7 +73,8 @@ export async function generateMetadata({
   } = await supabase
     .from("profiles")
     .select(`
-      display_name,
+      first_name,
+      last_name,
       username,
       bio
     `)
@@ -83,8 +92,13 @@ export async function generateMetadata({
   }
 
   const name =
-    profile.display_name ??
-    profile.username ??
+    [
+      profile.first_name?.trim(),
+      profile.last_name?.trim(),
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    profile.username ||
     "User";
 
   const description =
@@ -172,12 +186,20 @@ export default async function PublicProfilePage({
     .from("profiles")
     .select(`
       id,
-      display_name,
+      first_name,
+      last_name,
       username,
       bio,
       avatar_url,
+      cover_theme,
       location,
+      job_title,
+      gender,
       website_url,
+      github_url,
+      linkedin_url,
+      phone_country_code,
+      phone_number,
       role,
       verified
     `)
@@ -239,9 +261,91 @@ export default async function PublicProfilePage({
     );
   }
 
-  const displayName =
-    profile.display_name ??
-    profile.username;
+  const fullName =
+    [
+      profile.first_name?.trim(),
+      profile.last_name?.trim(),
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    profile.username ||
+    "User";
+
+  const getGenderLabel = (
+    value: string | null,
+  ) => {
+    switch (value) {
+      case "male":
+        return "Male";
+
+      case "female":
+        return "Female";
+
+      case "non_binary":
+        return "Non-binary";
+
+      case "other":
+        return "Other";
+
+      case "prefer_not_to_say":
+        return "Prefer not to say";
+
+      default:
+        return null;
+    }
+  };
+
+  const GenderIcon = (() => {
+    switch (profile.gender) {
+      case "male":
+        return Mars;
+
+      case "female":
+        return Venus;
+
+      case "non_binary":
+        return Transgender;
+
+      case "other":
+        return Sparkles;
+
+      case "prefer_not_to_say":
+        return ShieldQuestion;
+
+      default:
+        return null;
+    }
+  })();
+
+  const genderLabel =
+    getGenderLabel(
+      profile.gender,
+    );
+
+  const contactNumber =
+    profile.phone_number
+      ? [
+          profile.phone_country_code,
+          profile.phone_number,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : null;
+
+  const hasDetails =
+    Boolean(
+      profile.job_title ||
+        profile.gender ||
+        profile.location ||
+        contactNumber,
+    );
+
+  const hasSocialLinks =
+    Boolean(
+      profile.website_url ||
+        profile.github_url ||
+        profile.linkedin_url,
+    );
 
   const profileUrl =
     `/u/${profile.username}`;
@@ -272,6 +376,33 @@ export default async function PublicProfilePage({
   const effectiveRestrictionStatus =
     restriction?.status ??
     "active";
+
+  const coverThemeImages: Record<
+    string,
+    string
+  > = {
+    emerald:
+      "/images/profile-covers/cyber-green.png",
+
+    ocean:
+      "/images/profile-covers/deep-ocean.png",
+
+    violet:
+      "/images/profile-covers/purple-nebula.png",
+
+    amber:
+      "/images/profile-covers/crimson-flow.png",
+
+    midnight:
+      "/images/profile-covers/midnight-smoke.png",
+  };
+
+  const coverThemeImage =
+    coverThemeImages[
+      profile.cover_theme ??
+        "emerald"
+    ] ??
+    coverThemeImages.emerald;
 
   // --------------------------------------------------
   // PAGE
@@ -306,34 +437,48 @@ export default async function PublicProfilePage({
         <Container>
           <div className="mx-auto max-w-4xl">
             <article className="overflow-hidden rounded-3xl border border-white/10 bg-[var(--surface)]/70">
-              {/* Decorative top */}
+              {/* Profile cover */}
 
-              <div className="h-28 border-b border-white/5 bg-gradient-to-r from-green-400/10 via-transparent to-blue-400/10 md:h-36" />
+              <div
+                className="relative h-36 overflow-hidden border-b border-white/5 md:h-44"
+                style={{
+                  backgroundImage:
+                    `url("${coverThemeImage}")`,
+                  backgroundSize:
+                    "cover",
+                  backgroundPosition:
+                    "center",
+                }}
+              >
+                <div className="absolute inset-0 bg-black/5" />
+
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent" />
+              </div>
 
               <div className="px-6 pb-8 md:px-10 md:pb-10">
                 {/* =================================================
                     AVATAR + PROFILE ACTIONS
                 ================================================= */}
 
-                <div className="-mt-14 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                <div className="relative z-20 -mt-14 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                   {/* Avatar */}
 
                   <div>
-                    {profile.avatar_url ? (
-                      <img
-                        src={
-                          profile.avatar_url
-                        }
-                        alt={`${displayName} profile photo`}
-                        className="h-28 w-28 shrink-0 rounded-full border-4 border-[#102A2A] bg-[#102A2A] object-cover shadow-xl md:h-32 md:w-32"
-                      />
-                    ) : (
-                      <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full border-4 border-[#102A2A] bg-green-400/10 text-3xl font-bold text-green-300 shadow-xl md:h-32 md:w-32">
-                        {displayName
-                          .charAt(0)
-                          .toUpperCase()}
-                      </div>
-                    )}
+                    <ProfileAvatar
+                      avatarUrl={
+                        profile.avatar_url
+                      }
+                      gender={
+                        profile.gender
+                      }
+                      name={
+                        fullName
+                      }
+                      className="h-28 w-28 border-4 border-[#102A2A] shadow-xl md:h-32 md:w-32"
+                      iconSize={
+                        44
+                      }
+                    />
                   </div>
 
                   {/* Own-profile actions */}
@@ -381,7 +526,7 @@ export default async function PublicProfilePage({
                   <div className="flex flex-wrap items-center gap-2">
                     <h1 className="text-3xl font-bold text-white md:text-4xl">
                       {
-                        displayName
+                        fullName
                       }
                     </h1>
 
@@ -495,9 +640,64 @@ export default async function PublicProfilePage({
                     DETAILS
                 ================================================= */}
 
-                {(profile.location ||
-                  profile.website_url) && (
+                {hasDetails && (
                   <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-gray-400">
+                    {profile.job_title && (
+                      <span className="inline-flex items-center gap-2">
+                        <BriefcaseBusiness
+                          size={16}
+                        />
+
+                        {
+                          profile.job_title
+                        }
+                      </span>
+                    )}
+
+{profile.gender &&
+  genderLabel &&
+  GenderIcon && (
+    <span
+      className={`inline-flex items-center gap-2 ${
+        profile.gender === "male"
+          ? "text-blue-300"
+          : profile.gender === "female"
+            ? "text-pink-300"
+            : profile.gender === "non_binary"
+              ? "text-purple-300"
+              : profile.gender === "other"
+                ? "text-amber-300"
+                : profile.gender === "prefer_not_to_say"
+                  ? "text-slate-300"
+                  : "text-gray-300"
+      }`}
+    >
+      <span
+        className={`inline-flex h-7 w-7 items-center justify-center rounded-full border ${
+          profile.gender === "male"
+            ? "border-blue-400/20 bg-blue-400/10"
+            : profile.gender === "female"
+              ? "border-pink-400/20 bg-pink-400/10"
+              : profile.gender === "non_binary"
+                ? "border-purple-400/20 bg-purple-400/10"
+                : profile.gender === "other"
+                  ? "border-amber-400/20 bg-amber-400/10"
+                  : profile.gender === "prefer_not_to_say"
+                    ? "border-slate-400/20 bg-slate-400/10"
+                    : "border-white/10 bg-white/5"
+        }`}
+      >
+        <GenderIcon
+          size={15}
+        />
+      </span>
+
+      <span>
+        {genderLabel}
+      </span>
+    </span>
+  )}
+
                     {profile.location && (
                       <span className="inline-flex items-center gap-2">
                         <MapPin
@@ -510,6 +710,22 @@ export default async function PublicProfilePage({
                       </span>
                     )}
 
+                    {contactNumber && (
+                      <span className="inline-flex items-center gap-2">
+                        <Phone
+                          size={16}
+                        />
+
+                        {
+                          contactNumber
+                        }
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {hasSocialLinks && (
+                  <div className="mt-6 flex items-center gap-3">
                     {profile.website_url && (
                       <a
                         href={
@@ -517,19 +733,52 @@ export default async function PublicProfilePage({
                         }
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-green-400 transition hover:text-green-300"
+                        title={
+                          profile.website_url
+                        }
+                        aria-label="Open website in a new tab"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-gray-500 transition hover:border-green-400/30 hover:bg-green-400/10 hover:text-green-300"
                       >
                         <Globe2
-                          size={16}
+                          size={19}
                         />
+                      </a>
+                    )}
 
-                        {profile.website_url.replace(
-                          /^https?:\/\//,
-                          "",
-                        )}
+                    {profile.github_url && (
+                      <a
+                        href={
+                          profile.github_url
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={
+                          profile.github_url
+                        }
+                        aria-label="Open GitHub profile in a new tab"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-gray-500 transition hover:border-white/30 hover:bg-white/10 hover:text-white"
+                      >
+                        <Globe2
+                          size={19}
+                        />
+                      </a>
+                    )}
 
-                        <ExternalLink
-                          size={13}
+                    {profile.linkedin_url && (
+                      <a
+                        href={
+                          profile.linkedin_url
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={
+                          profile.linkedin_url
+                        }
+                        aria-label="Open LinkedIn profile in a new tab"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-gray-500 transition hover:border-sky-400/30 hover:bg-sky-400/10 hover:text-sky-300"
+                      >
+                        <Globe2
+                          size={19}
                         />
                       </a>
                     )}

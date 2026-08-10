@@ -2,16 +2,20 @@
 
 import {
   BadgeCheck,
+  BriefcaseBusiness,
   Globe2,
   Loader2,
-  MapPin,
+  Phone,
   Save,
   UserRound,
+  UsersRound,
 } from "lucide-react";
 import {
   FormEvent,
+  useRef,
   useState,
 } from "react";
+import LocationSearch from "./LocationSearch";
 import RoleBadge from "../ui/RoleBadge";
 import AvatarUploader from "./AvatarUploader";
 import VerifiedBadge from "../ui/VerifiedBadge";
@@ -22,17 +26,61 @@ interface ProfileEditorProps {
   email: string | null;
 
   initialProfile: {
-    display_name: string | null;
     username: string | null;
     username_set: boolean;
+
+    first_name: string | null;
+    last_name: string | null;
+
     bio: string | null;
     avatar_url: string | null;
     location: string | null;
+
+    job_title: string | null;
+    gender: string | null;
+
     website_url: string | null;
+    github_url: string | null;
+    linkedin_url: string | null;
+
+    phone_country_code: string | null;
+    phone_number: string | null;
+
+    profile_completion_rewarded: boolean;
+
     role: string | null;
     verified: boolean;
   };
 }
+
+
+const COUNTRY_CODES = [
+  { country: "Australia", code: "+61", flag: "🇦🇺" },
+  { country: "Bangladesh", code: "+880", flag: "🇧🇩" },
+  { country: "Canada", code: "+1", flag: "🇨🇦" },
+  { country: "China", code: "+86", flag: "🇨🇳" },
+  { country: "Denmark", code: "+45", flag: "🇩🇰" },
+  { country: "France", code: "+33", flag: "🇫🇷" },
+  { country: "Germany", code: "+49", flag: "🇩🇪" },
+  { country: "India", code: "+91", flag: "🇮🇳" },
+  { country: "Ireland", code: "+353", flag: "🇮🇪" },
+  { country: "Italy", code: "+39", flag: "🇮🇹" },
+  { country: "Japan", code: "+81", flag: "🇯🇵" },
+  { country: "Malaysia", code: "+60", flag: "🇲🇾" },
+  { country: "Netherlands", code: "+31", flag: "🇳🇱" },
+  { country: "Norway", code: "+47", flag: "🇳🇴" },
+  { country: "Pakistan", code: "+92", flag: "🇵🇰" },
+  { country: "Qatar", code: "+974", flag: "🇶🇦" },
+  { country: "Saudi Arabia", code: "+966", flag: "🇸🇦" },
+  { country: "Singapore", code: "+65", flag: "🇸🇬" },
+  { country: "South Korea", code: "+82", flag: "🇰🇷" },
+  { country: "Spain", code: "+34", flag: "🇪🇸" },
+  { country: "Sweden", code: "+46", flag: "🇸🇪" },
+  { country: "Switzerland", code: "+41", flag: "🇨🇭" },
+  { country: "United Arab Emirates", code: "+971", flag: "🇦🇪" },
+  { country: "United Kingdom", code: "+44", flag: "🇬🇧" },
+  { country: "United States", code: "+1", flag: "🇺🇸" },
+];
 
 export default function ProfileEditor({
   userId,
@@ -42,37 +90,126 @@ export default function ProfileEditor({
   const supabase =
     createClient();
 
-  const [displayName, setDisplayName] =
+  const [
+    firstName,
+    setFirstName,
+  ] =
     useState(
-      initialProfile.display_name ?? "",
+      initialProfile.first_name ??
+        "",
     );
 
-  const [username, setUsername] =
+  const [
+    lastName,
+    setLastName,
+  ] =
     useState(
-      initialProfile.username ?? "",
+      initialProfile.last_name ??
+        "",
     );
 
-  const [bio, setBio] =
+  const [
+    username,
+    setUsername,
+  ] =
     useState(
-      initialProfile.bio ?? "",
+      initialProfile.username ??
+        "",
     );
 
-  const [location, setLocation] =
+  const [
+    bio,
+    setBio,
+  ] =
     useState(
-      initialProfile.location ?? "",
+      initialProfile.bio ??
+        "",
     );
 
-  const [websiteUrl, setWebsiteUrl] =
+  const [
+    location,
+    setLocation,
+  ] =
     useState(
-      initialProfile.website_url ?? "",
+      initialProfile.location ??
+        "",
     );
 
-  const [avatarUrl, setAvatarUrl] =
+  const [
+    jobTitle,
+    setJobTitle,
+  ] =
+    useState(
+      initialProfile.job_title ??
+        "",
+    );
+
+  const [
+    gender,
+    setGender,
+  ] =
+    useState(
+      initialProfile.gender ??
+        "",
+    );
+
+  const [
+    websiteUrl,
+    setWebsiteUrl,
+  ] =
+    useState(
+      initialProfile.website_url ??
+        "",
+    );
+
+  const [
+    githubUrl,
+    setGithubUrl,
+  ] =
+    useState(
+      initialProfile.github_url ??
+        "",
+    );
+
+  const [
+    linkedinUrl,
+    setLinkedinUrl,
+  ] =
+    useState(
+      initialProfile.linkedin_url ??
+        "",
+    );
+
+  const [
+    phoneCountryCode,
+    setPhoneCountryCode,
+  ] =
+    useState(
+      initialProfile.phone_country_code ??
+        "+44",
+    );
+
+  const [
+    phoneNumber,
+    setPhoneNumber,
+  ] =
+    useState(
+      initialProfile.phone_number ??
+        "",
+    );
+
+  const [
+    avatarUrl,
+    setAvatarUrl,
+  ] =
     useState<string | null>(
       initialProfile.avatar_url,
     );
 
-  const [usernameLocked, setUsernameLocked] =
+  const [
+    usernameLocked,
+    setUsernameLocked,
+  ] =
     useState(
       initialProfile.username_set ||
         Boolean(
@@ -80,14 +217,83 @@ export default function ProfileEditor({
         ),
     );
 
-  const [saving, setSaving] =
+  const [
+    saving,
+    setSaving,
+  ] =
     useState(false);
 
-  const [error, setError] =
+  const [
+    error,
+    setError,
+  ] =
     useState("");
 
-  const [success, setSuccess] =
+  const [
+    success,
+    setSuccess,
+  ] =
     useState("");
+
+  const savedProfileRef =
+    useRef({
+      first_name:
+        initialProfile.first_name ??
+        "",
+
+      last_name:
+        initialProfile.last_name ??
+        "",
+
+      username:
+        initialProfile.username ??
+        "",
+
+      bio:
+        initialProfile.bio ??
+        "",
+
+      location:
+        initialProfile.location ??
+        "",
+
+      job_title:
+        initialProfile.job_title ??
+        "",
+
+      gender:
+        initialProfile.gender ??
+        "",
+
+      website_url:
+        initialProfile.website_url ??
+        "",
+
+      github_url:
+        initialProfile.github_url ??
+        "",
+
+      linkedin_url:
+        initialProfile.linkedin_url ??
+        "",
+
+      phone_country_code:
+        initialProfile.phone_country_code ??
+        "",
+
+      phone_number:
+        initialProfile.phone_number ??
+        "",
+
+    });
+
+  const fullName =
+    [
+      firstName.trim(),
+      lastName.trim(),
+    ]
+      .filter(Boolean)
+      .join(" ");
 
   // --------------------------------------------------
   // USERNAME VALIDATION
@@ -110,10 +316,10 @@ export default function ProfileEditor({
   };
 
   // --------------------------------------------------
-  // WEBSITE NORMALISATION
+  // URL NORMALISATION
   // --------------------------------------------------
 
-  const normaliseWebsite = (
+  const normaliseUrl = (
     value: string,
   ) => {
     const clean =
@@ -137,6 +343,28 @@ export default function ProfileEditor({
     return `https://${clean}`;
   };
 
+  const urlIsValid = (
+    value: string,
+  ) => {
+    if (!value) {
+      return true;
+    }
+
+    try {
+      const url =
+        new URL(value);
+
+      return (
+        url.protocol ===
+          "http:" ||
+        url.protocol ===
+          "https:"
+      );
+    } catch {
+      return false;
+    }
+  };
+
   // --------------------------------------------------
   // SAVE PROFILE
   // --------------------------------------------------
@@ -149,8 +377,11 @@ export default function ProfileEditor({
     setError("");
     setSuccess("");
 
-    const cleanDisplayName =
-      displayName.trim();
+    const cleanFirstName =
+      firstName.trim();
+
+    const cleanLastName =
+      lastName.trim();
 
     const cleanBio =
       bio.trim();
@@ -158,30 +389,62 @@ export default function ProfileEditor({
     const cleanLocation =
       location.trim();
 
+    const cleanJobTitle =
+      jobTitle.trim();
+
     const cleanWebsite =
-      normaliseWebsite(
+      normaliseUrl(
         websiteUrl,
       );
+
+    const cleanGithub =
+      normaliseUrl(
+        githubUrl,
+      );
+
+    const cleanLinkedin =
+      normaliseUrl(
+        linkedinUrl,
+      );
+
+    const cleanPhone =
+      phoneNumber.trim();
 
     const cleanUser =
       cleanUsername(
         username,
       );
 
-    if (!cleanDisplayName) {
+    if (
+      !cleanFirstName ||
+      !cleanLastName
+    ) {
       setError(
-        "Please enter a display name.",
+        "First name and last name are required.",
       );
+
       return;
     }
 
     if (
-      cleanDisplayName.length >
-      80
+      cleanFirstName.length >
+      60
     ) {
       setError(
-        "Display name must be 80 characters or fewer.",
+        "First name must be 60 characters or fewer.",
       );
+
+      return;
+    }
+
+    if (
+      cleanLastName.length >
+      60
+    ) {
+      setError(
+        "Last name must be 60 characters or fewer.",
+      );
+
       return;
     }
 
@@ -195,6 +458,7 @@ export default function ProfileEditor({
       setError(
         "Username must be 3–30 characters and can only contain lowercase letters, numbers, dots, and underscores.",
       );
+
       return;
     }
 
@@ -205,6 +469,7 @@ export default function ProfileEditor({
       setError(
         "Bio must be 300 characters or fewer.",
       );
+
       return;
     }
 
@@ -215,39 +480,203 @@ export default function ProfileEditor({
       setError(
         "Location must be 100 characters or fewer.",
       );
+
+      return;
+    }
+
+    if (
+      cleanJobTitle.length >
+      100
+    ) {
+      setError(
+        "Profession must be 100 characters or fewer.",
+      );
+
+      return;
+    }
+
+    if (
+      cleanPhone &&
+      !/^[0-9 ()-]{5,25}$/.test(
+        cleanPhone,
+      )
+    ) {
+      setError(
+        "Please enter a valid contact number.",
+      );
+
+      return;
+    }
+
+    if (
+      !urlIsValid(
+        cleanWebsite,
+      )
+    ) {
+      setError(
+        "Please enter a valid website URL.",
+      );
+
+      return;
+    }
+
+    if (
+      !urlIsValid(
+        cleanGithub,
+      )
+    ) {
+      setError(
+        "Please enter a valid GitHub URL.",
+      );
+
+      return;
+    }
+
+    if (
+      !urlIsValid(
+        cleanLinkedin,
+      )
+    ) {
+      setError(
+        "Please enter a valid LinkedIn URL.",
+      );
+
       return;
     }
 
     try {
-      setSaving(true);
+      setSaving(
+        true,
+      );
+
+      const previous =
+        savedProfileRef.current;
 
       const updateData: {
-        display_name: string;
-        bio: string | null;
-        location: string | null;
-        website_url: string | null;
+        first_name?: string;
+        last_name?: string;
+        bio?: string | null;
+        location?: string | null;
+        job_title?: string | null;
+        gender?: string | null;
+        website_url?: string | null;
+        github_url?: string | null;
+        linkedin_url?: string | null;
+        phone_country_code?: string | null;
+        phone_number?: string | null;
         username?: string;
         username_set?: boolean;
-      } = {
-        display_name:
-          cleanDisplayName,
+      } = {};
 
-        bio:
+      // --------------------------------------------------
+      // ONLY SAVE FIELDS CHANGED IN THIS TAB
+      // --------------------------------------------------
+
+      if (
+        cleanFirstName !==
+        previous.first_name
+      ) {
+        updateData.first_name =
+          cleanFirstName;
+      }
+
+      if (
+        cleanLastName !==
+        previous.last_name
+      ) {
+        updateData.last_name =
+          cleanLastName;
+      }
+
+      if (
+        cleanBio !==
+        previous.bio
+      ) {
+        updateData.bio =
           cleanBio ||
-          null,
+          null;
+      }
 
-        location:
+      if (
+        cleanLocation !==
+        previous.location
+      ) {
+        updateData.location =
           cleanLocation ||
-          null,
+          null;
+      }
 
-        website_url:
+      if (
+        cleanJobTitle !==
+        previous.job_title
+      ) {
+        updateData.job_title =
+          cleanJobTitle ||
+          null;
+      }
+
+      if (
+        gender !==
+        previous.gender
+      ) {
+        updateData.gender =
+          gender ||
+          null;
+      }
+
+      if (
+        cleanWebsite !==
+        previous.website_url
+      ) {
+        updateData.website_url =
           cleanWebsite ||
-          null,
-      };
+          null;
+      }
+
+      if (
+        cleanGithub !==
+        previous.github_url
+      ) {
+        updateData.github_url =
+          cleanGithub ||
+          null;
+      }
+
+      if (
+        cleanLinkedin !==
+        previous.linkedin_url
+      ) {
+        updateData.linkedin_url =
+          cleanLinkedin ||
+          null;
+      }
+
+      if (
+        cleanPhone !==
+        previous.phone_number
+      ) {
+        updateData.phone_number =
+          cleanPhone ||
+          null;
+
+        updateData.phone_country_code =
+          cleanPhone
+            ? phoneCountryCode
+            : null;
+      } else if (
+        cleanPhone &&
+        phoneCountryCode !==
+          previous.phone_country_code
+      ) {
+        updateData.phone_country_code =
+          phoneCountryCode;
+      }
 
       if (
         !usernameLocked &&
-        cleanUser
+        cleanUser &&
+        cleanUser !==
+          previous.username
       ) {
         updateData.username =
           cleanUser;
@@ -256,19 +685,37 @@ export default function ProfileEditor({
           true;
       }
 
+      if (
+        Object.keys(
+          updateData,
+        ).length === 0
+      ) {
+        setSuccess(
+          "No profile changes to save.",
+        );
+
+        return;
+      }
+
       const {
-        error,
+        error:
+          updateError,
       } = await supabase
         .from("profiles")
-        .update(updateData)
+        .update(
+          updateData,
+        )
         .eq(
           "id",
           userId,
         );
 
-      if (error) {
+      if (
+        updateError
+      ) {
         if (
-          error.code === "23505"
+          updateError.code ===
+          "23505"
         ) {
           throw new Error(
             "That username is already taken.",
@@ -276,7 +723,7 @@ export default function ProfileEditor({
         }
 
         if (
-          error.message
+          updateError.message
             .toLowerCase()
             .includes(
               "username cannot be changed",
@@ -287,40 +734,226 @@ export default function ProfileEditor({
           );
         }
 
-        throw error;
+        const errorDetails = [
+          updateError.code
+            ? `Code: ${updateError.code}`
+            : null,
+
+          updateError.message
+            ? `Message: ${updateError.message}`
+            : null,
+
+          updateError.details
+            ? `Details: ${updateError.details}`
+            : null,
+
+          updateError.hint
+            ? `Hint: ${updateError.hint}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" | ");
+
+        throw new Error(
+          errorDetails ||
+            "Your profile could not be updated.",
+        );
       }
 
       if (
-        !usernameLocked &&
-        cleanUser
+        updateData.username !==
+        undefined
       ) {
-        setUsernameLocked(true);
+        setUsernameLocked(
+          true,
+        );
+
         setUsername(
           cleanUser,
         );
       }
 
-      setWebsiteUrl(
-        cleanWebsite,
-      );
+      if (
+        updateData.first_name !==
+        undefined
+      ) {
+        setFirstName(
+          cleanFirstName,
+        );
+      }
+
+      if (
+        updateData.last_name !==
+        undefined
+      ) {
+        setLastName(
+          cleanLastName,
+        );
+      }
+
+      if (
+        updateData.website_url !==
+        undefined
+      ) {
+        setWebsiteUrl(
+          cleanWebsite,
+        );
+      }
+
+      if (
+        updateData.github_url !==
+        undefined
+      ) {
+        setGithubUrl(
+          cleanGithub,
+        );
+      }
+
+      if (
+        updateData.linkedin_url !==
+        undefined
+      ) {
+        setLinkedinUrl(
+          cleanLinkedin,
+        );
+      }
+
+      if (
+        updateData.phone_number !==
+        undefined
+      ) {
+        setPhoneNumber(
+          cleanPhone,
+        );
+      }
+
+      savedProfileRef.current = {
+        ...savedProfileRef.current,
+
+        ...(updateData.first_name !==
+        undefined
+          ? {
+              first_name:
+                cleanFirstName,
+            }
+          : {}),
+
+        ...(updateData.last_name !==
+        undefined
+          ? {
+              last_name:
+                cleanLastName,
+            }
+          : {}),
+
+        ...(updateData.username !==
+        undefined
+          ? {
+              username:
+                cleanUser,
+            }
+          : {}),
+
+        ...(updateData.bio !==
+        undefined
+          ? {
+              bio:
+                cleanBio,
+            }
+          : {}),
+
+        ...(updateData.location !==
+        undefined
+          ? {
+              location:
+                cleanLocation,
+            }
+          : {}),
+
+        ...(updateData.job_title !==
+        undefined
+          ? {
+              job_title:
+                cleanJobTitle,
+            }
+          : {}),
+
+        ...(updateData.gender !==
+        undefined
+          ? {
+              gender,
+            }
+          : {}),
+
+        ...(updateData.website_url !==
+        undefined
+          ? {
+              website_url:
+                cleanWebsite,
+            }
+          : {}),
+
+        ...(updateData.github_url !==
+        undefined
+          ? {
+              github_url:
+                cleanGithub,
+            }
+          : {}),
+
+        ...(updateData.linkedin_url !==
+        undefined
+          ? {
+              linkedin_url:
+                cleanLinkedin,
+            }
+          : {}),
+
+        ...(updateData.phone_country_code !==
+        undefined
+          ? {
+              phone_country_code:
+                cleanPhone
+                  ? phoneCountryCode
+                  : "",
+            }
+          : {}),
+
+        ...(updateData.phone_number !==
+        undefined
+          ? {
+              phone_number:
+                cleanPhone,
+            }
+          : {}),
+
+      };
 
       setSuccess(
         "Profile updated successfully.",
       );
-    } catch (error) {
+    } catch (
+      error
+    ) {
+      console.error(
+        "Profile update failed:",
+        error,
+      );
+
       setError(
         error instanceof Error
           ? error.message
           : "Your profile could not be updated.",
       );
     } finally {
-      setSaving(false);
+      setSaving(
+        false,
+      );
     }
   };
 
-  // --------------------------------------------------
-  // PAGE
-  // --------------------------------------------------
+  const inputStyles =
+    "mt-2 w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400 disabled:cursor-not-allowed disabled:opacity-60";
 
   return (
     <form
@@ -329,9 +962,7 @@ export default function ProfileEditor({
       }
       className="space-y-8"
     >
-      {/* =============================================
-          PROFILE HEADER
-      ============================================= */}
+      {/* PROFILE HEADER */}
 
       <section className="rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-6 md:p-8">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
@@ -342,10 +973,8 @@ export default function ProfileEditor({
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <h2 className="text-3xl font-bold text-white">
-                {
-                  displayName ||
-                  "Your profile"
-                }
+                {fullName ||
+                  "Your profile"}
               </h2>
 
               {initialProfile.verified && (
@@ -364,15 +993,18 @@ export default function ProfileEditor({
                 )}
 
               <RoleBadge
-  role={initialProfile.role}
-  showUser
-/>
+                role={
+                  initialProfile.role
+                }
+                showUser
+              />
 
               {initialProfile.verified && (
                 <span className="inline-flex items-center gap-1.5 text-blue-300">
                   <BadgeCheck
                     size={15}
                   />
+
                   Verified
                 </span>
               )}
@@ -392,31 +1024,33 @@ export default function ProfileEditor({
         </div>
 
         <div className="mt-8 border-t border-white/10 pt-8">
-          <AvatarUploader
-            userId={
-              userId
-            }
-            initialAvatarUrl={
-              avatarUrl
-            }
-            displayName={
-              displayName ||
-              "User"
-            }
-            onAvatarChange={(
-              value,
-            ) =>
-              setAvatarUrl(
-                value,
-              )
-            }
-          />
+<AvatarUploader
+  userId={
+    userId
+  }
+  initialAvatarUrl={
+    avatarUrl
+  }
+  displayName={
+    fullName ||
+    "User"
+  }
+  gender={
+    gender ||
+    null
+  }
+  onAvatarChange={(
+    value,
+  ) =>
+    setAvatarUrl(
+      value,
+    )
+  }
+/>
         </div>
       </section>
 
-      {/* =============================================
-          BASIC DETAILS
-      ============================================= */}
+      {/* IDENTITY */}
 
       <section className="rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-6 md:p-8">
         <div className="flex items-start gap-3">
@@ -438,35 +1072,65 @@ export default function ProfileEditor({
         </div>
 
         <div className="mt-8 grid gap-6">
-          {/* Display Name */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <label className="block text-sm font-medium text-gray-300">
+              First name
+              <span className="ml-1 text-red-400">
+                *
+              </span>
 
-          <label className="block text-sm font-medium text-gray-300">
-            Display name
+              <input
+                type="text"
+                value={
+                  firstName
+                }
+                onChange={(
+                  event,
+                ) =>
+                  setFirstName(
+                    event.target
+                      .value,
+                  )
+                }
+                maxLength={60}
+                className={
+                  inputStyles
+                }
+                autoComplete="given-name"
+                placeholder="First name"
+                required
+              />
+            </label>
 
-            <input
-              type="text"
-              value={
-                displayName
-              }
-              onChange={(
-                event,
-              ) =>
-                setDisplayName(
-                  event.target
-                    .value,
-                )
-              }
-              maxLength={80}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400"
-              placeholder="Your display name"
-            />
+            <label className="block text-sm font-medium text-gray-300">
+              Last name
+              <span className="ml-1 text-red-400">
+                *
+              </span>
 
-            <span className="mt-2 block text-xs text-gray-500">
-              This is the name shown on comments and your public profile.
-            </span>
-          </label>
-
-          {/* Username */}
+              <input
+                type="text"
+                value={
+                  lastName
+                }
+                onChange={(
+                  event,
+                ) =>
+                  setLastName(
+                    event.target
+                      .value,
+                  )
+                }
+                maxLength={60}
+                className={
+                  inputStyles
+                }
+                autoComplete="family-name"
+                placeholder="Last name"
+                required
+              />
+            </label>
+          </div>
 
           <label className="block text-sm font-medium text-gray-300">
             Username
@@ -510,13 +1174,13 @@ export default function ProfileEditor({
             )}
           </label>
 
-          {/* Bio */}
-
           <label className="block text-sm font-medium text-gray-300">
             Bio
 
             <textarea
-              value={bio}
+              value={
+                bio
+              }
               onChange={(
                 event,
               ) =>
@@ -540,29 +1204,33 @@ export default function ProfileEditor({
         </div>
       </section>
 
-      {/* =============================================
-          ADDITIONAL DETAILS
-      ============================================= */}
+      {/* PROFESSIONAL */}
 
       <section className="rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-6 md:p-8">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-green-400">
-            Details
-          </p>
+        <div className="flex items-start gap-3">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-400/10 text-blue-300">
+            <BriefcaseBusiness
+              size={19}
+            />
+          </div>
 
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            Additional Information
-          </h2>
+          <div>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-blue-300">
+              Professional
+            </p>
+
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              Professional Information
+            </h2>
+          </div>
         </div>
 
         <div className="mt-8 grid gap-6 md:grid-cols-2">
-          {/* Location */}
-
           <label className="block text-sm font-medium text-gray-300">
-            Location
+            Profession
 
             <div className="relative mt-2">
-              <MapPin
+              <BriefcaseBusiness
                 size={17}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
               />
@@ -570,25 +1238,179 @@ export default function ProfileEditor({
               <input
                 type="text"
                 value={
-                  location
+                  jobTitle
                 }
                 onChange={(
                   event,
                 ) =>
-                  setLocation(
+                  setJobTitle(
                     event.target
                       .value,
                   )
                 }
                 maxLength={100}
-                placeholder="City, Country"
+                placeholder="e.g. Security Analyst"
                 className="w-full rounded-xl border border-white/10 bg-black/10 py-3 pl-11 pr-4 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400"
               />
             </div>
           </label>
 
-          {/* Website */}
+          <label className="block text-sm font-medium text-gray-300">
+            Gender
 
+            <div className="relative mt-2">
+              <UsersRound
+                size={17}
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+              />
+
+              <select
+                value={
+                  gender
+                }
+                onChange={(
+                  event,
+                ) =>
+                  setGender(
+                    event.target
+                      .value,
+                  )
+                }
+                className="w-full rounded-xl border border-white/10 bg-black/10 py-3 pl-11 pr-4 text-white outline-none transition focus:border-green-400"
+              >
+                <option value="" className="bg-[#102A2A]">
+                  Not specified
+                </option>
+                <option value="male" className="bg-[#102A2A]">
+                  Male
+                </option>
+                <option value="female" className="bg-[#102A2A]">
+                  Female
+                </option>
+                <option value="non_binary" className="bg-[#102A2A]">
+                  Non-binary
+                </option>
+                <option value="other" className="bg-[#102A2A]">
+                  Other
+                </option>
+                <option value="prefer_not_to_say" className="bg-[#102A2A]">
+                  Prefer not to say
+                </option>
+              </select>
+            </div>
+          </label>
+
+<LocationSearch
+  value={
+    location
+  }
+  onChange={
+    setLocation
+  }
+/>
+
+          <div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-gray-300">
+                Contact number
+              </p>
+
+              <span className="text-xs text-gray-500">
+                Optional
+              </span>
+            </div>
+
+            <div className="mt-2 grid gap-3 sm:grid-cols-[165px_1fr]">
+              <label className="block">
+                <span className="sr-only">
+                  Country calling code
+                </span>
+
+                <select
+                  value={
+                    phoneCountryCode
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    setPhoneCountryCode(
+                      event.target
+                        .value,
+                    )
+                  }
+                  className="w-full rounded-xl border border-white/10 bg-black/10 px-3 py-3 text-sm text-white outline-none transition focus:border-green-400"
+                  aria-label="Country calling code"
+                >
+                  {COUNTRY_CODES.map(
+                    (
+                      item,
+                    ) => (
+                      <option
+                        key={`${item.country}-${item.code}`}
+                        value={
+                          item.code
+                        }
+                        className="bg-[#102A2A] text-white"
+                      >
+                        {item.flag}{" "}
+                        {item.country}{" "}
+                        ({item.code})
+                      </option>
+                    ),
+                  )}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="sr-only">
+                  Contact number
+                </span>
+
+                <div className="relative">
+                  <Phone
+                    size={17}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+                  />
+
+                  <input
+                    type="tel"
+                    value={
+                      phoneNumber
+                    }
+                    onChange={(
+                      event,
+                    ) =>
+                      setPhoneNumber(
+                        event.target
+                          .value,
+                      )
+                    }
+                    maxLength={25}
+                    placeholder="Contact number"
+                    autoComplete="tel-national"
+                    className="w-full rounded-xl border border-white/10 bg-black/10 py-3 pl-11 pr-4 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400"
+                  />
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* LINKS */}
+
+      <section className="rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-6 md:p-8">
+        <div>
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-green-400">
+            Links
+          </p>
+
+          <h2 className="mt-2 text-2xl font-semibold text-white">
+            Websites & Social Profiles
+          </h2>
+        </div>
+
+        <div className="mt-8 grid gap-6">
           <label className="block text-sm font-medium text-gray-300">
             Website
 
@@ -617,12 +1439,66 @@ export default function ProfileEditor({
               />
             </div>
           </label>
+
+          <label className="block text-sm font-medium text-gray-300">
+            GitHub
+
+            <div className="relative mt-2">
+              <Globe2
+                size={17}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+              />
+
+              <input
+                type="text"
+                value={
+                  githubUrl
+                }
+                onChange={(
+                  event,
+                ) =>
+                  setGithubUrl(
+                    event.target
+                      .value,
+                  )
+                }
+                maxLength={300}
+                placeholder="https://github.com/username"
+                className="w-full rounded-xl border border-white/10 bg-black/10 py-3 pl-11 pr-4 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400"
+              />
+            </div>
+          </label>
+
+          <label className="block text-sm font-medium text-gray-300">
+            LinkedIn
+
+            <div className="relative mt-2">
+              <Globe2
+                size={17}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+              />
+
+              <input
+                type="text"
+                value={
+                  linkedinUrl
+                }
+                onChange={(
+                  event,
+                ) =>
+                  setLinkedinUrl(
+                    event.target
+                      .value,
+                  )
+                }
+                maxLength={300}
+                placeholder="https://www.linkedin.com/in/username"
+                className="w-full rounded-xl border border-white/10 bg-black/10 py-3 pl-11 pr-4 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400"
+              />
+            </div>
+          </label>
         </div>
       </section>
-
-      {/* =============================================
-          MESSAGES
-      ============================================= */}
 
       {error && (
         <p
@@ -642,17 +1518,13 @@ export default function ProfileEditor({
         </p>
       )}
 
-      {/* =============================================
-          SAVE
-      ============================================= */}
-
       <div className="flex justify-end">
         <button
           type="submit"
           disabled={
             saving
           }
-          className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-6 py-3 font-medium text-black transition hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-green-500 px-6 py-3 font-medium text-black transition hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {saving ? (
             <Loader2
