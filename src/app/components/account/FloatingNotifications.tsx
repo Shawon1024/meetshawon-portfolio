@@ -509,19 +509,46 @@ export default function FloatingNotifications() {
                 );
               },
             )
-            .subscribe(
+             .subscribe(
               (
                 status,
                 error,
               ) => {
                 if (
+                  cancelled
+                ) {
+                  return;
+                }
+
+                if (
                   status ===
-                    "CHANNEL_ERROR" &&
-                  error
+                  "CHANNEL_ERROR"
                 ) {
                   console.warn(
-                    "Floating notification realtime temporarily disconnected:",
-                    error,
+                    "Floating notification realtime temporarily disconnected.",
+                    error ?? "",
+                  );
+
+                  return;
+                }
+
+                if (
+                  status ===
+                  "TIMED_OUT"
+                ) {
+                  console.warn(
+                    "Floating notification realtime connection timed out temporarily.",
+                  );
+
+                  return;
+                }
+
+                if (
+                  status ===
+                  "CLOSED"
+                ) {
+                  console.debug(
+                    "Floating notification realtime channel closed.",
                   );
                 }
               },

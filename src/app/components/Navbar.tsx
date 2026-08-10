@@ -627,7 +627,7 @@ export default function Navbar() {
     loadNotifications,
   ]);
 
-  // --------------------------------------------------
+   // --------------------------------------------------
   // REALTIME NOTIFICATIONS
   // --------------------------------------------------
 
@@ -638,6 +638,9 @@ export default function Navbar() {
 
     const userId =
       profile.id;
+
+    let cancelled =
+      false;
 
     const channel =
       supabase
@@ -659,13 +662,10 @@ export default function Navbar() {
             filter:
               `recipient_id=eq.${userId}`,
           },
-          (
-            payload,
-          ) => {
-            console.log(
-              "🔔 Realtime notification received:",
-              payload,
-            );
+          () => {
+            if (cancelled) {
+              return;
+            }
 
             void loadNotifications(
               userId,
@@ -689,45 +689,38 @@ export default function Navbar() {
             status,
             error,
           ) => {
-            console.log(
-              "Notification realtime status:",
-              status,
-              error ?? "",
-            );
-
-            if (
-              status ===
-              "SUBSCRIBED"
-            ) {
-              console.log(
-                "✅ Notification realtime connected",
-              );
+            if (cancelled) {
+              return;
             }
 
             if (
               status ===
               "CHANNEL_ERROR"
             ) {
-              console.error(
-                "❌ Notification realtime channel failed:",
-                error,
+              console.warn(
+                "Notification realtime temporarily disconnected.",
+                error ?? "",
               );
+
+              return;
             }
 
             if (
               status ===
               "TIMED_OUT"
             ) {
-              console.error(
-                "❌ Notification realtime timed out.",
+              console.warn(
+                "Notification realtime connection timed out temporarily.",
               );
+
+              return;
             }
 
             if (
               status ===
               "CLOSED"
             ) {
-              console.log(
+              console.debug(
                 "Notification realtime channel closed.",
               );
             }
@@ -735,6 +728,9 @@ export default function Navbar() {
         );
 
     return () => {
+      cancelled =
+        true;
+
       void supabase.removeChannel(
         channel,
       );
@@ -744,10 +740,6 @@ export default function Navbar() {
     loadNotifications,
     supabase,
   ]);
-
-  // --------------------------------------------------
-  // REFRESH NOTIFICATIONS ON WINDOW FOCUS
-  // --------------------------------------------------
 
   useEffect(() => {
     if (!profile?.id) {
