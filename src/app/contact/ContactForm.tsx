@@ -526,24 +526,32 @@ export default function ContactForm() {
 
         {/* TURNSTILE */}
 
-        <div>
-          <p className="mb-2 text-sm font-medium text-gray-300">
-            Human verification
-          </p>
+<div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+  <div className="flex flex-col gap-3">
+    <div>
+      <p className="text-sm font-medium text-white">
+        Security verification
+      </p>
 
-          {!siteKey ? (
-            <p className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-300">
-              Human verification is not configured.
-            </p>
-          ) : (
-            <div
-              ref={
-                turnstileContainerRef
-              }
-              className="min-h-[65px] overflow-hidden rounded-xl"
-            />
-          )}
-        </div>
+      <p className="mt-1 text-xs leading-5 text-gray-500">
+        Protected by Cloudflare Turnstile to help prevent automated spam.
+      </p>
+    </div>
+
+    {!siteKey ? (
+      <p className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-300">
+        Human verification is not configured.
+      </p>
+    ) : (
+      <div className="flex justify-center overflow-hidden rounded-xl">
+        <div
+          ref={turnstileContainerRef}
+          className="w-full max-w-[420px]"
+        />
+      </div>
+    )}
+  </div>
+</div>
 
         {error && (
           <p
