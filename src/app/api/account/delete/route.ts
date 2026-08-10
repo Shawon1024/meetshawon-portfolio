@@ -7,6 +7,26 @@ import {
 
 import { createClient } from "../../../lib/supabase/server";
 
+function jsonResponse(
+  body: Record<
+    string,
+    unknown
+  >,
+  status: number,
+) {
+  return NextResponse.json(
+    body,
+    {
+      status,
+
+      headers: {
+        "Cache-Control":
+          "no-store",
+      },
+    },
+  );
+}
+
 export async function DELETE() {
   try {
     // --------------------------------------------------
@@ -17,8 +37,11 @@ export async function DELETE() {
       await createClient();
 
     const {
-      data: { user },
-      error: userError,
+      data: {
+        user,
+      },
+      error:
+        userError,
     } =
       await supabase.auth.getUser();
 
@@ -26,14 +49,12 @@ export async function DELETE() {
       userError ||
       !user
     ) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           error:
             "You must be signed in to delete your account.",
         },
-        {
-          status: 401,
-        },
+        401,
       );
     }
 
@@ -57,14 +78,12 @@ export async function DELETE() {
         "Account deletion configuration is missing.",
       );
 
-      return NextResponse.json(
+      return jsonResponse(
         {
           error:
             "Account deletion is currently unavailable.",
         },
-        {
-          status: 500,
-        },
+        500,
       );
     }
 
@@ -83,6 +102,9 @@ export async function DELETE() {
 
             persistSession:
               false,
+
+            detectSessionInUrl:
+              false,
           },
         },
       );
@@ -92,51 +114,55 @@ export async function DELETE() {
     // --------------------------------------------------
 
     const {
-      error: deleteError,
+      error:
+        deleteError,
     } =
       await adminSupabase.auth.admin.deleteUser(
         user.id,
       );
 
-    if (deleteError) {
+    if (
+      deleteError
+    ) {
       console.error(
         "Supabase account deletion failed:",
         deleteError,
       );
 
-      return NextResponse.json(
+      return jsonResponse(
         {
           error:
             "Your account could not be deleted.",
         },
-        {
-          status: 500,
-        },
+        500,
       );
     }
 
-    return NextResponse.json(
+    // --------------------------------------------------
+    // SUCCESS
+    // --------------------------------------------------
+
+    return jsonResponse(
       {
-        success: true,
+        success:
+          true,
       },
-      {
-        status: 200,
-      },
+      200,
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Unexpected account deletion error:",
       error,
     );
 
-    return NextResponse.json(
+    return jsonResponse(
       {
         error:
           "An unexpected error occurred while deleting your account.",
       },
-      {
-        status: 500,
-      },
+      500,
     );
   }
 }
