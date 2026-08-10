@@ -26,11 +26,16 @@ export default async function AdminPostsPage() {
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "admin") {
+  const canWriteBlog =
+    profile?.role === "admin" ||
+    profile?.role === "author" ||
+    profile?.role === "moderator";
+
+  if (!canWriteBlog) {
     redirect("/account");
   }
 
-  const { data: posts, error } = await supabase
+  let postsQuery = supabase
     .from("posts")
     .select(`
       id,
@@ -40,11 +45,30 @@ export default async function AdminPostsPage() {
       featured,
       published_at,
       created_at,
-      updated_at
-    `)
-    .order("created_at", {
+      updated_at,
+      author_id
+    `);
+
+  if (
+    profile?.role ===
+    "author"
+  ) {
+    postsQuery =
+      postsQuery.eq(
+        "author_id",
+        user.id,
+      );
+  }
+
+  const {
+    data: posts,
+    error,
+  } = await postsQuery.order(
+    "created_at",
+    {
       ascending: false,
-    });
+    },
+  );
 
   return (
     <main>
@@ -53,11 +77,13 @@ export default async function AdminPostsPage() {
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.25em] text-green-400">
-                Admin
+                Blog Studio
               </p>
 
               <h1 className="mt-3 text-4xl font-bold text-white md:text-5xl">
-                Manage Posts
+                {profile?.role === "admin"
+                  ? "Manage Posts"
+                  : "My Posts"}
               </h1>
 
               <p className="mt-4 max-w-2xl leading-7 text-gray-400">

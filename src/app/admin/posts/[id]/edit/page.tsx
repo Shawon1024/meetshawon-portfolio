@@ -35,7 +35,7 @@ export default async function EditPostPage({
   }
 
   // --------------------------------------------------
-  // ADMIN CHECK
+  // BLOR WRITER ROLE CHECK
   // --------------------------------------------------
 
   const {
@@ -47,9 +47,14 @@ export default async function EditPostPage({
     .eq("id", user.id)
     .single();
 
+  const canWriteBlog =
+    profile?.role === "admin" ||
+    profile?.role === "author" ||
+    profile?.role === "moderator";
+
   if (
     profileError ||
-    profile?.role !== "admin"
+    !canWriteBlog
   ) {
     redirect("/account");
   }
@@ -73,7 +78,8 @@ export default async function EditPostPage({
       featured,
       category_id,
       cover_image_url,
-      cover_image_alt
+      cover_image_alt,
+      author_id
     `)
     .eq("id", id)
     .single();
@@ -83,6 +89,14 @@ export default async function EditPostPage({
     !post
   ) {
     notFound();
+  }
+
+  if (
+    profile?.role !== "admin" &&
+    profile?.role !== "moderator" &&
+    post.author_id !== user.id
+  ) {
+    redirect("/admin/posts");
   }
 
   // --------------------------------------------------
@@ -201,6 +215,7 @@ export default async function EditPostPage({
           <div className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-6 md:p-8">
             <PostEditorForm
               authorId={user.id}
+              currentRole={profile.role}
               post={post}
               categories={categories ?? []}
               tags={tags ?? []}

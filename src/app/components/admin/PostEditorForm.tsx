@@ -45,6 +45,7 @@ interface TagOption {
 
 interface PostEditorFormProps {
   authorId: string;
+  currentRole: string | null;
   categories: CategoryOption[];
   tags: TagOption[];
   post?: ExistingPost;
@@ -65,6 +66,7 @@ type SubmitAction =
 
 export default function PostEditorForm({
   authorId,
+  currentRole,
   categories,
   tags,
   post,
@@ -73,6 +75,9 @@ export default function PostEditorForm({
   const router = useRouter();
 
   const isEditing = Boolean(post);
+
+  const isAdmin =
+  currentRole === "admin";
 
   const [title, setTitle] = useState(
     post?.title ?? "",
@@ -410,44 +415,45 @@ export default function PostEditorForm({
       const supabase =
         createClient();
 
-      const postData = {
-        author_id: authorId,
+  const postData = {
+    category_id:
+      categoryId || null,
 
-        category_id:
-          categoryId || null,
+    title:
+      title.trim(),
 
-        title:
-          title.trim(),
+    slug:
+      slug.trim(),
 
-        slug:
-          slug.trim(),
+    excerpt:
+      excerpt.trim() ||
+      null,
 
-        excerpt:
-          excerpt.trim() ||
-          null,
+    content:
+      content.trim(),
 
-        content:
-          content.trim(),
+    status,
 
-        status,
+    featured:
+      isAdmin
+        ? featured
+        : false,
 
-        featured,
+    cover_image_url:
+      coverImageUrl ||
+      null,
 
-        cover_image_url:
-          coverImageUrl ||
-          null,
+    cover_image_alt:
+      coverImageUrl
+        ? coverImageAlt.trim()
+        : null,
 
-        cover_image_alt:
-          coverImageUrl
-            ? coverImageAlt.trim()
-            : null,
-
-        published_at:
-          status ===
-          "published"
-            ? new Date().toISOString()
-            : null,
-      };
+    published_at:
+      status ===
+      "published"
+        ? new Date().toISOString()
+        : null,
+  };
 
       let savedPostId:
         | string
@@ -492,9 +498,11 @@ export default function PostEditorForm({
             insertError,
         } = await supabase
           .from("posts")
-          .insert(
-            postData,
-          )
+        .insert({
+          ...postData,
+          author_id:
+            authorId,
+        })
           .select("id")
           .single();
 
@@ -1148,6 +1156,7 @@ nmap -sV 192.168.1.10
 
         {/* FEATURED */}
 
+              {isAdmin && (
         <label className="flex w-fit cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-sm text-gray-300 transition hover:border-green-400/30">
           <input
             type="checkbox"
@@ -1171,6 +1180,7 @@ nmap -sV 192.168.1.10
 
           Feature this article
         </label>
+      )}
 
         {/* ERROR */}
 

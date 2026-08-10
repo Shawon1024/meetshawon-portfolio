@@ -29,9 +29,12 @@ export default async function NewPostPage() {
     .eq("id", user.id)
     .single();
 
-  if (
-    profile?.role !== "admin"
-  ) {
+  const canWriteBlog =
+    profile?.role === "admin" ||
+    profile?.role === "author" ||
+    profile?.role === "moderator";
+
+  if (!canWriteBlog) {
     redirect(
       "/account",
     );
@@ -117,6 +120,10 @@ export default async function NewPostPage() {
             <PostEditorForm
               authorId={
                 user.id
+              }
+              currentRole={
+                profile?.role ??
+                null
               }
               categories={
                 categories ?? []

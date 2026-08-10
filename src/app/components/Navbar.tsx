@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   UserRound,
   X,
+  PenLine,
 } from "lucide-react";
 import {
   useCallback,
@@ -1744,7 +1745,9 @@ export default function Navbar() {
                   {(profile.role ===
                     "admin" ||
                     profile.role ===
-                      "moderator") && (
+                      "moderator" ||
+                    profile.role ===
+                      "author") && (
                     <div className="border-t border-white/10 p-2">
                       {profile.role ===
                         "admin" && (
@@ -1787,6 +1790,30 @@ export default function Navbar() {
                           />
 
                           Moderation Dashboard
+                        </Link>
+                      )}
+
+                      {(profile.role ===
+                        "admin" ||
+                        profile.role ===
+                          "author" ||
+                        profile.role ===
+                          "moderator") && (
+                        <Link
+                          href="/admin/posts"
+                          role="menuitem"
+                          onClick={() =>
+                            setAccountOpen(
+                              false,
+                            )
+                          }
+                          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-green-300 transition hover:bg-green-400/10"
+                        >
+                          <PenLine
+                            size={17}
+                          />
+
+                          Blog Studio
                         </Link>
                       )}
                     </div>
@@ -2324,6 +2351,29 @@ export default function Navbar() {
 
                           Security
                         </Link>
+
+                        {(profile.role ===
+                          "admin" ||
+                          profile.role ===
+                            "author" ||
+                          profile.role ===
+                            "moderator") && (
+                          <Link
+                            href="/admin/posts"
+                            onClick={
+                              closeMobileMenu
+                            }
+                            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-green-300 transition duration-200 hover:bg-green-400/10"
+                          >
+                            <PenLine
+                              size={
+                                17
+                              }
+                            />
+
+                            Blog Studio
+                          </Link>
+                        )}
 
                         {profile.role ===
                           "admin" && (
