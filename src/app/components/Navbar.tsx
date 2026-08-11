@@ -1826,7 +1826,6 @@ export default function Navbar() {
                     <div className="border-t border-white/10 p-2">
                       <a
                         href="https://drive.meetshawon.com"
-                        target="_blank"
                         rel="noopener noreferrer"
                         role="menuitem"
                         onClick={() =>
@@ -2419,7 +2418,6 @@ export default function Navbar() {
                             "partner") && (
                           <a
                             href="https://drive.meetshawon.com"
-                            target="_blank"
                             rel="noopener noreferrer"
                             onClick={
                               closeMobileMenu
