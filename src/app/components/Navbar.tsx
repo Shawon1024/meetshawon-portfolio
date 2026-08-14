@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   usePathname,
-  useRouter,
 } from "next/navigation";
 import {
   Bell,
@@ -106,9 +105,6 @@ const NOTIFICATIONS_CHANGED_EVENT =
 export default function Navbar() {
   const pathname =
     usePathname();
-
-  const router =
-    useRouter();
 
   const supabase =
     useMemo(
@@ -1276,7 +1272,7 @@ export default function Navbar() {
             ) : !profile ? (
               <>
                 <Link
-                  href="/auth/sign-in"
+                  href={mainSiteHref("/auth/sign-in")}
                   className="rounded-xl px-4 py-2.5 text-sm font-medium text-gray-100 transition duration-200 hover:bg-white/5 hover:text-white"
                 >
                   Sign In
@@ -1800,7 +1796,7 @@ export default function Navbar() {
                       {profile.role ===
                         "moderator" && (
                         <Link
-                          href="/moderation"
+                          href={mainSiteHref("/moderation")}
                           role="menuitem"
                           onClick={() =>
                             setAccountOpen(
@@ -1826,7 +1822,7 @@ export default function Navbar() {
                         profile.role ===
                           "moderator") && (
                         <Link
-                          href={mainSiteHref("/admin")}
+                          href={mainSiteHref("/admin/posts")}
                           role="menuitem"
                           onClick={() =>
                             setAccountOpen(
@@ -1852,7 +1848,6 @@ export default function Navbar() {
                     <div className="border-t border-white/10 p-2">
                       <a
                         href="https://drive.meetshawon.com"
-                        target="_blank"
                         rel="noopener noreferrer"
                         role="menuitem"
                         onClick={() =>
@@ -2001,7 +1996,7 @@ export default function Navbar() {
               ) : !profile ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Link
-                    href="/auth/sign-in"
+                    href={mainSiteHref("/auth/sign-in")}
                     onClick={
                       closeMobileMenu
                     }
@@ -2190,7 +2185,7 @@ export default function Navbar() {
                         )}
 
                         <Link
-                          href="/account/notifications"
+                          href={mainSiteHref("/account/notifications")}
                           onClick={
                             closeMobileMenu
                           }
@@ -2300,7 +2295,11 @@ export default function Navbar() {
                       <div className="space-y-1 border-t border-white/10 p-2">
                         {profile.username && (
                           <Link
-                            href={`/u/${profile.username}`}
+                            href={
+                              mainSiteHref(
+                                `/u/${profile.username}`,
+                              )
+                            }
                             onClick={
                               closeMobileMenu
                             }
@@ -2317,7 +2316,7 @@ export default function Navbar() {
                         )}
 
                         <Link
-                          href="/account"
+                          href={mainSiteHref("/account")}
                           onClick={
                             closeMobileMenu
                           }
@@ -2333,7 +2332,7 @@ export default function Navbar() {
                         </Link>
 
                         <Link
-                          href="/account/saved"
+                          href={mainSiteHref("/account")}
                           onClick={
                             closeMobileMenu
                           }
@@ -2349,7 +2348,7 @@ export default function Navbar() {
                         </Link>
 
                         <Link
-                          href="/account/activity"
+                          href={mainSiteHref("/account")}
                           onClick={
                             closeMobileMenu
                           }
@@ -2365,7 +2364,7 @@ export default function Navbar() {
                         </Link>
 
                         <Link
-                          href="/account/security"
+                          href={mainSiteHref("/account")}
                           onClick={
                             closeMobileMenu
                           }
@@ -2387,7 +2386,7 @@ export default function Navbar() {
                           profile.role ===
                             "moderator") && (
                           <Link
-                            href="/admin/posts"
+                            href={mainSiteHref("/admin/posts")}
                             onClick={
                               closeMobileMenu
                             }
@@ -2406,7 +2405,7 @@ export default function Navbar() {
                         {profile.role ===
                           "admin" && (
                           <Link
-                            href="/admin"
+                            href={mainSiteHref("/admin")}
                             onClick={
                               closeMobileMenu
                             }
@@ -2447,7 +2446,6 @@ export default function Navbar() {
                             "partner") && (
                           <a
                             href="https://drive.meetshawon.com"
-                            target="_blank"
                             rel="noopener noreferrer"
                             onClick={
                               closeMobileMenu
