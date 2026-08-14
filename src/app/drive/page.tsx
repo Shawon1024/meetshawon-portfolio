@@ -41,7 +41,7 @@ export default async function DrivePage() {
     !user
   ) {
     redirect(
-      "https://drive.meetshawon.com/auth/sign-in?next=/",
+      "https://meetshawon.com/auth/sign-in?next=https%3A%2F%2Fdrive.meetshawon.com",
     );
   }
 

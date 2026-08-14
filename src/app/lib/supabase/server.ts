@@ -1,16 +1,27 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import {
+  createServerClient,
+} from "@supabase/ssr";
+
+import {
+  cookies,
+} from "next/headers";
 
 export async function createClient() {
-  const cookieStore = await cookies();
+  const cookieStore =
+    await cookies();
 
   const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL;
+    process.env
+      .NEXT_PUBLIC_SUPABASE_URL;
 
   const supabaseKey =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    process.env
+      .NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-  if (!supabaseUrl || !supabaseKey) {
+  if (
+    !supabaseUrl ||
+    !supabaseKey
+  ) {
     throw new Error(
       "Missing Supabase server environment variables.",
     );
@@ -20,27 +31,58 @@ export async function createClient() {
     supabaseUrl,
     supabaseKey,
     {
+      cookieOptions: {
+        domain:
+          ".meetshawon.com",
+        path: "/",
+        sameSite: "lax",
+        secure: true,
+      },
+
       cookies: {
         getAll() {
           return cookieStore.getAll();
         },
 
-        setAll(cookiesToSet) {
+        setAll(
+          cookiesToSet,
+        ) {
           try {
             cookiesToSet.forEach(
-              ({ name, value, options }) => {
+              ({
+                name,
+                value,
+                options,
+              }) => {
                 cookieStore.set(
                   name,
                   value,
-                  options,
+                  {
+                    ...options,
+
+                    domain:
+                      ".meetshawon.com",
+
+                    path:
+                      "/",
+
+                    sameSite:
+                      "lax",
+
+                    secure:
+                      true,
+                  },
                 );
               },
             );
           } catch {
             /*
-             * Cookie updates can fail while rendering a
-             * Server Component. Session refresh middleware
-             * will handle updates later.
+             * Server Components may
+             * not be allowed to write
+             * cookies.
+             *
+             * src/proxy.ts handles
+             * session refresh.
              */
           }
         },

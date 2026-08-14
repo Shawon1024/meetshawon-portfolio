@@ -20,37 +20,37 @@ export async function proxy(
       .toLowerCase() ??
     "";
 
-  let response =
-    NextResponse.next({
-      request,
-    });
+  // --------------------------------------------------
+  // RESPONSE / DRIVE ROUTING
+  // --------------------------------------------------
 
-  // --------------------------------------------------
-  // DRIVE SUBDOMAIN
-  // --------------------------------------------------
+  let response: NextResponse;
 
   if (
     hostname ===
-    "drive.meetshawon.com"
+      "drive.meetshawon.com" &&
+    request.nextUrl.pathname ===
+      "/"
   ) {
     const url =
       request.nextUrl.clone();
 
-    if (
-      url.pathname === "/"
-    ) {
-      url.pathname =
-        "/drive";
+    url.pathname =
+      "/drive";
 
-      response =
-        NextResponse.rewrite(
-          url,
-        );
-    }
+    response =
+      NextResponse.rewrite(
+        url,
+      );
+  } else {
+    response =
+      NextResponse.next({
+        request,
+      });
   }
 
   // --------------------------------------------------
-  // SUPABASE SESSION REFRESH
+  // SUPABASE ENVIRONMENT
   // --------------------------------------------------
 
   const supabaseUrl =
@@ -68,11 +68,23 @@ export async function proxy(
     return response;
   }
 
+  // --------------------------------------------------
+  // SUPABASE SESSION
+  // --------------------------------------------------
+
   const supabase =
     createServerClient(
       supabaseUrl,
       supabaseKey,
       {
+        cookieOptions: {
+          domain:
+            ".meetshawon.com",
+          path: "/",
+          sameSite: "lax",
+          secure: true,
+        },
+
         cookies: {
           getAll() {
             return request.cookies.getAll();
@@ -102,7 +114,21 @@ export async function proxy(
                 response.cookies.set(
                   name,
                   value,
-                  options,
+                  {
+                    ...options,
+
+                    domain:
+                      ".meetshawon.com",
+
+                    path:
+                      "/",
+
+                    sameSite:
+                      "lax",
+
+                    secure:
+                      true,
+                  },
                 );
               },
             );

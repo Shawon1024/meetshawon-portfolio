@@ -4,18 +4,23 @@ import {
   FormEvent,
   useState,
 } from "react";
+
 import Link from "next/link";
+
 import {
   Eye,
   EyeOff,
   LogIn,
 } from "lucide-react";
+
 import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
 
-import { createClient } from "../../lib/supabase/client";
+import {
+  createClient,
+} from "../../lib/supabase/client";
 
 export default function SignInForm() {
   const router =
@@ -183,6 +188,40 @@ export default function SignInForm() {
           searchParams.get(
             "next",
           );
+
+        /*
+         * DRIVE RETURN
+         *
+         * Only this exact external destination
+         * is allowed.
+         *
+         * We intentionally do NOT allow arbitrary
+         * https:// URLs because that would create
+         * an open-redirect vulnerability.
+         */
+
+        if (
+          next ===
+          "https://drive.meetshawon.com"
+        ) {
+          window.location.assign(
+            "https://drive.meetshawon.com",
+          );
+
+          return;
+        }
+
+        /*
+         * NORMAL INTERNAL RETURN
+         *
+         * Examples:
+         *
+         * /account
+         * /blog/article-name
+         * /u/username
+         *
+         * //evil.example.com is rejected.
+         */
 
         const safeNext =
           next &&
