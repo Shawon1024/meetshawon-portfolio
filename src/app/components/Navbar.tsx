@@ -87,6 +87,19 @@ const navLinks = [
   },
 ];
 
+const MAIN_SITE_URL =
+  "https://meetshawon.com";
+
+const mainSiteHref = (
+  href: string,
+) => {
+  if (href === "/") {
+    return MAIN_SITE_URL;
+  }
+
+  return `${MAIN_SITE_URL}${href}`;
+};
+
 const NOTIFICATIONS_CHANGED_EVENT =
   "notifications-changed";
 
@@ -881,11 +894,8 @@ export default function Navbar() {
       setAccountOpen(false);
       setMobileOpen(false);
 
-      router.push(
-        "/auth/sign-in",
-      );
-
-      router.refresh();
+      window.location.href =
+        `${MAIN_SITE_URL}/auth/sign-in`;
     };
 
   // --------------------------------------------------
@@ -983,13 +993,19 @@ export default function Navbar() {
         if (
           notification.comment_id
         ) {
-          return `/blog/${notification.post_slug}#comment-${notification.comment_id}`;
+          return mainSiteHref(
+            `/blog/${notification.post_slug}#comment-${notification.comment_id}`,
+          );
         }
 
-        return `/blog/${notification.post_slug}`;
+        return mainSiteHref(
+          `/blog/${notification.post_slug}`,
+        );
       }
 
-      return "/account/notifications";
+      return mainSiteHref(
+        "/account/notifications",
+      );
     };
 
   const markNotificationRead =
@@ -1194,7 +1210,7 @@ export default function Navbar() {
         ================================================= */}
 
         <Link
-          href="/"
+          href={MAIN_SITE_URL}
           className="flex shrink-0 items-center"
           aria-label="Meet Shawon Home"
         >
@@ -1229,7 +1245,9 @@ export default function Navbar() {
                       link.href
                     }
                     href={
-                      link.href
+                      mainSiteHref(
+                      link.href,
+                    )
                     }
                     className={`rounded-lg px-3 py-2 text-sm font-medium transition duration-200 ${
                       active
@@ -1497,7 +1515,11 @@ export default function Navbar() {
 
                     <div className="border-t border-white/10 p-2">
                       <Link
-                        href="/account/notifications"
+                        href={
+                          mainSiteHref(
+                            "/account/notifications",
+                          )
+                        }
                         onClick={() =>
                           setNotificationOpen(
                             false,
@@ -1644,7 +1666,11 @@ export default function Navbar() {
                   <div className="p-2">
                     {profile.username && (
                       <Link
-                        href={`/u/${profile.username}`}
+                        href={
+                          mainSiteHref(
+                            `/u/${profile.username}`,
+                          )
+                        }
                         role="menuitem"
                         onClick={() =>
                           setAccountOpen(
@@ -1664,7 +1690,7 @@ export default function Navbar() {
                     )}
 
                     <Link
-                      href="/account"
+                      href={mainSiteHref("/account")}
                       role="menuitem"
                       onClick={() =>
                         setAccountOpen(
@@ -1683,7 +1709,7 @@ export default function Navbar() {
                     </Link>
 
                     <Link
-                      href="/account/saved"
+                      href={mainSiteHref("/account/saved")}
                       role="menuitem"
                       onClick={() =>
                         setAccountOpen(
@@ -1702,7 +1728,7 @@ export default function Navbar() {
                     </Link>
 
                     <Link
-                      href="/account/activity"
+                      href={mainSiteHref("/account/activity")}
                       role="menuitem"
                       onClick={() =>
                         setAccountOpen(
@@ -1721,7 +1747,7 @@ export default function Navbar() {
                     </Link>
 
                     <Link
-                      href="/account/security"
+                      href={mainSiteHref("/account/security")}
                       role="menuitem"
                       onClick={() =>
                         setAccountOpen(
@@ -1752,7 +1778,7 @@ export default function Navbar() {
                       {profile.role ===
                         "admin" && (
                         <Link
-                          href="/admin"
+                          href={mainSiteHref("/admin")}
                           role="menuitem"
                           onClick={() =>
                             setAccountOpen(
@@ -1800,7 +1826,7 @@ export default function Navbar() {
                         profile.role ===
                           "moderator") && (
                         <Link
-                          href="/admin/posts"
+                          href={mainSiteHref("/admin")}
                           role="menuitem"
                           onClick={() =>
                             setAccountOpen(
@@ -1943,7 +1969,9 @@ export default function Navbar() {
                         link.href
                       }
                       href={
-                        link.href
+                        mainSiteHref(
+                          link.href,
+                        )
                       }
                       onClick={
                         closeMobileMenu
@@ -2397,7 +2425,7 @@ export default function Navbar() {
                         {profile.role ===
                           "moderator" && (
                           <Link
-                            href="/moderation"
+                            href={mainSiteHref("/moderation")}
                             onClick={
                               closeMobileMenu
                             }
