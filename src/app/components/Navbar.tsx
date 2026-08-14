@@ -1279,7 +1279,7 @@ export default function Navbar() {
                 </Link>
 
                 <Link
-                  href="/auth/sign-up"
+                  href={mainSiteHref("/auth/sign-up")}
                   className="rounded-xl bg-green-500 px-4 py-2.5 text-sm font-medium text-black transition duration-200 hover:bg-green-400"
                 >
                   Register
@@ -2006,7 +2006,7 @@ export default function Navbar() {
                   </Link>
 
                   <Link
-                    href="/auth/sign-up"
+                    href={mainSiteHref("/auth/sign-up")}
                     onClick={
                       closeMobileMenu
                     }
@@ -2332,7 +2332,7 @@ export default function Navbar() {
                         </Link>
 
                         <Link
-                          href={mainSiteHref("/account")}
+                          href={mainSiteHref("/account/saved")}
                           onClick={
                             closeMobileMenu
                           }
@@ -2348,7 +2348,7 @@ export default function Navbar() {
                         </Link>
 
                         <Link
-                          href={mainSiteHref("/account")}
+                          href={mainSiteHref("/account/activity")}
                           onClick={
                             closeMobileMenu
                           }
@@ -2364,7 +2364,7 @@ export default function Navbar() {
                         </Link>
 
                         <Link
-                          href={mainSiteHref("/account")}
+                          href={mainSiteHref("/account/security")}
                           onClick={
                             closeMobileMenu
                           }
