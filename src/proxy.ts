@@ -14,17 +14,32 @@ export async function proxy(
   request: NextRequest,
 ) {
   const hostname =
-    request.headers
-      .get("host")
-      ?.split(":")[0]
-      .toLowerCase() ??
-    "";
+    (
+      request.headers.get(
+        "x-forwarded-host",
+      ) ??
+      request.headers.get(
+        "host",
+      ) ??
+      ""
+    )
+      .split(":")[0]
+      .toLowerCase();
+
+  const isMeetShawonDomain =
+    hostname ===
+      "meetshawon.com" ||
+    hostname ===
+      "www.meetshawon.com" ||
+    hostname ===
+      "drive.meetshawon.com";
 
   // --------------------------------------------------
-  // RESPONSE / DRIVE ROUTING
+  // INITIAL RESPONSE / DRIVE REWRITE
   // --------------------------------------------------
 
-  let response: NextResponse;
+  let response:
+    NextResponse;
 
   if (
     hostname ===
@@ -69,7 +84,7 @@ export async function proxy(
   }
 
   // --------------------------------------------------
-  // SUPABASE SESSION
+  // SUPABASE SESSION REFRESH
   // --------------------------------------------------
 
   const supabase =
@@ -77,13 +92,18 @@ export async function proxy(
       supabaseUrl,
       supabaseKey,
       {
-        cookieOptions: {
-          domain:
-            ".meetshawon.com",
-          path: "/",
-          sameSite: "lax",
-          secure: true,
-        },
+        ...(isMeetShawonDomain
+          ? {
+              cookieOptions: {
+                domain:
+                  ".meetshawon.com",
+                path: "/",
+                sameSite:
+                  "lax" as const,
+                secure: true,
+              },
+            }
+          : {}),
 
         cookies: {
           getAll() {
@@ -117,17 +137,16 @@ export async function proxy(
                   {
                     ...options,
 
-                    domain:
-                      ".meetshawon.com",
-
-                    path:
-                      "/",
-
-                    sameSite:
-                      "lax",
-
-                    secure:
-                      true,
+                    ...(isMeetShawonDomain
+                      ? {
+                          domain:
+                            ".meetshawon.com",
+                          path: "/",
+                          sameSite:
+                            "lax" as const,
+                          secure: true,
+                        }
+                      : {}),
                   },
                 );
               },

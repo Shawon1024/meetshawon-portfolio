@@ -13,7 +13,9 @@ import {
 } from "next/navigation";
 
 import Container from "../components/Container";
-import { createClient } from "../lib/supabase/server";
+import {
+  createClient,
+} from "../lib/supabase/server";
 
 export default async function DrivePage() {
   // --------------------------------------------------
@@ -41,7 +43,7 @@ export default async function DrivePage() {
     !user
   ) {
     redirect(
-      "https://meetshawon.com/auth/sign-in?next=https%3A%2F%2Fdrive.meetshawon.com",
+      "https://www.meetshawon.com/auth/sign-in?next=https%3A%2F%2Fdrive.meetshawon.com",
     );
   }
 
@@ -78,17 +80,8 @@ export default async function DrivePage() {
     profileError ||
     !canAccessDrive
   ) {
-    /*
-     * IMPORTANT:
-     *
-     * Use the absolute main-domain URL.
-     *
-     * redirect("/") would send the user back to
-     * drive.meetshawon.com and create a loop.
-     */
-
     redirect(
-      "https://meetshawon.com",
+      "https://www.meetshawon.com",
     );
   }
 
@@ -153,7 +146,7 @@ export default async function DrivePage() {
                   </Link>
 
                   <Link
-                    href="https://meetshawon.com"
+                    href="https://www.meetshawon.com"
                     className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-6 py-3 font-medium text-white transition hover:border-green-400/30 hover:bg-white/5"
                   >
                     Back to Portfolio

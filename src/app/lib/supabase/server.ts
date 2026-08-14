@@ -4,11 +4,36 @@ import {
 
 import {
   cookies,
+  headers,
 } from "next/headers";
 
 export async function createClient() {
   const cookieStore =
     await cookies();
+
+  const headerStore =
+    await headers();
+
+  const hostname =
+    (
+      headerStore.get(
+        "x-forwarded-host",
+      ) ??
+      headerStore.get(
+        "host",
+      ) ??
+      ""
+    )
+      .split(":")[0]
+      .toLowerCase();
+
+  const isMeetShawonDomain =
+    hostname ===
+      "meetshawon.com" ||
+    hostname ===
+      "www.meetshawon.com" ||
+    hostname ===
+      "drive.meetshawon.com";
 
   const supabaseUrl =
     process.env
@@ -31,13 +56,18 @@ export async function createClient() {
     supabaseUrl,
     supabaseKey,
     {
-      cookieOptions: {
-        domain:
-          ".meetshawon.com",
-        path: "/",
-        sameSite: "lax",
-        secure: true,
-      },
+      ...(isMeetShawonDomain
+        ? {
+            cookieOptions: {
+              domain:
+                ".meetshawon.com",
+              path: "/",
+              sameSite:
+                "lax" as const,
+              secure: true,
+            },
+          }
+        : {}),
 
       cookies: {
         getAll() {
@@ -60,17 +90,16 @@ export async function createClient() {
                   {
                     ...options,
 
-                    domain:
-                      ".meetshawon.com",
-
-                    path:
-                      "/",
-
-                    sameSite:
-                      "lax",
-
-                    secure:
-                      true,
+                    ...(isMeetShawonDomain
+                      ? {
+                          domain:
+                            ".meetshawon.com",
+                          path: "/",
+                          sameSite:
+                            "lax" as const,
+                          secure: true,
+                        }
+                      : {}),
                   },
                 );
               },

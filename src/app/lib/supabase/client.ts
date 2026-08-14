@@ -20,17 +20,33 @@ export function createClient() {
     );
   }
 
+  const hostname =
+    typeof window !==
+    "undefined"
+      ? window.location.hostname
+      : "";
+
+  const isMeetShawonDomain =
+    hostname ===
+      "meetshawon.com" ||
+    hostname ===
+      "www.meetshawon.com" ||
+    hostname ===
+      "drive.meetshawon.com";
+
   return createBrowserClient(
     supabaseUrl,
     supabaseKey,
-    {
-      cookieOptions: {
-        domain:
-          ".meetshawon.com",
-        path: "/",
-        sameSite: "lax",
-        secure: true,
-      },
-    },
+    isMeetShawonDomain
+      ? {
+          cookieOptions: {
+            domain:
+              ".meetshawon.com",
+            path: "/",
+            sameSite: "lax",
+            secure: true,
+          },
+        }
+      : undefined,
   );
 }
