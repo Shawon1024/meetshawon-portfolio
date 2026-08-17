@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import {
   AlertTriangle,
   Home,
@@ -9,6 +10,7 @@ import {
   useEffect,
 } from "react";
 import Link from "next/link";
+
 interface GlobalErrorProps {
   error: Error & {
     digest?: string;
@@ -24,6 +26,10 @@ export default function GlobalError({
   useEffect(() => {
     console.error(
       "Global application error:",
+      error,
+    );
+
+    Sentry.captureException(
       error,
     );
   }, [
@@ -91,14 +97,16 @@ export default function GlobalError({
                 Try Again
               </button>
 
-<Link
-  href="/"
-  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-gray-200 transition hover:border-green-400/30 hover:text-green-300 sm:w-auto"
->
-  <Home size={17} />
+              <Link
+                href="/"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-gray-200 transition hover:border-green-400/30 hover:text-green-300 sm:w-auto"
+              >
+                <Home
+                  size={17}
+                />
 
-  Back to Home
-</Link>
+                Back to Home
+              </Link>
 
             </div>
 
