@@ -77,6 +77,10 @@ const navLinks = [
     label: "Projects",
   },
   {
+    href: "/skills",
+    label: "Skills",
+  },
+  {
     href: "/blog",
     label: "Blog",
   },
@@ -1245,7 +1249,7 @@ export default function Navbar() {
                       link.href,
                     )
                     }
-                    className={`rounded-lg px-3 py-2 text-sm font-medium transition duration-200 ${
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition duration-200 ${
                       active
                         ? "bg-green-400/10 text-green-300"
                         : "text-gray-100 hover:bg-white/5 hover:text-white"
@@ -1524,7 +1528,7 @@ export default function Navbar() {
                             false,
                           )
                         }
-                        className="block rounded-xl px-4 py-3 text-center text-sm font-medium text-green-400 transition hover:bg-white/5 hover:text-green-300"
+                        className="block rounded-xl px-4 py-3 text-center text-sm font-semibold text-green-400 transition hover:bg-white/5 hover:text-green-300"
                       >
                         See all notifications
                       </Link>

@@ -7,43 +7,43 @@ import {
   Wrench,
 } from "lucide-react";
 
-import Container from "../../components/Container";
+import Container from "../Container";
 
 const interests = [
   {
     title: "Ethical Hacking",
     description:
-      "Learning how vulnerabilities are identified, tested, and responsibly reported.",
+      "Learning structured and responsible methods for identifying, validating, documenting, and communicating security weaknesses.",
     icon: Search,
+  },
+  {
+    title: "Penetration Testing",
+    description:
+      "Developing practical knowledge of reconnaissance, vulnerability assessment, exploitation concepts, and professional security reporting.",
+    icon: ShieldCheck,
   },
   {
     title: "Network Security",
     description:
-      "Understanding how systems communicate and how networks can be monitored and protected.",
+      "Understanding how systems communicate and how networks can be configured, monitored, tested, and protected.",
     icon: Network,
   },
   {
     title: "Secure Infrastructure",
     description:
-      "Building practical systems with secure configuration, access control, and resilience in mind.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Cloud & Self-Hosting",
-    description:
-      "Exploring private cloud services, DNS, HTTPS, storage, and secure remote access.",
+      "Building systems with secure configuration, access control, monitoring, resilience, and maintainability in mind.",
     icon: Cloud,
   },
   {
     title: "Security Automation",
     description:
-      "Using scripts and tools to make repetitive security and administration tasks more efficient.",
+      "Using scripting and technical tools to improve the consistency and efficiency of security and administration tasks.",
     icon: Code2,
   },
   {
     title: "Hands-On Labs",
     description:
-      "Developing practical skills through experiments, virtual machines, home labs, and projects.",
+      "Turning theory into practical understanding through virtual machines, home-lab environments, experiments, and documented projects.",
     icon: Wrench,
   },
 ];
@@ -52,22 +52,22 @@ const values = [
   {
     title: "Continuous Learning",
     description:
-      "Cybersecurity changes constantly, so I treat learning as an ongoing professional responsibility.",
+      "Cybersecurity changes constantly, so I treat learning, practice, and reflection as ongoing professional responsibilities.",
   },
   {
     title: "Ethical Responsibility",
     description:
-      "Security knowledge should be used legally, responsibly, and with respect for privacy and trust.",
+      "Security knowledge must be applied legally, responsibly, and with respect for privacy, authorisation, and trust.",
   },
   {
     title: "Practical Thinking",
     description:
-      "I value hands-on experience and aim to understand how concepts work in real systems.",
+      "I value hands-on experience and aim to understand how security concepts behave in real systems and operational environments.",
   },
   {
     title: "Clear Communication",
     description:
-      "Technical work is more valuable when it can be explained clearly to both technical and non-technical audiences.",
+      "Technical work creates greater value when risks, findings, and recommendations can be communicated clearly to different audiences.",
   },
 ];
 
@@ -85,14 +85,16 @@ export default function InterestsValues() {
           </h2>
 
           <p className="mt-5 leading-7 text-gray-400">
-            The areas I am developing and the principles that guide how I
-            approach cybersecurity, technology, and professional growth.
+            These are the areas I am actively developing and the principles
+            that guide how I approach cybersecurity, technical work, and
+            professional growth.
           </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {interests.map((interest) => {
-            const Icon = interest.icon;
+            const Icon =
+              interest.icon;
 
             return (
               <article

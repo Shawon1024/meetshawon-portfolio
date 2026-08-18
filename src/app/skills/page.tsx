@@ -1,6 +1,7 @@
 import SkillsGrid from "../skills/SkillsGrid";
 import SkillsCTA from "../skills/SkillsCTA";
 import CurrentLearning from "../skills/CurrentLearning";
+import SkillsMap from "../skills/SkillsMap";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -53,7 +54,7 @@ export default function SkillsPage() {
           </p>
         </div>
       </section>
-
+      <SkillsMap />
       <SkillsGrid />
       <CurrentLearning />
       <SkillsCTA />

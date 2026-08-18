@@ -1,17 +1,23 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+} from "lucide-react";
 
 import Badge from "../components/ui/Badge";
 import Card from "../components/ui/Card";
-import type { Project } from "../data/projects";
+import type {
+  Project,
+} from "../data/projects";
 
 interface ProjectShowcaseCardProps {
   project: Project;
+  eager?: boolean;
 }
 
 export default function ProjectShowcaseCard({
   project,
+  eager = false,
 }: ProjectShowcaseCardProps) {
   return (
     <Card>
@@ -20,6 +26,17 @@ export default function ProjectShowcaseCard({
         alt={`${project.title} preview`}
         width={1000}
         height={560}
+        loading={
+          eager
+            ? "eager"
+            : "lazy"
+        }
+        fetchPriority={
+          eager
+            ? "high"
+            : "auto"
+        }
+        sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
         className="h-44 w-full rounded-xl object-cover"
       />
 
@@ -45,20 +62,36 @@ export default function ProjectShowcaseCard({
         </p>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          {project.technologies.map((technology) => (
-            <Badge key={technology}>
-              {technology}
-            </Badge>
-          ))}
+          {project.technologies.map(
+            (technology) => (
+              <Badge
+                key={technology}
+              >
+                {technology}
+              </Badge>
+            ),
+          )}
         </div>
 
         <ul className="mt-6 space-y-2 text-sm text-gray-400">
-          {project.highlights.slice(0, 3).map((highlight) => (
-            <li key={highlight} className="flex gap-2">
-              <span className="text-green-400">•</span>
-              <span>{highlight}</span>
-            </li>
-          ))}
+          {project.highlights
+            .slice(0, 3)
+            .map(
+              (highlight) => (
+                <li
+                  key={highlight}
+                  className="flex gap-2"
+                >
+                  <span className="text-green-400">
+                    •
+                  </span>
+
+                  <span>
+                    {highlight}
+                  </span>
+                </li>
+              ),
+            )}
         </ul>
 
         <Link

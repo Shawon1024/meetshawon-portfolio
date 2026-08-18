@@ -4,7 +4,11 @@ export interface Project {
   summary: string;
   description: string;
   image: string;
-  status: "Completed" | "In Progress" | "Planned";
+  status:
+    | "Completed"
+    | "Active"
+    | "In Progress"
+    | "Planned";
   featured: boolean;
   technologies: string[];
   highlights: string[];
@@ -13,15 +17,71 @@ export interface Project {
 
 export const projects: Project[] = [
   {
-    slug: "private-cloud-infrastructure",
-    title: "Self-Hosted Private Cloud Infrastructure",
+    slug:
+      "professional-portfolio",
+
+    title:
+      "Professional Portfolio Platform",
+
     summary:
-      "A production-style private cloud environment built around TrueNAS SCALE, ZFS, Nextcloud, Cloudflare, and secure remote access.",
+      "A production-deployed cybersecurity portfolio and community platform with authentication, role-based access, blogging, moderation, monitoring, and a private Drive gateway.",
+
     description:
-      "This project explores secure storage, user isolation, remote access, DNS, HTTPS, backups, and infrastructure documentation through a self-hosted cloud platform.",
-    image: "/projects/placeholder.png",
-    status: "In Progress",
-    featured: true,
+      "A full-stack professional platform built to showcase projects, skills, qualifications, and technical writing while demonstrating secure application architecture, operational monitoring, and production deployment.",
+
+    image:
+      "/projects/placeholder.jpg",
+
+    status:
+      "Active",
+
+    featured:
+      true,
+
+    technologies: [
+      "Next.js",
+      "TypeScript",
+      "Tailwind CSS",
+      "Supabase",
+      "Vercel",
+      "Cloudflare",
+      "Sentry",
+    ],
+
+    highlights: [
+      "Authentication and user profiles",
+      "Role-based admin and moderation",
+      "Blog and community features",
+      "Private Drive authentication gateway",
+      "Production monitoring and backups",
+    ],
+
+    href:
+      "/projects/professional-portfolio",
+  },
+
+  {
+    slug:
+      "private-cloud-infrastructure",
+
+    title:
+      "Self-Hosted Private Cloud Infrastructure",
+
+    summary:
+      "An in-progress NAS and private-cloud project combining dedicated hardware, TrueNAS SCALE, mirrored-storage planning, secure user access, and a custom Drive subdomain.",
+
+    description:
+      "A developing self-hosted infrastructure project focused on reliable storage, user separation, remote access, DNS, HTTPS, documentation, and eventual private-cloud file services.",
+
+    image:
+      "/projects/placeholder.jpg",
+
+    status:
+      "In Progress",
+
+    featured:
+      true,
+
     technologies: [
       "TrueNAS SCALE",
       "ZFS",
@@ -29,65 +89,59 @@ export const projects: Project[] = [
       "Cloudflare",
       "HTTPS",
     ],
+
     highlights: [
-      "ZFS mirrored storage",
-      "Individual user accounts",
-      "Storage quotas",
-      "Secure remote access",
-      "Cloudflare DNS integration",
+      "Dedicated NAS hardware",
+      "Build awaiting remaining parts",
+      "Two-drive mirror planned",
+      "Role-protected Drive gateway",
+      "Live NAS integration planned",
     ],
-    href: "/projects/private-cloud-infrastructure",
+
+    href:
+      "/projects/private-cloud-infrastructure",
   },
+
   {
-    slug: "cybersecurity-home-lab",
-    title: "Cybersecurity Home Lab",
+    slug:
+      "cybersecurity-home-lab",
+
+    title:
+      "Cybersecurity Home Lab",
+
     summary:
-      "A practical environment for learning Linux, networking, virtualisation, vulnerability testing, and security tools.",
+      "A developing lab environment for structured learning in Linux, networking, virtualisation, security tools, and authorised ethical-hacking exercises.",
+
     description:
-      "A dedicated lab environment designed for ethical hacking practice, security experiments, technical documentation, and structured cybersecurity learning.",
-    image: "/projects/placeholder.png",
-    status: "In Progress",
-    featured: true,
+      "A dedicated learning environment designed for controlled cybersecurity practice, technical experiments, documentation, and the gradual development of practical security skills.",
+
+    image:
+      "/projects/placeholder.jpg",
+
+    status:
+      "In Progress",
+
+    featured:
+      true,
+
     technologies: [
       "Kali Linux",
       "Virtual Machines",
       "Linux",
       "Networking",
-      "Security Tools",
+      "Nmap",
+      "Wireshark",
     ],
+
     highlights: [
-      "Isolated virtual lab",
-      "Linux administration practice",
-      "Network security experiments",
-      "Ethical hacking exercises",
+      "Dedicated practice workstation",
+      "Isolated virtual-lab design",
+      "Linux and networking development",
+      "Authorised security exercises planned",
       "Documented learning process",
     ],
-    href: "/projects/cybersecurity-home-lab",
-  },
-  {
-    slug: "professional-portfolio",
-    title: "Professional Portfolio Platform",
-    summary:
-      "A modern portfolio built with Next.js, TypeScript, Tailwind CSS, GitHub, Cloudflare, and reusable UI components.",
-    description:
-      "A professional personal-brand platform designed to document projects, certifications, technical writing, and cybersecurity development.",
-    image: "/projects/placeholder.png",
-    status: "In Progress",
-    featured: false,
-    technologies: [
-      "Next.js",
-      "TypeScript",
-      "Tailwind CSS",
-      "GitHub",
-      "Cloudflare",
-    ],
-    highlights: [
-      "Responsive design",
-      "Reusable components",
-      "Professional branding",
-      "SEO-ready structure",
-      "Git-based workflow",
-    ],
-    href: "/projects/professional-portfolio",
+
+    href:
+      "/projects/cybersecurity-home-lab",
   },
 ];

@@ -8,12 +8,15 @@ export default function ProjectsGrid() {
       <Container>
         <div className="mx-auto max-w-6xl">
         <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-            {projects.map((project) => (
-            <ProjectShowcaseCard
-                key={project.slug}
-                project={project}
-            />
-            ))}
+            {projects.map(
+              (project, index) => (
+                <ProjectShowcaseCard
+                  key={project.slug}
+                  project={project}
+                  eager={index < 3}
+                />
+              ),
+            )}
         </div>
         </div>
       </Container>

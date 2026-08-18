@@ -1,4 +1,7 @@
-import { ArrowRight, Download } from "lucide-react";
+import {
+  ArrowRight,
+  Download,
+} from "lucide-react";
 import Link from "next/link";
 
 import Container from "../Container";
@@ -9,17 +12,18 @@ export default function AboutCTA() {
       <Container>
         <div className="rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-8 text-center shadow-2xl md:p-12">
           <p className="text-sm font-medium uppercase tracking-[0.25em] text-green-400">
-            Next Step
+            Explore My Work
           </p>
 
           <h2 className="mx-auto mt-4 max-w-3xl text-3xl font-bold text-white md:text-4xl">
-            Explore my projects or review my professional background
+            See how I am turning cybersecurity learning into practical
+            experience
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl leading-7 text-gray-400">
-            My portfolio documents the practical systems, security labs, and
-            technical projects I am building as I develop toward a career in
-            cybersecurity.
+            Explore my technical projects, security labs, and self-hosted
+            infrastructure work, or download my CV for an overview of my
+            education, skills, and professional development.
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-4">

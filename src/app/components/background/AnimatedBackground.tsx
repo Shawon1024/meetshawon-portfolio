@@ -1,8 +1,18 @@
 export default function AnimatedBackground() {
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-      <div className="absolute left-[-10%] top-[-10%] h-[500px] w-[500px] rounded-full bg-cyan-400/20 blur-3xl animate-float"/>
-      <div className="absolute right-[-10%] bottom-[-10%] h-[450px] w-[450px] rounded-full bg-green-400/20 blur-3xl animate-float"/>
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+    >
+      <div className="animate-float absolute left-[-10%] top-[-10%] h-[500px] w-[500px] rounded-full bg-cyan-400/20 blur-3xl" />
+
+      <div
+        className="animate-float absolute bottom-[-10%] right-[-10%] h-[450px] w-[450px] rounded-full bg-green-400/20 blur-3xl"
+        style={{
+          animationDelay:
+            "-10s",
+        }}
+      />
     </div>
   );
 }
