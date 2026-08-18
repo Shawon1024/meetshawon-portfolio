@@ -8,14 +8,14 @@ export const dynamic =
 export async function GET() {
   return NextResponse.json(
     {
-      status: "maintenance",
+      status: "ok",
       service:
         "MeetShawon.Com",
       timestamp:
         new Date().toISOString(),
     },
     {
-      status: 503,
+      status: 200,
       headers: {
         "Cache-Control":
           "no-store, no-cache, must-revalidate",
