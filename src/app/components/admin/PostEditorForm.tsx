@@ -14,7 +14,7 @@ import {
   TriangleAlert,
   X,
 } from "lucide-react";
-
+import Image from "next/image";
 import MarkdownRenderer from "../blog/MarkdownRenderer";
 import { createClient } from "../../lib/supabase/client";
 
@@ -977,7 +977,7 @@ export default function PostEditorForm({
 
           {coverImageUrl && (
             <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-black/10">
-              <img
+              <Image
                 src={
                   coverImageUrl
                 }
@@ -985,6 +985,9 @@ export default function PostEditorForm({
                   coverImageAlt ||
                   "Cover image preview"
                 }
+                width={1200}
+                height={675}
+                sizes="(min-width: 1024px) 800px, 100vw"
                 className="aspect-[16/9] w-full object-cover"
               />
             </div>

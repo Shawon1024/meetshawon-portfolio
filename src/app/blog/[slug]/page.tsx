@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import BookmarkButton from "../../components/blog/BookmarkButton";
 import RoleBadge from "../../components/ui/RoleBadge";
@@ -535,13 +536,16 @@ const {
             <div className="mt-8 flex items-center gap-3">
               {author
                 ?.avatar_url ? (
-                <img
+                <Image
                   src={
                     author.avatar_url
                   }
                   alt={
                     authorFullName
                   }
+                  width={44}
+                  height={44}
+                  sizes="44px"
                   className="h-11 w-11 rounded-full border border-white/10 object-cover"
                 />
               ) : (

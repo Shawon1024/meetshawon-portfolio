@@ -7,6 +7,7 @@ import {
   UserRound,
   Venus,
 } from "lucide-react";
+import Image from "next/image";
 
 interface ProfileAvatarProps {
   avatarUrl?: string | null;
@@ -30,13 +31,16 @@ export default function ProfileAvatar({
 
   if (avatarUrl) {
     return (
-      <img
+      <Image
         src={avatarUrl}
         alt={
           name
             ? `${name} profile photo`
             : "Profile photo"
         }
+        width={96}
+        height={96}
+        sizes="96px"
         className={`${className} shrink-0 rounded-full border border-white/10 object-cover`}
       />
     );

@@ -20,7 +20,7 @@ import {
   TriangleAlert,
   X,
 } from "lucide-react";
-
+import Image from "next/image";
 import { createClient } from "../../lib/supabase/client";
 import VerifiedBadge from "../ui/VerifiedBadge";
 
@@ -1510,11 +1510,14 @@ if (error) {
             =========================================== */}
 
             {profile?.avatar_url ? (
-              <img
+              <Image
                 src={
                   profile.avatar_url
                 }
                 alt=""
+                width={40}
+                height={40}
+                sizes="40px"
                 className="h-10 w-10 shrink-0 rounded-full object-cover"
               />
             ) : (

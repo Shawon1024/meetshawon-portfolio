@@ -13,7 +13,7 @@ import {
   useMemo,
   useState,
 } from "react";
-
+import Image from "next/image";
 import RoleBadge from "../ui/RoleBadge";
 import VerifiedBadge from "../ui/VerifiedBadge";
 import { createClient } from "../../lib/supabase/client";
@@ -878,11 +878,14 @@ export default function ModerationUserManager({
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
                   <div className="flex min-w-0 gap-4">
                     {user.avatar_url ? (
-                      <img
+                      <Image
                         src={
                           user.avatar_url
                         }
                         alt=""
+                        width={48}
+                        height={48}
+                        sizes="48px"
                         className="h-12 w-12 shrink-0 rounded-full border border-white/10 object-cover"
                       />
                     ) : (

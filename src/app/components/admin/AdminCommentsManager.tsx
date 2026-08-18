@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   ExternalLink,
   MessageCircle,
@@ -403,13 +404,16 @@ export default function AdminCommentsManager({
                         <div className="flex items-center gap-3">
                           {profile
                             ?.avatar_url ? (
-                            <img
-                              src={
-                                profile.avatar_url
-                              }
-                              alt=""
-                              className="h-10 w-10 rounded-full object-cover"
-                            />
+                              <Image
+                                src={
+                                  profile.avatar_url
+                                }
+                                alt=""
+                                width={40}
+                                height={40}
+                                sizes="40px"
+                                className="h-10 w-10 rounded-full object-cover"
+                              />
                           ) : (
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-400/10 text-sm font-semibold text-green-300">
                               {name

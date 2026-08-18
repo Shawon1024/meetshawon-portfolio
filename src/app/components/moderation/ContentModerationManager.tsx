@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -776,14 +777,17 @@ export default function ContentModerationManager({
                       <div className="flex gap-4">
                         {comment.author
                           ?.avatar_url ? (
-                          <img
-                            src={
-                              comment.author
-                                .avatar_url
-                            }
-                            alt=""
-                            className="h-12 w-12 shrink-0 rounded-full border border-white/10 object-cover"
-                          />
+                            <Image
+                              src={
+                                comment.author
+                                  .avatar_url
+                              }
+                              alt=""
+                              width={48}
+                              height={48}
+                              sizes="48px"
+                              className="h-12 w-12 shrink-0 rounded-full border border-white/10 object-cover"
+                            />
                         ) : (
                           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-400/10 font-semibold text-blue-300">
                             {authorName

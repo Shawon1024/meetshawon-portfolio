@@ -837,8 +837,11 @@ export default function AccountSecurity({
           // The user may already no longer exist.
         }
 
-        window.location.href =
-          "/";
+        router.replace(
+          "/",
+        );
+
+        router.refresh();
       } catch (error) {
         setDeleteError(
           error instanceof Error

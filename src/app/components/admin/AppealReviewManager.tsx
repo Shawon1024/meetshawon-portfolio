@@ -12,7 +12,7 @@ import {
   useMemo,
   useState,
 } from "react";
-
+import Image from "next/image";
 import { createClient } from "../../lib/supabase/client";
 import RoleBadge from "../ui/RoleBadge";
 import VerifiedBadge from "../ui/VerifiedBadge";
@@ -662,14 +662,17 @@ export default function AppealReviewManager({
                       <div className="flex gap-4">
                         {appeal.user
                           ?.avatar_url ? (
-                          <img
-                            src={
-                              appeal.user
-                                .avatar_url
-                            }
-                            alt=""
-                            className="h-12 w-12 shrink-0 rounded-full border border-white/10 object-cover"
-                          />
+                            <Image
+                              src={
+                                appeal.user
+                                  .avatar_url
+                              }
+                              alt=""
+                              width={48}
+                              height={48}
+                              sizes="48px"
+                              className="h-12 w-12 shrink-0 rounded-full border border-white/10 object-cover"
+                            />
                         ) : (
                           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-400/10 font-semibold text-green-300">
                             {name

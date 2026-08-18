@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowLeft,
   ArrowRight,
@@ -962,7 +963,7 @@ if (popularPostsError) {
                             href={`/blog/${post.slug}`}
                             className="-mx-6 -mt-6 mb-6 block overflow-hidden"
                           >
-                            <img
+                            <Image
                               src={
                                 post.cover_image_url ||
                                 "/default-blog-cover.png"
@@ -973,6 +974,9 @@ if (popularPostsError) {
                                     post.title
                                   : "Default article cover"
                               }
+                              width={1200}
+                              height={675}
+                              sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                               className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                             />
                           </Link>

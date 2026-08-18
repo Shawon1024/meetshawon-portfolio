@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowLeft,
   ArrowRight,
@@ -280,7 +281,7 @@ export default async function SavedArticlesPage() {
                             href={`/blog/${post.slug}`}
                             className="block overflow-hidden"
                           >
-                            <img
+                            <Image
                               src={
                                 post.cover_image_url
                               }
@@ -288,6 +289,9 @@ export default async function SavedArticlesPage() {
                                 post.cover_image_alt ??
                                 post.title
                               }
+                              width={1200}
+                              height={675}
+                              sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                               className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.03]"
                             />
                           </Link>

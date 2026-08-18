@@ -1456,12 +1456,15 @@ export default function Navbar() {
                                   <div className="relative shrink-0">
                                     {notification.actor
                                       ?.avatar_url ? (
-                                      <img
+                                      <Image
                                         src={
                                           notification.actor
                                             .avatar_url
                                         }
                                         alt=""
+                                        width={40}
+                                        height={40}
+                                        sizes="40px"
                                         className="h-10 w-10 rounded-full object-cover"
                                       />
                                     ) : (
@@ -1558,11 +1561,14 @@ export default function Navbar() {
                   }
                 >
                   {profile.avatar_url ? (
-                    <img
+                    <Image
                       src={
                         profile.avatar_url
                       }
                       alt={`${fullName} profile`}
+                      width={32}
+                      height={32}
+                      sizes="32px"
                       className="h-8 w-8 rounded-full object-cover"
                     />
                   ) : (
@@ -1604,11 +1610,14 @@ export default function Navbar() {
                   <div className="border-b border-white/10 p-5">
                     <div className="flex items-center gap-3">
                       {profile.avatar_url ? (
-                        <img
+                        <Image
                           src={
                             profile.avatar_url
                           }
                           alt={`${fullName} profile`}
+                          width={44}
+                          height={44}
+                          sizes="44px"
                           className="h-11 w-11 rounded-full object-cover"
                         />
                       ) : (
@@ -2223,11 +2232,14 @@ export default function Navbar() {
                     >
                       <div className="flex min-w-0 items-center gap-3">
                         {profile.avatar_url ? (
-                          <img
+                          <Image
                             src={
                               profile.avatar_url
                             }
                             alt={`${fullName} profile`}
+                            width={44}
+                            height={44}
+                            sizes="44px"
                             className="h-11 w-11 shrink-0 rounded-full object-cover"
                           />
                         ) : (

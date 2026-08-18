@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element -- Native images preserve arbitrary source proportions in the inline viewer and lightbox. */
+
 "use client";
 
 import {
@@ -100,7 +102,7 @@ export default function ArticleCoverImage({
             }
           }}
         >
-          {/* Close */}
+          {/* Close button */}
           <button
             type="button"
             onClick={() =>
@@ -112,7 +114,7 @@ export default function ArticleCoverImage({
             <X size={22} />
           </button>
 
-          {/* Large image */}
+          {/* Full-size image */}
           <img
             src={src}
             alt={alt}

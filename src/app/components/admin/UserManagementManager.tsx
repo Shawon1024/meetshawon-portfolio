@@ -14,7 +14,7 @@ import {
   useMemo,
   useState,
 } from "react";
-
+import Image from "next/image";
 import VerifiedBadge from "../ui/VerifiedBadge";
 import { createClient } from "../../lib/supabase/client";
 
@@ -716,11 +716,14 @@ export default function UserManagementManager({
                       {/* Avatar */}
 
                       {user.avatar_url ? (
-                        <img
+                        <Image
                           src={
                             user.avatar_url
                           }
                           alt=""
+                          width={48}
+                          height={48}
+                          sizes="48px"
                           className="h-12 w-12 shrink-0 rounded-full border border-white/10 object-cover"
                         />
                       ) : (
