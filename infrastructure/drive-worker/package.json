@@ -1,0 +1,17 @@
+{
+  "name": "meetshawon-drive-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Provisioning worker for Meet Shawon Drive partner storage.",
+  "scripts": {
+    "start": "node worker.mjs",
+    "check": "node --check worker.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}

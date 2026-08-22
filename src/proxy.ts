@@ -10,52 +10,93 @@ import type {
   NextRequest,
 } from "next/server";
 
+const DRIVE_HOSTNAME =
+  "drive.meetshawon.com";
+
+function getHostname(
+  request: NextRequest,
+) {
+  return (
+    request.headers.get(
+      "x-forwarded-host",
+    ) ??
+    request.headers.get(
+      "host",
+    ) ??
+    ""
+  )
+    .split(":")[0]
+    .toLowerCase();
+}
+
+function getDriveRewritePath(
+  pathname: string,
+) {
+  if (pathname === "/") {
+    return "/drive";
+  }
+
+  if (
+    pathname ===
+    "/dashboard"
+  ) {
+    return "/drive/dashboard";
+  }
+
+  if (
+    pathname ===
+    "/access-denied"
+  ) {
+    return "/drive/access-denied";
+  }
+
+  return null;
+}
+
 export async function proxy(
   request: NextRequest,
 ) {
   const hostname =
-    (
-      request.headers.get(
-        "x-forwarded-host",
-      ) ??
-      request.headers.get(
-        "host",
-      ) ??
-      ""
-    )
-      .split(":")[0]
-      .toLowerCase();
+    getHostname(request);
+
+  const isDriveDomain =
+    hostname ===
+    DRIVE_HOSTNAME ||
+      hostname ===
+    "drive.localhost";
 
   const isMeetShawonDomain =
     hostname ===
       "meetshawon.com" ||
     hostname ===
       "www.meetshawon.com" ||
-    hostname ===
-      "drive.meetshawon.com";
+    isDriveDomain;
 
   // --------------------------------------------------
-  // INITIAL RESPONSE / DRIVE REWRITE
+  // INITIAL RESPONSE
   // --------------------------------------------------
 
   let response:
     NextResponse;
 
-  if (
-    hostname ===
-      "drive.meetshawon.com" &&
-    request.nextUrl.pathname ===
-      "/"
-  ) {
-    const url =
+  const driveRewritePath =
+    isDriveDomain
+      ? getDriveRewritePath(
+          request.nextUrl
+            .pathname,
+        )
+      : null;
+
+  if (driveRewritePath) {
+    const rewriteUrl =
       request.nextUrl.clone();
 
-    url.pathname =
-      "/drive";
+    rewriteUrl.pathname =
+      driveRewritePath;
 
     response =
       NextResponse.rewrite(
-        url,
+        rewriteUrl,
       );
   } else {
     response =
@@ -163,6 +204,6 @@ export async function proxy(
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

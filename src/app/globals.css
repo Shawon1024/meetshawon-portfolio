@@ -57,3 +57,159 @@ body {
     animation: none;
   }
 }
+
+/* --------------------------------------------------
+   DRIVE WI-FI SIGNAL
+-------------------------------------------------- */
+
+@keyframes drive-wifi-dot {
+  0%,
+  12% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+
+  20%,
+  88% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes drive-wifi-arc-one {
+  0%,
+  20% {
+    opacity: 0.12;
+  }
+
+  30%,
+  88% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.12;
+  }
+}
+
+@keyframes drive-wifi-arc-two {
+  0%,
+  38% {
+    opacity: 0.12;
+  }
+
+  48%,
+  88% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.12;
+  }
+}
+
+@keyframes drive-wifi-arc-three {
+  0%,
+  56% {
+    opacity: 0.12;
+  }
+
+  66%,
+  88% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.12;
+  }
+}
+
+.drive-wifi-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: drive-wifi-dot 1.8s ease-in-out infinite;
+}
+
+.drive-wifi-arc-one {
+  animation: drive-wifi-arc-one 1.8s ease-in-out infinite;
+}
+
+.drive-wifi-arc-two {
+  animation: drive-wifi-arc-two 1.8s ease-in-out infinite;
+}
+
+.drive-wifi-arc-three {
+  animation: drive-wifi-arc-three 1.8s ease-in-out infinite;
+}
+
+/* --------------------------------------------------
+   DRIVE ECG SIGNAL
+-------------------------------------------------- */
+
+@keyframes drive-ecg-trace {
+  0% {
+    stroke-dashoffset: 150;
+    opacity: 0.3;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  82% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes drive-ecg-dot {
+  0%,
+  80% {
+    opacity: 0;
+  }
+
+  82% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.drive-ecg-path {
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
+  animation: drive-ecg-trace 2s linear infinite;
+}
+
+.drive-ecg-dot {
+  animation: drive-ecg-dot 2s linear infinite;
+}
+
+/* --------------------------------------------------
+   REDUCED MOTION
+-------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .drive-wifi-dot,
+  .drive-wifi-arc-one,
+  .drive-wifi-arc-two,
+  .drive-wifi-arc-three,
+  .drive-ecg-path,
+  .drive-ecg-dot {
+    animation: none;
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
