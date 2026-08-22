@@ -135,6 +135,17 @@ const config = {
       108447924224,
     ),
 
+  truenasNextcloudAppName:
+    requiredEnv(
+      "TRUENAS_NEXTCLOUD_APP_NAME",
+    ),
+
+  nextcloudReadyTimeoutMs:
+    integerEnv(
+      "NEXTCLOUD_READY_TIMEOUT_MS",
+      180000,
+    ),
+
   nextcloudUrl:
     requiredEnv(
       "NEXTCLOUD_URL",
@@ -752,6 +763,10 @@ async function ensureDataset(
       ],
       60000,
     );
+
+    return {
+      created: true,
+    };
   } else {
     await truenas.call(
       "pool.dataset.update",
@@ -769,6 +784,10 @@ async function ensureDataset(
       60000,
     );
   }
+
+  return {
+    created: false,
+  };
 }
 
 function permissions(
@@ -926,6 +945,38 @@ async function applyDatasetAcl(
   );
 }
 
+async function redeployNextcloud(
+  truenas,
+) {
+  console.log(
+    `[drive-worker] Redeploying TrueNAS app ${config.truenasNextcloudAppName} to refresh dataset mounts`,
+  );
+
+  const jobId =
+    await truenas.call(
+      "app.redeploy",
+      [
+        config
+          .truenasNextcloudAppName,
+      ],
+      60000,
+    );
+
+  const app =
+    await truenas.waitForJob(
+      jobId,
+    );
+
+  if (
+    app?.state &&
+    app.state !== "RUNNING"
+  ) {
+    throw new Error(
+      `Nextcloud redeploy completed with unexpected state: ${app.state}`,
+    );
+  }
+}
+
 // --------------------------------------------------
 // NEXTCLOUD OCS CLIENT
 // --------------------------------------------------
@@ -1021,6 +1072,47 @@ async function nextcloudRequest(
   }
 
   return body?.ocs?.data;
+}
+
+async function waitForNextcloudReady() {
+  const deadline =
+    Date.now() +
+    config
+      .nextcloudReadyTimeoutMs;
+
+  let lastError =
+    "Nextcloud is not ready.";
+
+  while (
+    Date.now() <
+    deadline
+  ) {
+    try {
+      await getNextcloudUser(
+        config
+          .nextcloudWorkerUsername,
+      );
+
+      console.log(
+        "[drive-worker] Nextcloud is ready after redeploy",
+      );
+
+      return;
+    } catch (error) {
+      lastError =
+        errorMessage(
+          error,
+        );
+
+      await sleep(
+        3000,
+      );
+    }
+  }
+
+  throw new Error(
+    `Nextcloud did not become ready within ${config.nextcloudReadyTimeoutMs}ms: ${lastError}`,
+  );
 }
 
 async function getNextcloudUser(
@@ -1385,21 +1477,38 @@ async function provisionAccount(
   const truenas =
     new TrueNasClient();
 
+  let datasetCreated =
+    false;
+
   try {
     await truenas.connect();
 
-    await ensureDataset(
-      truenas,
-      datasetId,
-      username,
-    );
+    const dataset =
+      await ensureDataset(
+        truenas,
+        datasetId,
+        username,
+      );
+
+    datasetCreated =
+      dataset.created;
 
     await applyDatasetAcl(
       truenas,
       mountPath,
     );
+
+    if (datasetCreated) {
+      await redeployNextcloud(
+        truenas,
+      );
+    }
   } finally {
     truenas.close();
+  }
+
+  if (datasetCreated) {
+    await waitForNextcloudReady();
   }
 
   const nextcloud =
@@ -1433,6 +1542,10 @@ async function provisionAccount(
     quota_bytes:
       config
         .driveQuotaBytes,
+    dataset_created:
+      datasetCreated,
+    nextcloud_redeployed:
+      datasetCreated,
     nextcloud_user_created:
       nextcloud.created,
     notification_sent:
