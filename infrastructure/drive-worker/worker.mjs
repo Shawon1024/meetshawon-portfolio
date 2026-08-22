@@ -1672,7 +1672,7 @@ async function run() {
 
   if (config.dryRun) {
     console.log(
-      "[drive-worker] DRY_RUN=true — queue claims are disabled.",
+      "[drive-worker] DRY_RUN=true â€” queue claims are disabled.",
     );
   }
 
