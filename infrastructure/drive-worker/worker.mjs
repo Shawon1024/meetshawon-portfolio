@@ -1027,6 +1027,58 @@ async function redeployNextcloud(
   );
 }
 
+async function stopNextcloud(
+  truenas,
+) {
+  console.log(
+    `[drive-worker] Stopping TrueNAS app ${config.truenasNextcloudAppName} for guarded dataset deletion`,
+  );
+
+  const jobId =
+    await truenas.call(
+      "app.stop",
+      [
+        config
+          .truenasNextcloudAppName,
+      ],
+      60000,
+    );
+
+  await truenas.waitForJob(
+    jobId,
+  );
+
+  console.log(
+    "[drive-worker] Nextcloud stopped for guarded dataset deletion",
+  );
+}
+
+async function startNextcloud(
+  truenas,
+) {
+  console.log(
+    `[drive-worker] Starting TrueNAS app ${config.truenasNextcloudAppName} after guarded dataset deletion`,
+  );
+
+  const jobId =
+    await truenas.call(
+      "app.start",
+      [
+        config
+          .truenasNextcloudAppName,
+      ],
+      60000,
+    );
+
+  await truenas.waitForJob(
+    jobId,
+  );
+
+  console.log(
+    "[drive-worker] TrueNAS accepted the Nextcloud start request",
+  );
+}
+
 // --------------------------------------------------
 // NEXTCLOUD OCS CLIENT
 // --------------------------------------------------
@@ -1836,8 +1888,18 @@ async function deleteApprovedAccount(
 
   let dataset;
 
+  let nextcloudStopped =
+    false;
+
   try {
     await truenas.connect();
+
+    await stopNextcloud(
+      truenas,
+    );
+
+    nextcloudStopped =
+      true;
 
     dataset =
       await deleteDataset(
@@ -1845,8 +1907,18 @@ async function deleteApprovedAccount(
         datasetId,
       );
   } finally {
+    if (
+      nextcloudStopped
+    ) {
+      await startNextcloud(
+        truenas,
+      );
+    }
+
     truenas.close();
   }
+
+  await waitForNextcloudReady();
 
   const displayName =
     getDisplayName(
