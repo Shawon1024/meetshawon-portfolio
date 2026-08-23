@@ -183,7 +183,7 @@ const config = {
 };
 
 // --------------------------------------------------
-// GENERAL HELPERS
+// GENERAL UTILITIES
 // --------------------------------------------------
 
 function sleep(milliseconds) {
@@ -1498,16 +1498,15 @@ async function provisionAccount(
       mountPath,
     );
 
-    await redeployNextcloud();
-    await waitForNextcloudReady();
+    await redeployNextcloud(
+      truenas,
+    );
 
   } finally {
     truenas.close();
   }
 
-  if (datasetCreated) {
-    await waitForNextcloudReady();
-  }
+  await waitForNextcloudReady();
 
   const nextcloud =
     await ensureNextcloudUser({
@@ -1543,7 +1542,7 @@ async function provisionAccount(
     dataset_created:
       datasetCreated,
     nextcloud_redeployed:
-      datasetCreated,
+      true,
     nextcloud_user_created:
       nextcloud.created,
     notification_sent:
