@@ -962,19 +962,13 @@ async function redeployNextcloud(
       60000,
     );
 
-  const app =
-    await truenas.waitForJob(
-      jobId,
-    );
+  await truenas.waitForJob(
+    jobId,
+  );
 
-  if (
-    app?.state &&
-    app.state !== "RUNNING"
-  ) {
-    throw new Error(
-      `Nextcloud redeploy completed with unexpected state: ${app.state}`,
-    );
-  }
+  console.log(
+    "[drive-worker] TrueNAS accepted the Nextcloud redeployment",
+  );
 }
 
 // --------------------------------------------------
