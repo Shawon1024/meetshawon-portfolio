@@ -1,38 +1,45 @@
 import {
-  ArrowRight,
   CheckCircle2,
-  Circle,
   Clock3,
+  Route,
+  Target,
 } from "lucide-react";
 
 import Container from "../components/Container";
 
 const stages = [
   {
-    title: "Build the foundation",
+    title: "Complete introductory technical foundations",
     description:
-      "Strengthen networking, operating systems, security fundamentals, and practical lab skills.",
+      "Completed Cisco Networking Academy training in cybersecurity, operating systems, and computer hardware.",
+    status: "Completed",
+  },
+  {
+    title: "Strengthen networking and ethical-hacking skills",
+    description:
+      "Currently studying Networking Basics and Ethical Hacker through Cisco Networking Academy.",
     status: "Current",
   },
   {
-    title: "Complete foundational certification",
+    title: "Prepare for CompTIA certifications",
     description:
-      "Prepare for a recognised entry-level certification such as CompTIA Security+.",
-    status: "Next",
-  },
-  {
-    title: "Develop practical offensive skills",
-    description:
-      "Progress into hands-on penetration-testing training and practical certifications.",
+      "Develop the knowledge and practical readiness required for CompTIA Network+ and CompTIA Security+.",
     status: "Planned",
   },
   {
-    title: "Advance toward professional testing roles",
+    title: "Apply learning through practical projects",
     description:
-      "Build deeper methodology, reporting, Active Directory, and exploitation skills.",
-    status: "Long term",
+      "Continue translating academic study and certification knowledge into home-lab exercises, security projects, and documented technical work.",
+    status: "Ongoing",
   },
 ];
+
+const statusStyles: Record<string, string> = {
+  Completed: "border-green-400/20 bg-green-400/10 text-green-300",
+  Current: "border-amber-400/20 bg-amber-400/10 text-amber-300",
+  Planned: "border-white/10 bg-white/5 text-gray-300",
+  Ongoing: "border-cyan-400/20 bg-cyan-400/10 text-cyan-300",
+};
 
 export default function CertificationProgress() {
   return (
@@ -45,26 +52,26 @@ export default function CertificationProgress() {
             </p>
 
             <h2 className="mt-3 text-3xl font-bold text-white md:text-4xl">
-              Certification progression
+              Learning progression
             </h2>
 
             <p className="mt-5 max-w-md leading-7 text-gray-400">
-              My certification roadmap is designed to build strong technical
-              foundations first, then move progressively into practical
-              offensive-security skills.
+              My development path combines academic study, recognised
+              training, planned professional certifications, and practical
+              project work.
             </p>
           </div>
 
           <div className="space-y-4">
-            {stages.map((stage, index) => {
+            {stages.map((stage) => {
               const Icon =
-                index === 0
-                  ? Clock3
-                  : index === 1
-                    ? ArrowRight
-                    : index === stages.length - 1
-                      ? Circle
-                      : CheckCircle2;
+                stage.status === "Completed"
+                  ? CheckCircle2
+                  : stage.status === "Current"
+                    ? Clock3
+                    : stage.status === "Planned"
+                      ? Target
+                      : Route;
 
               return (
                 <article
@@ -72,7 +79,7 @@ export default function CertificationProgress() {
                   className="flex gap-4 rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-5"
                 >
                   <div className="mt-1 text-green-400">
-                    <Icon size={20} />
+                    <Icon size={20} aria-hidden="true" />
                   </div>
 
                   <div>
@@ -81,7 +88,11 @@ export default function CertificationProgress() {
                         {stage.title}
                       </h3>
 
-                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-300">
+                      <span
+                        className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                          statusStyles[stage.status]
+                        }`}
+                      >
                         {stage.status}
                       </span>
                     </div>
