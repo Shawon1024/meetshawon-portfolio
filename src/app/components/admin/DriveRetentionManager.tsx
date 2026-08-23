@@ -114,7 +114,8 @@ export default function DriveRetentionManager({
       accounts.filter(
         (account) =>
           account.lifecycle_status !== "active" &&
-          account.lifecycle_status !== "provisioning",
+          account.lifecycle_status !== "provisioning" &&
+          account.lifecycle_status !== "deleted",
       ),
     [accounts],
   );
