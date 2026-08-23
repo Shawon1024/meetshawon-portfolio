@@ -1498,11 +1498,9 @@ async function provisionAccount(
       mountPath,
     );
 
-    if (datasetCreated) {
-      await redeployNextcloud(
-        truenas,
-      );
-    }
+    await redeployNextcloud();
+    await waitForNextcloudReady();
+
   } finally {
     truenas.close();
   }
