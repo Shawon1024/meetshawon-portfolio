@@ -164,7 +164,12 @@ export default async function DriveDashboardPage() {
   const allocation =
     isAdmin
       ? "Main administrator storage"
-      : "100 GB private allocation";
+      : "101 GiB private allocation";
+
+  const capacityLabel =
+    isAdmin
+      ? "Main dataset"
+      : "101 GiB";
 
   return (
     <main className="px-5 py-10 sm:px-6 md:py-16">
@@ -223,18 +228,22 @@ export default async function DriveDashboardPage() {
                 />
               </Link>
 
-              <button
-                type="button"
-                disabled
-                title="Available after Nextcloud integration"
-                className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2.5 text-sm font-semibold text-slate-950 opacity-55"
+              <Link
+                href="https://files.meetshawon.com/apps/files/files"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:brightness-110"
               >
                 <Cloud
                   size={17}
                 />
 
                 Open Files
-              </button>
+
+                <ArrowUpRight
+                  size={16}
+                />
+              </Link>
             </div>
           </div>
         </section>
@@ -280,7 +289,7 @@ export default async function DriveDashboardPage() {
             <p className="mt-4 text-xl font-semibold text-white">
               {isAdmin
                 ? "Main"
-                : "100 GB"}
+                : "101 GiB"}
             </p>
 
             <p className="mt-1 text-xs text-slate-500">
@@ -291,7 +300,7 @@ export default async function DriveDashboardPage() {
           <article className="rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-slate-400">
-                Storage telemetry
+                Storage service
               </p>
 
               <Gauge
@@ -300,12 +309,12 @@ export default async function DriveDashboardPage() {
               />
             </div>
 
-            <p className="mt-4 text-xl font-semibold text-amber-200">
-              Pending
+            <p className="mt-4 text-xl font-semibold text-green-300">
+              Operational
             </p>
 
             <p className="mt-1 text-xs text-slate-500">
-              Awaiting NAS connection
+              Private NAS connected
             </p>
           </article>
 
@@ -321,12 +330,12 @@ export default async function DriveDashboardPage() {
               />
             </div>
 
-            <p className="mt-4 text-xl font-semibold text-amber-200">
-              Setup pending
+            <p className="mt-4 text-xl font-semibold text-green-300">
+              Online
             </p>
 
             <p className="mt-1 text-xs text-slate-500">
-              Nextcloud not connected
+              Nextcloud connected
             </p>
           </article>
         </section>
@@ -363,28 +372,41 @@ export default async function DriveDashboardPage() {
               </p>
 
               <p className="mt-2 break-all font-mono text-lg text-cyan-200">
-                NAS_STORAGE_01/{datasetName}
+                {datasetName}
               </p>
             </div>
 
             <div className="mt-7">
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-sm font-medium text-white">
-                  Storage usage
-                </p>
+              <p className="text-sm font-medium text-white">
+                Storage service
+              </p>
 
-                <p className="text-sm text-slate-400">
-                  Awaiting telemetry
-                </p>
-              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                    Capacity
+                  </p>
 
-              <div className="mt-3 h-3 overflow-hidden rounded-full border border-white/10 bg-black/30">
-                <div className="h-full w-full animate-pulse bg-gradient-to-r from-cyan-400/10 via-cyan-300/30 to-cyan-400/10" />
+                  <p className="mt-2 font-semibold text-cyan-200">
+                    {capacityLabel}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                    Usage reporting
+                  </p>
+
+                  <p className="mt-2 font-semibold text-green-300">
+                    Available in Files
+                  </p>
+                </div>
               </div>
 
               <p className="mt-3 text-xs leading-5 text-slate-500">
-                Used and available storage will appear after the dashboard is
-                connected to the NAS service.
+                Live used-space telemetry is not exposed on this dashboard.
+                Open Files to manage your data and view the storage information
+                provided by Nextcloud.
               </p>
             </div>
           </article>
@@ -499,27 +521,27 @@ export default async function DriveDashboardPage() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-amber-400/15 bg-amber-400/[0.05] p-5">
+            <div className="rounded-2xl border border-green-400/15 bg-green-400/[0.05] p-5">
               <p className="text-sm text-slate-400">
-                NAS telemetry
+                Private NAS
               </p>
 
-              <p className="mt-2 flex items-center gap-2 font-semibold text-amber-200">
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
+              <p className="mt-2 flex items-center gap-2 font-semibold text-green-300">
+                <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
 
-                Integration pending
+                Operational
               </p>
             </div>
 
-            <div className="rounded-2xl border border-amber-400/15 bg-amber-400/[0.05] p-5">
+            <div className="rounded-2xl border border-green-400/15 bg-green-400/[0.05] p-5">
               <p className="text-sm text-slate-400">
                 File interface
               </p>
 
-              <p className="mt-2 flex items-center gap-2 font-semibold text-amber-200">
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
+              <p className="mt-2 flex items-center gap-2 font-semibold text-green-300">
+                <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
 
-                Awaiting Nextcloud
+                Nextcloud online
               </p>
             </div>
           </div>
@@ -531,9 +553,9 @@ export default async function DriveDashboardPage() {
             />
 
             <p className="text-sm leading-6 text-slate-300">
-              Your account and Drive allocation are prepared. File access will
-              be enabled after Nextcloud and the secure NAS connection are
-              configured.
+              Your authenticated account is connected to its private dataset
+              through Nextcloud. Open Files to upload, organise, share, and
+              restore recently deleted items from the recycle bin.
             </p>
           </div>
         </section>
