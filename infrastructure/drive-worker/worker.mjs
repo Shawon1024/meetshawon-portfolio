@@ -790,6 +790,62 @@ async function ensureDataset(
   };
 }
 
+async function deleteDataset(
+  truenas,
+  datasetId,
+) {
+  const exists =
+    await datasetExists(
+      truenas,
+      datasetId,
+    );
+
+  if (!exists) {
+    return {
+      existed: false,
+      deleted: false,
+    };
+  }
+
+  const result =
+    await truenas.call(
+      "pool.dataset.delete",
+      [
+        datasetId,
+        {
+          recursive: false,
+          force: false,
+        },
+      ],
+      60000,
+    );
+
+  if (
+    result !== true &&
+    result !== null
+  ) {
+    throw new Error(
+      "TrueNAS returned an unexpected dataset deletion result.",
+    );
+  }
+
+  if (
+    await datasetExists(
+      truenas,
+      datasetId,
+    )
+  ) {
+    throw new Error(
+      "TrueNAS reported success but the dataset still exists.",
+    );
+  }
+
+  return {
+    existed: true,
+    deleted: true,
+  };
+}
+
 function permissions(
   read,
   write,
@@ -1211,6 +1267,54 @@ async function disableNextcloudUser(
   );
 }
 
+async function deleteNextcloudUser(
+  username,
+) {
+  const existing =
+    await getNextcloudUser(
+      username,
+    );
+
+  if (!existing) {
+    return {
+      existed: false,
+      deleted: false,
+    };
+  }
+
+  if (
+    existing.enabled !==
+    false
+  ) {
+    throw new Error(
+      "The Nextcloud account must be disabled before permanent deletion.",
+    );
+  }
+
+  await nextcloudRequest(
+    `/ocs/v1.php/cloud/users/${encodeURIComponent(username)}?format=json`,
+    {
+      method:
+        "DELETE",
+    },
+  );
+
+  if (
+    await getNextcloudUser(
+      username,
+    )
+  ) {
+    throw new Error(
+      "Nextcloud reported success but the account still exists.",
+    );
+  }
+
+  return {
+    existed: true,
+    deleted: true,
+  };
+}
+
 async function ensureNextcloudUser({
   username,
   displayName,
@@ -1422,6 +1526,35 @@ async function sendSuspendedEmail({
   });
 }
 
+async function sendDeletedEmail({
+  email,
+  displayName,
+}) {
+  await sendEmail({
+    to:
+      email,
+
+    subject:
+      "Your Meet Shawon Drive data has been permanently deleted",
+
+    html: `
+      <h2>Meet Shawon Drive</h2>
+
+      <p>Hello ${escapeHtml(displayName)},</p>
+
+      <p>
+        The 30-day retention period for your suspended Drive has ended.
+        Following a manual administrator review, your Drive account and
+        retained storage dataset have now been permanently deleted.
+      </p>
+
+      <p>
+        This action cannot be reversed through the Drive recycle bin.
+      </p>
+    `,
+  });
+}
+
 // --------------------------------------------------
 // JOB HANDLERS
 // --------------------------------------------------
@@ -1605,6 +1738,153 @@ async function suspendAccount(
   };
 }
 
+async function deleteApprovedAccount(
+  claim,
+) {
+  const {
+    job,
+    account,
+    user,
+  } = claim;
+
+  const username =
+    account
+      ?.nextcloud_username;
+
+  const datasetName =
+    account
+      ?.dataset_name;
+
+  if (
+    !validateUsername(
+      username,
+    )
+  ) {
+    throw new Error(
+      "The claimed deletion has an invalid Nextcloud username.",
+    );
+  }
+
+  const {
+    datasetId,
+    mountPath,
+  } =
+    validateDataset(
+      datasetName,
+      username,
+    );
+
+  if (
+    account
+      ?.lifecycle_status !==
+    "deletion_due"
+  ) {
+    throw new Error(
+      "The Drive account is not marked as deletion due.",
+    );
+  }
+
+  const scheduledAt =
+    Date.parse(
+      account
+        ?.deletion_scheduled_at ??
+      "",
+    );
+
+  if (
+    !Number.isFinite(
+      scheduledAt,
+    ) ||
+    scheduledAt >
+      Date.now()
+  ) {
+    throw new Error(
+      "The Drive retention deadline has not passed.",
+    );
+  }
+
+  if (
+    job?.payload
+      ?.manual_admin_approval !==
+    true
+  ) {
+    throw new Error(
+      "Permanent deletion has no explicit administrator approval.",
+    );
+  }
+
+  if (
+    job.payload
+      .dataset_name !==
+      datasetName ||
+    job.payload
+      .nextcloud_username !==
+      username
+  ) {
+    throw new Error(
+      "The approved deletion identifiers do not match the Drive account.",
+    );
+  }
+
+  const nextcloud =
+    await deleteNextcloudUser(
+      username,
+    );
+
+  const truenas =
+    new TrueNasClient();
+
+  let dataset;
+
+  try {
+    await truenas.connect();
+
+    dataset =
+      await deleteDataset(
+        truenas,
+        datasetId,
+      );
+  } finally {
+    truenas.close();
+  }
+
+  const displayName =
+    getDisplayName(
+      user,
+      username,
+    );
+
+  await sendDeletedEmail({
+    email:
+      user?.email,
+    displayName,
+  });
+
+  return {
+    action:
+      job.action,
+    username,
+    dataset_name:
+      datasetName,
+    dataset_id:
+      datasetId,
+    mount_path:
+      mountPath,
+    nextcloud_user_existed:
+      nextcloud.existed,
+    nextcloud_user_deleted:
+      nextcloud.deleted,
+    dataset_existed:
+      dataset.existed,
+    dataset_deleted:
+      dataset.deleted,
+    manual_admin_approval:
+      true,
+    notification_sent:
+      true,
+  };
+}
+
 async function processClaim(
   claim,
 ) {
@@ -1625,6 +1905,15 @@ async function processClaim(
     "suspend"
   ) {
     return suspendAccount(
+      claim,
+    );
+  }
+
+  if (
+    action ===
+    "approve_deletion"
+  ) {
+    return deleteApprovedAccount(
       claim,
     );
   }
