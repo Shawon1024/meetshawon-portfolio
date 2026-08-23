@@ -68,16 +68,16 @@ export const projects: Project[] = [
       "Self-Hosted Private Cloud Infrastructure",
 
     summary:
-      "An in-progress NAS and private-cloud project combining dedicated hardware, TrueNAS SCALE, mirrored-storage planning, secure user access, and a custom Drive subdomain.",
+      "A completed NAS and private-cloud platform combining dedicated hardware, TrueNAS SCALE, mirrored ZFS storage, controlled user access, automated provisioning, and secure remote connectivity.",
 
     description:
-      "A developing self-hosted infrastructure project focused on reliable storage, user separation, remote access, DNS, HTTPS, documentation, and eventual private-cloud file services.",
+      "A tested and operational self-hosted infrastructure project focused on resilient storage, user separation, secure remote access, automated storage provisioning, monitoring, documentation, and recovery planning.",
 
     image:
-      "/projects/placeholder.jpg",
+      "/projects/private-cloud-infrastructure/build-ready.png",
 
     status:
-      "In Progress",
+      "Completed",
 
     featured:
       true,
@@ -85,17 +85,19 @@ export const projects: Project[] = [
     technologies: [
       "TrueNAS SCALE",
       "ZFS",
-      "Nextcloud",
+      "Next.js",
+      "Supabase",
       "Cloudflare",
       "HTTPS",
+      "Linux",
     ],
 
     highlights: [
-      "Dedicated NAS hardware",
-      "Build awaiting remaining parts",
-      "Two-drive mirror planned",
+      "Healthy two-drive ZFS mirror",
       "Role-protected Drive gateway",
-      "Live NAS integration planned",
+      "Automated isolated user storage",
+      "Secure remote file access",
+      "Monitoring and backup tasks",
     ],
 
     href:
