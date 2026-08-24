@@ -5,6 +5,9 @@ import {
   ArrowRight,
   CalendarDays,
   Clock3,
+  Eye,
+  Heart,
+  MessageCircle,
   RotateCcw,
   Search,
 } from "lucide-react";
@@ -288,6 +291,7 @@ if (popularPostsError) {
         slug,
         excerpt,
         content,
+        view_count,
         featured,
         published_at,
         cover_image_url,
@@ -432,6 +436,169 @@ if (popularPostsError) {
         POSTS_PER_PAGE,
     ) ?? [];
 
+  // --------------------------------------------------
+  // ENGAGEMENT TOTALS
+  // --------------------------------------------------
+
+  const engagementPostIds =
+    Array.from(
+      new Set([
+        ...(
+          popularPosts ??
+          []
+        ).map(
+          (
+            post,
+          ) =>
+            post.id,
+        ),
+
+        ...paginatedPosts.map(
+          (
+            post,
+          ) =>
+            post.id,
+        ),
+      ]),
+    );
+
+  const reactionCounts =
+    new Map<
+      string,
+      number
+    >();
+
+  const commentCounts =
+    new Map<
+      string,
+      number
+    >();
+
+  if (
+    engagementPostIds.length >
+    0
+  ) {
+    const [
+      reactionResult,
+      commentResult,
+    ] =
+      await Promise.all([
+        supabase
+          .from(
+            "reactions",
+          )
+          .select(
+            "post_id",
+          )
+          .in(
+            "post_id",
+            engagementPostIds,
+          ),
+
+        supabase
+          .from(
+            "comments",
+          )
+          .select(
+            "post_id",
+          )
+          .in(
+            "post_id",
+            engagementPostIds,
+          )
+          .eq(
+            "status",
+            "approved",
+          ),
+      ]);
+
+    if (
+      reactionResult.error
+    ) {
+      console.error(
+        "Blog reaction totals could not be loaded:",
+        reactionResult.error,
+      );
+    }
+
+    if (
+      commentResult.error
+    ) {
+      console.error(
+        "Blog comment totals could not be loaded:",
+        commentResult.error,
+      );
+    }
+
+    for (
+      const reaction of
+        reactionResult.data ??
+        []
+    ) {
+      if (
+        !reaction.post_id
+      ) {
+        continue;
+      }
+
+      reactionCounts.set(
+        reaction.post_id,
+        (
+          reactionCounts.get(
+            reaction.post_id,
+          ) ??
+          0
+        ) + 1,
+      );
+    }
+
+    for (
+      const comment of
+        commentResult.data ??
+        []
+    ) {
+      if (
+        !comment.post_id
+      ) {
+        continue;
+      }
+
+      commentCounts.set(
+        comment.post_id,
+        (
+          commentCounts.get(
+            comment.post_id,
+          ) ??
+          0
+        ) + 1,
+      );
+    }
+  }
+
+  const popularPostsWithEngagement =
+    (
+      popularPosts ??
+      []
+    ).map(
+      (
+        post,
+      ) => ({
+        ...post,
+
+        reaction_count:
+          reactionCounts.get(
+            post.id,
+          ) ??
+          0,
+
+        comment_count:
+          commentCounts.get(
+            post.id,
+          ) ??
+          0,
+      }),
+    );
+
   const hasActiveFilters =
     Boolean(
       selectedCategory ||
@@ -570,7 +737,7 @@ if (popularPostsError) {
       <Container>
         <div className="mx-auto max-w-6xl">
           <PopularArticles
-            posts={popularPosts}
+            posts={popularPostsWithEngagement}
           />
         </div>
       </Container>
@@ -950,6 +1117,22 @@ if (popularPostsError) {
                             Boolean,
                           ) ?? [];
 
+                      const views =
+                        post.view_count ??
+                        0;
+
+                      const reactions =
+                        reactionCounts.get(
+                          post.id,
+                        ) ??
+                        0;
+
+                      const comments =
+                        commentCounts.get(
+                          post.id,
+                        ) ??
+                        0;
+
                       return (
                         <article
                           key={
@@ -1047,14 +1230,13 @@ if (popularPostsError) {
                             </div>
                           )}
 
-                          {/* Meta */}
+                          {/* Article information */}
 
                           <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-gray-500">
                             <span className="inline-flex items-center gap-2">
                               <CalendarDays
-                                size={
-                                  15
-                                }
+                                size={15}
+                                aria-hidden="true"
                               />
 
                               {formatDate(
@@ -1064,9 +1246,8 @@ if (popularPostsError) {
 
                             <span className="inline-flex items-center gap-2">
                               <Clock3
-                                size={
-                                  15
-                                }
+                                size={15}
+                                aria-hidden="true"
                               />
 
                               {estimateReadingTime(
@@ -1075,21 +1256,78 @@ if (popularPostsError) {
                             </span>
                           </div>
 
-                          {/* Read */}
+                          {/* Engagement and article link */}
 
-                          <div className="mt-auto pt-7">
-                            <Link
-                              href={`/blog/${post.slug}`}
-                              className="inline-flex items-center gap-2 font-medium text-green-400 transition hover:text-green-300"
-                            >
-                              Read Article
+                          <div className="mt-auto pt-6">
+                            <div className="flex items-center gap-5 border-t border-white/10 pt-4 text-sm text-gray-500">
+                              <span
+                                className="inline-flex items-center gap-1.5"
+                                title={`${views.toLocaleString("en-GB")} views`}
+                              >
+                                <Eye
+                                  size={15}
+                                  aria-hidden="true"
+                                />
 
-                              <ArrowRight
-                                size={
-                                  17
-                                }
-                              />
-                            </Link>
+                                {views.toLocaleString(
+                                  "en-GB",
+                                )}
+
+                                <span className="sr-only">
+                                  views
+                                </span>
+                              </span>
+
+                              <span
+                                className="inline-flex items-center gap-1.5"
+                                title={`${reactions.toLocaleString("en-GB")} reactions`}
+                              >
+                                <Heart
+                                  size={15}
+                                  aria-hidden="true"
+                                />
+
+                                {reactions.toLocaleString(
+                                  "en-GB",
+                                )}
+
+                                <span className="sr-only">
+                                  reactions
+                                </span>
+                              </span>
+
+                              <span
+                                className="inline-flex items-center gap-1.5"
+                                title={`${comments.toLocaleString("en-GB")} comments`}
+                              >
+                                <MessageCircle
+                                  size={15}
+                                  aria-hidden="true"
+                                />
+
+                                {comments.toLocaleString(
+                                  "en-GB",
+                                )}
+
+                                <span className="sr-only">
+                                  comments
+                                </span>
+                              </span>
+                            </div>
+
+                            <div className="pt-6">
+                              <Link
+                                href={`/blog/${post.slug}`}
+                                className="inline-flex items-center gap-2 font-medium text-green-400 transition hover:text-green-300"
+                              >
+                                Read Article
+
+                                <ArrowRight
+                                  size={17}
+                                  aria-hidden="true"
+                                />
+                              </Link>
+                            </div>
                           </div>
                         </article>
                       );
