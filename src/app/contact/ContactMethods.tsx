@@ -21,8 +21,8 @@ const methods = [
   },
   {
     title: "GitHub",
-    value: "github.com/Shawon1024",
-    href: "https://github.com/Shawon1024",
+    value: "github.com/shawon1024",
+    href: "https://github.com/shawon1024",
     icon: Code2,
   },
 ];
@@ -40,31 +40,25 @@ export default function ContactMethods() {
 
       <p className="mt-5 max-w-md leading-7 text-gray-400">
         Email is the best option for formal enquiries. LinkedIn and GitHub are
-        also available for networking and reviewing my technical work.
+        also available for professional networking and reviewing my technical
+        work.
       </p>
 
       <div className="mt-8 space-y-4">
         {methods.map((method) => {
           const Icon = method.icon;
+          const external = method.href.startsWith("http");
 
           return (
             <a
               key={method.title}
               href={method.href}
-              target={
-                method.href.startsWith("http")
-                  ? "_blank"
-                  : undefined
-              }
-              rel={
-                method.href.startsWith("http")
-                  ? "noopener noreferrer"
-                  : undefined
-              }
+              target={external ? "_blank" : undefined}
+              rel={external ? "noopener noreferrer" : undefined}
               className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-5 transition hover:border-green-400/50"
             >
               <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-400/10 text-green-300">
-                <Icon size={22} />
+                <Icon size={22} aria-hidden="true" />
               </div>
 
               <div className="min-w-0">
@@ -81,11 +75,12 @@ export default function ContactMethods() {
         })}
       </div>
 
-      <div className="mt-8 space-y-4 rounded-2xl border border-white/10 bg-black/10 p-6">
+      <div className="mt-8 space-y-5 rounded-2xl border border-white/10 bg-black/10 p-6">
         <div className="flex gap-3">
           <MapPin
             size={20}
             className="mt-0.5 shrink-0 text-green-400"
+            aria-hidden="true"
           />
 
           <div>
@@ -94,7 +89,7 @@ export default function ContactMethods() {
             </p>
 
             <p className="mt-1 text-gray-400">
-              United Kingdom
+              London, United Kingdom
             </p>
           </div>
         </div>
@@ -103,6 +98,7 @@ export default function ContactMethods() {
           <Clock3
             size={20}
             className="mt-0.5 shrink-0 text-green-400"
+            aria-hidden="true"
           />
 
           <div>

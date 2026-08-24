@@ -1,15 +1,13 @@
 "use client";
 
 import Script from "next/script";
+import type { FormEvent } from "react";
 import {
-  FormEvent,
   useEffect,
   useRef,
   useState,
 } from "react";
-import {
-  Send,
-} from "lucide-react";
+import { Send } from "lucide-react";
 
 interface FormData {
   name: string;
@@ -25,21 +23,14 @@ interface TurnstileApi {
       sitekey: string;
       theme?: "light" | "dark" | "auto";
       size?: "normal" | "compact" | "flexible";
-      callback?: (
-        token: string,
-      ) => void;
+      callback?: (token: string) => void;
       "expired-callback"?: () => void;
       "error-callback"?: () => void;
     },
   ) => string;
 
-  reset: (
-    widgetId?: string,
-  ) => void;
-
-  remove: (
-    widgetId: string,
-  ) => void;
+  reset: (widgetId?: string) => void;
+  remove: (widgetId: string) => void;
 }
 
 declare global {
@@ -56,78 +47,38 @@ const initialFormData: FormData = {
 };
 
 export default function ContactForm() {
-  const [
-    formData,
-    setFormData,
-  ] =
-    useState(
-      initialFormData,
-    );
-
-  const [
-    error,
-    setError,
-  ] =
-    useState("");
-
-  const [
-    submitted,
-    setSubmitted,
-  ] =
-    useState(false);
-
-  const [
-    submitting,
-    setSubmitting,
-  ] =
-    useState(false);
-
-  const [
-    turnstileToken,
-    setTurnstileToken,
-  ] =
-    useState("");
-
-  const [
-    turnstileReady,
-    setTurnstileReady,
-  ] =
-    useState(false);
+  const [formData, setFormData] =
+    useState<FormData>(initialFormData);
+  const [error, setError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileReady, setTurnstileReady] = useState(false);
 
   const turnstileContainerRef =
-    useRef<HTMLDivElement | null>(
-      null,
-    );
-
-  const widgetIdRef =
-    useRef<string | null>(
-      null,
-    );
+    useRef<HTMLDivElement | null>(null);
+  const widgetIdRef = useRef<string | null>(null);
 
   const siteKey =
-    process.env
-      .NEXT_PUBLIC_TURNSTILE_SITE_KEY ??
-    "";
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
   const updateField = (
-    field:
-      keyof FormData,
+    field: keyof FormData,
     value: string,
   ) => {
-    setFormData(
-      (
-        current,
-      ) => ({
-        ...current,
-        [field]:
-          value,
-      }),
-    );
-  };
+    setFormData((current) => ({
+      ...current,
+      [field]: value,
+    }));
 
-  // --------------------------------------------------
-  // RENDER TURNSTILE
-  // --------------------------------------------------
+    if (error) {
+      setError("");
+    }
+
+    if (submitted) {
+      setSubmitted(false);
+    }
+  };
 
   useEffect(() => {
     if (
@@ -140,234 +91,151 @@ export default function ContactForm() {
       return;
     }
 
-    widgetIdRef.current =
-      window.turnstile.render(
-        turnstileContainerRef.current,
-        {
-          sitekey:
-            siteKey,
+    widgetIdRef.current = window.turnstile.render(
+      turnstileContainerRef.current,
+      {
+        sitekey: siteKey,
+        theme: "dark",
+        size: "flexible",
 
-          theme:
-            "dark",
-
-          size:
-            "flexible",
-
-          callback: (
-            token,
-          ) => {
-            setTurnstileToken(
-              token,
-            );
-
-            setError("");
-          },
-
-          "expired-callback":
-            () => {
-              setTurnstileToken(
-                "",
-              );
-            },
-
-          "error-callback":
-            () => {
-              setTurnstileToken(
-                "",
-              );
-
-              setError(
-                "Human verification could not be completed. Please try again.",
-              );
-            },
+        callback: (token) => {
+          setTurnstileToken(token);
+          setError("");
         },
-      );
+
+        "expired-callback": () => {
+          setTurnstileToken("");
+          setError(
+            "Human verification expired. Please complete it again.",
+          );
+        },
+
+        "error-callback": () => {
+          setTurnstileToken("");
+          setError(
+            "Human verification could not be completed. Please try again.",
+          );
+        },
+      },
+    );
 
     return () => {
       if (
         widgetIdRef.current &&
         window.turnstile
       ) {
-        window.turnstile.remove(
-          widgetIdRef.current,
-        );
-
-        widgetIdRef.current =
-          null;
+        window.turnstile.remove(widgetIdRef.current);
+        widgetIdRef.current = null;
       }
     };
-  }, [
-    siteKey,
-    turnstileReady,
-  ]);
+  }, [siteKey, turnstileReady]);
 
-  // --------------------------------------------------
-  // RESET TURNSTILE
-  // --------------------------------------------------
+  const resetTurnstile = () => {
+    setTurnstileToken("");
 
-  const resetTurnstile =
-    () => {
-      setTurnstileToken(
-        "",
+    if (
+      widgetIdRef.current &&
+      window.turnstile
+    ) {
+      window.turnstile.reset(widgetIdRef.current);
+    }
+  };
+
+  const handleSubmit = async (
+    event: FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+
+    setError("");
+    setSubmitted(false);
+
+    const name = formData.name.trim();
+    const email = formData.email.trim();
+    const subject = formData.subject.trim();
+    const message = formData.message.trim();
+
+    if (!name || !email || !subject || !message) {
+      setError("Please complete every field.");
+      return;
+    }
+
+    if (name.length < 2) {
+      setError("Please enter your name.");
+      return;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (subject.length < 3) {
+      setError("Please enter a more descriptive subject.");
+      return;
+    }
+
+    if (message.length < 10) {
+      setError(
+        "Please provide a little more information in your message.",
+      );
+      return;
+    }
+
+    if (!turnstileToken) {
+      setError(
+        "Please complete the human verification before sending your message.",
+      );
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          subject,
+          message,
+          turnstileToken,
+        }),
+      });
+
+      const result = (await response.json()) as {
+        success?: boolean;
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ?? "The message could not be sent.",
+        );
+      }
+
+      setSubmitted(true);
+      setFormData(initialFormData);
+      resetTurnstile();
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "The message could not be sent.",
       );
 
-      if (
-        widgetIdRef.current &&
-        window.turnstile
-      ) {
-        window.turnstile.reset(
-          widgetIdRef.current,
-        );
-      }
-    };
-
-  // --------------------------------------------------
-  // SUBMIT
-  // --------------------------------------------------
-
-  const handleSubmit =
-    async (
-      event:
-        FormEvent,
-    ) => {
-      event.preventDefault();
-
-      setError("");
-      setSubmitted(
-        false,
-      );
-
-      const {
-        name,
-        email,
-        subject,
-        message,
-      } =
-        formData;
-
-      if (
-        !name.trim() ||
-        !email.trim() ||
-        !subject.trim() ||
-        !message.trim()
-      ) {
-        setError(
-          "Please complete every field.",
-        );
-
-        return;
-      }
-
-      const emailPattern =
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-      if (
-        !emailPattern.test(
-          email.trim(),
-        )
-      ) {
-        setError(
-          "Please enter a valid email address.",
-        );
-
-        return;
-      }
-
-      if (
-        !turnstileToken
-      ) {
-        setError(
-          "Please complete the human verification before sending your message.",
-        );
-
-        return;
-      }
-
-      try {
-        setSubmitting(
-          true,
-        );
-
-        const response =
-          await fetch(
-            "/api/contact",
-            {
-              method:
-                "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-
-              body:
-                JSON.stringify(
-                  {
-                    name:
-                      name.trim(),
-
-                    email:
-                      email.trim(),
-
-                    subject:
-                      subject.trim(),
-
-                    message:
-                      message.trim(),
-
-                    turnstileToken,
-                  },
-                ),
-            },
-          );
-
-        const result =
-          (await response.json()) as {
-            success?:
-              boolean;
-
-            error?:
-              string;
-          };
-
-        if (
-          !response.ok
-        ) {
-          throw new Error(
-            result.error ??
-              "The message could not be sent.",
-          );
-        }
-
-        setSubmitted(
-          true,
-        );
-
-        setFormData(
-          initialFormData,
-        );
-
-        resetTurnstile();
-      } catch (
-        caughtError
-      ) {
-        setError(
-          caughtError instanceof
-            Error
-            ? caughtError.message
-            : "The message could not be sent.",
-        );
-
-        resetTurnstile();
-      } finally {
-        setSubmitting(
-          false,
-        );
-      }
-    };
+      resetTurnstile();
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const inputStyles =
-    "mt-2 w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400 disabled:cursor-not-allowed disabled:opacity-60";
+    "mt-2 w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400 focus:ring-1 focus:ring-green-400/30 disabled:cursor-not-allowed disabled:opacity-60";
 
   return (
     <div>
@@ -386,172 +254,149 @@ export default function ContactForm() {
       <Script
         src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
         strategy="afterInteractive"
-        onLoad={() => {
-          setTurnstileReady(
-            true,
+        onReady={() => {
+          setTurnstileReady(true);
+        }}
+        onError={() => {
+          setTurnstileReady(false);
+          setError(
+            "Human verification could not be loaded. Please refresh the page and try again.",
           );
         }}
       />
 
       <form
-        onSubmit={
-          handleSubmit
-        }
+        onSubmit={handleSubmit}
         className="mt-8 space-y-6"
+        aria-busy={submitting}
         noValidate
       >
         <div className="grid gap-6 md:grid-cols-2">
-          <label className="text-sm font-medium text-gray-300">
+          <label
+            htmlFor="contact-name"
+            className="text-sm font-medium text-gray-300"
+          >
             Name
 
             <input
+              id="contact-name"
+              name="name"
               type="text"
-              value={
-                formData.name
-              }
-              onChange={(
-                event,
-              ) =>
-                updateField(
-                  "name",
-                  event.target
-                    .value,
-                )
+              value={formData.name}
+              onChange={(event) =>
+                updateField("name", event.target.value)
               }
               placeholder="Your name"
-              className={
-                inputStyles
-              }
+              className={inputStyles}
               autoComplete="name"
-              maxLength={
-                100
-              }
-              disabled={
-                submitting
-              }
+              minLength={2}
+              maxLength={100}
+              required
+              disabled={submitting}
             />
           </label>
 
-          <label className="text-sm font-medium text-gray-300">
-            Email
+          <label
+            htmlFor="contact-email"
+            className="text-sm font-medium text-gray-300"
+          >
+            Email address
 
             <input
+              id="contact-email"
+              name="email"
               type="email"
-              value={
-                formData.email
-              }
-              onChange={(
-                event,
-              ) =>
-                updateField(
-                  "email",
-                  event.target
-                    .value,
-                )
+              value={formData.email}
+              onChange={(event) =>
+                updateField("email", event.target.value)
               }
               placeholder="you@example.com"
-              className={
-                inputStyles
-              }
+              className={inputStyles}
               autoComplete="email"
-              maxLength={
-                254
-              }
-              disabled={
-                submitting
-              }
+              inputMode="email"
+              maxLength={254}
+              required
+              disabled={submitting}
             />
           </label>
         </div>
 
-        <label className="block text-sm font-medium text-gray-300">
+        <label
+          htmlFor="contact-subject"
+          className="block text-sm font-medium text-gray-300"
+        >
           Subject
 
           <input
+            id="contact-subject"
+            name="subject"
             type="text"
-            value={
-              formData.subject
-            }
-            onChange={(
-              event,
-            ) =>
-              updateField(
-                "subject",
-                event.target
-                  .value,
-              )
+            value={formData.subject}
+            onChange={(event) =>
+              updateField("subject", event.target.value)
             }
             placeholder="What would you like to discuss?"
-            className={
-              inputStyles
-            }
-            maxLength={
-              150
-            }
-            disabled={
-              submitting
-            }
+            className={inputStyles}
+            minLength={3}
+            maxLength={150}
+            required
+            disabled={submitting}
           />
         </label>
 
-        <label className="block text-sm font-medium text-gray-300">
+        <label
+          htmlFor="contact-message"
+          className="block text-sm font-medium text-gray-300"
+        >
           Message
 
           <textarea
-            value={
-              formData.message
+            id="contact-message"
+            name="message"
+            value={formData.message}
+            onChange={(event) =>
+              updateField("message", event.target.value)
             }
-            onChange={(
-              event,
-            ) =>
-              updateField(
-                "message",
-                event.target
-                  .value,
-              )
-            }
-            placeholder="Write your message here..."
-            rows={
-              7
-            }
+            placeholder="Tell me about the opportunity, project, or reason for getting in touch."
+            rows={8}
             className={`${inputStyles} resize-y`}
-            maxLength={
-              5000
-            }
-            disabled={
-              submitting
-            }
+            minLength={10}
+            maxLength={5000}
+            required
+            disabled={submitting}
           />
         </label>
 
-        {/* TURNSTILE */}
+        <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+          <div className="flex flex-col gap-3">
+            <div>
+              <p className="text-sm font-medium text-white">
+                Security verification
+              </p>
 
-<div className="rounded-2xl border border-white/10 bg-black/10 p-4">
-  <div className="flex flex-col gap-3">
-    <div>
-      <p className="text-sm font-medium text-white">
-        Security verification
-      </p>
+              <p className="mt-1 text-xs leading-5 text-gray-500">
+                Protected by Cloudflare Turnstile to help prevent automated
+                spam.
+              </p>
+            </div>
 
-      <p className="mt-1 text-xs leading-5 text-gray-500">
-        Protected by Cloudflare Turnstile to help prevent automated spam.
-      </p>
-    </div>
-
-    {!siteKey ? (
-      <p className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-300">
-        Human verification is not configured.
-      </p>
-    ) : (
-      <div className="flex justify-center overflow-hidden rounded-xl">
-        <div
-          ref={turnstileContainerRef}
-          className="w-full max-w-[420px]"
-        />
-      </div>
-    )}
-  </div>
-</div>
+            {!siteKey ? (
+              <p
+                role="alert"
+                className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-300"
+              >
+                Human verification is not configured.
+              </p>
+            ) : (
+              <div className="flex justify-center overflow-hidden rounded-xl">
+                <div
+                  ref={turnstileContainerRef}
+                  className="w-full max-w-[420px]"
+                />
+              </div>
+            )}
+          </div>
+        </div>
 
         {error && (
           <p
@@ -563,32 +408,33 @@ export default function ContactForm() {
         )}
 
         {submitted && (
-          <p
+          <div
             role="status"
-            className="rounded-xl border border-green-400/20 bg-green-400/10 px-4 py-3 text-sm text-green-300"
+            className="rounded-xl border border-green-400/20 bg-green-400/10 px-4 py-4 text-sm text-green-300"
           >
-            Your message has been sent successfully. I&apos;ll respond as soon
-            as possible.
-          </p>
+            <p className="font-medium">
+              Your message has been sent successfully.
+            </p>
+
+            <p className="mt-1 text-green-200/80">
+              Thank you for getting in touch. I&apos;ll respond as soon as
+              possible.
+            </p>
+          </div>
         )}
 
         <button
           type="submit"
           disabled={
             submitting ||
-            !siteKey
+            !siteKey ||
+            !turnstileToken
           }
           className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-6 py-3 font-medium text-black transition hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitting
-            ? "Sending..."
-            : "Send Message"}
+          {submitting ? "Sending..." : "Send Message"}
 
-          <Send
-            size={
-              18
-            }
-          />
+          <Send size={18} aria-hidden="true" />
         </button>
       </form>
     </div>

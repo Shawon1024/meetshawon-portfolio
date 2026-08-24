@@ -1,9 +1,5 @@
-import {
-  NextResponse,
-} from "next/server";
-import {
-  Resend,
-} from "resend";
+import { NextResponse } from "next/server";
+import { Resend } from "resend";
 
 interface ContactRequest {
   name?: string;
@@ -20,71 +16,33 @@ interface TurnstileResponse {
   "error-codes"?: string[];
 }
 
-function escapeHtml(
-  value: string,
-) {
+function escapeHtml(value: string) {
   return value
-    .replaceAll(
-      "&",
-      "&amp;",
-    )
-    .replaceAll(
-      "<",
-      "&lt;",
-    )
-    .replaceAll(
-      ">",
-      "&gt;",
-    )
-    .replaceAll(
-      '"',
-      "&quot;",
-    )
-    .replaceAll(
-      "'",
-      "&#039;",
-    );
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function jsonResponse(
-  body: Record<
-    string,
-    unknown
-  >,
+  body: Record<string, unknown>,
   status: number,
 ) {
-  return NextResponse.json(
-    body,
-    {
-      status,
-
-      headers: {
-        "Cache-Control":
-          "no-store",
-      },
+  return NextResponse.json(body, {
+    status,
+    headers: {
+      "Cache-Control": "no-store",
     },
-  );
+  });
 }
 
-export async function POST(
-  request: Request,
-) {
+export async function POST(request: Request) {
   try {
-    // --------------------------------------------------
-    // ENVIRONMENT
-    // --------------------------------------------------
-
-    const resendApiKey =
-      process.env
-        .RESEND_API_KEY;
-
-    const destination =
-      process.env
-        .CONTACT_EMAIL;
-
+    const resendApiKey = process.env.RESEND_API_KEY;
+    const destination = process.env.CONTACT_EMAIL;
     const turnstileSecret =
-      process.env
-        .TURNSTILE_SECRET_KEY;
+      process.env.TURNSTILE_SECRET_KEY;
 
     if (
       !resendApiKey ||
@@ -104,37 +62,26 @@ export async function POST(
       );
     }
 
-    // --------------------------------------------------
-    // PARSE REQUEST
-    // --------------------------------------------------
+    let body: ContactRequest;
 
-    const body =
-      (await request.json()) as
-        ContactRequest;
+    try {
+      body = (await request.json()) as ContactRequest;
+    } catch {
+      return jsonResponse(
+        {
+          error: "The submitted request is invalid.",
+        },
+        400,
+      );
+    }
 
-    const name =
-      body.name?.trim() ??
-      "";
-
+    const name = body.name?.trim() ?? "";
     const email =
-      body.email?.trim() ??
-      "";
-
-    const subject =
-      body.subject?.trim() ??
-      "";
-
-    const message =
-      body.message?.trim() ??
-      "";
-
+      body.email?.trim().toLowerCase() ?? "";
+    const subject = body.subject?.trim() ?? "";
+    const message = body.message?.trim() ?? "";
     const turnstileToken =
-      body.turnstileToken?.trim() ??
-      "";
-
-    // --------------------------------------------------
-    // REQUIRED FIELDS
-    // --------------------------------------------------
+      body.turnstileToken?.trim() ?? "";
 
     if (
       !name ||
@@ -152,127 +99,75 @@ export async function POST(
       );
     }
 
-    // --------------------------------------------------
-    // INPUT LENGTHS
-    // --------------------------------------------------
-
     if (
-      name.length >
-        100 ||
-      email.length >
-        254 ||
-      subject.length >
-        150 ||
-      message.length >
-        5000 ||
-      turnstileToken.length >
-        2048
+      name.length > 100 ||
+      email.length > 254 ||
+      subject.length > 150 ||
+      message.length > 5000 ||
+      turnstileToken.length > 2048
     ) {
       return jsonResponse(
         {
-          error:
-            "One or more fields are invalid.",
+          error: "One or more fields are invalid.",
         },
         400,
       );
     }
-
-    // --------------------------------------------------
-    // EMAIL FORMAT
-    // --------------------------------------------------
 
     const emailPattern =
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (
-      !emailPattern.test(
-        email,
-      )
-    ) {
+    if (!emailPattern.test(email)) {
       return jsonResponse(
         {
-          error:
-            "Please enter a valid email address.",
+          error: "Please enter a valid email address.",
         },
         400,
       );
     }
 
-    // --------------------------------------------------
-    // TURNSTILE VALIDATION
-    // --------------------------------------------------
-
     const forwardedFor =
-      request.headers.get(
-        "x-forwarded-for",
-      );
+      request.headers.get("x-forwarded-for");
 
-    const remoteIp =
-      forwardedFor
-        ?.split(",")[0]
-        ?.trim();
+    const remoteIp = forwardedFor
+      ?.split(",")[0]
+      ?.trim();
 
-    const verificationBody =
-      new URLSearchParams({
-        secret:
-          turnstileSecret,
+    const verificationBody = new URLSearchParams({
+      secret: turnstileSecret,
+      response: turnstileToken,
+    });
 
-        response:
-          turnstileToken,
-      });
-
-    if (
-      remoteIp
-    ) {
-      verificationBody.set(
-        "remoteip",
-        remoteIp,
-      );
+    if (remoteIp) {
+      verificationBody.set("remoteip", remoteIp);
     }
 
-    let turnstileResult:
-      TurnstileResponse;
+    let turnstileResult: TurnstileResponse;
 
     try {
-      const verificationResponse =
-        await fetch(
-          "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-          {
-            method:
-              "POST",
-
-            headers: {
-              "Content-Type":
-                "application/x-www-form-urlencoded",
-            },
-
-            body:
-              verificationBody,
-
-            cache:
-              "no-store",
-
-            signal:
-              AbortSignal.timeout(
-                10_000,
-              ),
+      const verificationResponse = await fetch(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/x-www-form-urlencoded",
           },
-        );
+          body: verificationBody,
+          cache: "no-store",
+          signal: AbortSignal.timeout(10_000),
+        },
+      );
 
-      if (
-        !verificationResponse.ok
-      ) {
+      if (!verificationResponse.ok) {
         throw new Error(
           `Turnstile verification returned ${verificationResponse.status}`,
         );
       }
 
       turnstileResult =
-        (await verificationResponse.json()) as
-          TurnstileResponse;
-    } catch (
-      verificationError
-    ) {
+        (await verificationResponse.json()) as TurnstileResponse;
+    } catch (verificationError) {
       console.error(
         "Turnstile verification request failed:",
         verificationError,
@@ -287,38 +182,22 @@ export async function POST(
       );
     }
 
-    // --------------------------------------------------
-    // VERIFY RESULT + HOSTNAME
-    // --------------------------------------------------
-
-    const allowedHostnames =
-      new Set([
-        "meetshawon.com",
-        "www.meetshawon.com",
-        "localhost",
-      ]);
+    const allowedHostnames = new Set([
+      "meetshawon.com",
+      "www.meetshawon.com",
+      "localhost",
+    ]);
 
     if (
       !turnstileResult.success ||
       !turnstileResult.hostname ||
-      !allowedHostnames.has(
-        turnstileResult.hostname,
-      )
+      !allowedHostnames.has(turnstileResult.hostname)
     ) {
-      console.warn(
-        "Turnstile validation rejected.",
-        {
-          hostname:
-            turnstileResult.hostname ??
-            null,
-
-          errorCodes:
-            turnstileResult[
-              "error-codes"
-            ] ??
-            [],
-        },
-      );
+      console.warn("Turnstile validation rejected.", {
+        hostname: turnstileResult.hostname ?? null,
+        errorCodes:
+          turnstileResult["error-codes"] ?? [],
+      });
 
       return jsonResponse(
         {
@@ -329,90 +208,301 @@ export async function POST(
       );
     }
 
-    // --------------------------------------------------
-    // ESCAPE USER CONTENT
-    // --------------------------------------------------
+    const cleanSubject = subject
+      .replace(/[\r\n]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
 
-    const safeName =
-      escapeHtml(
-        name,
-      );
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeSubject = escapeHtml(cleanSubject);
+    const safeMessage = escapeHtml(message).replaceAll(
+      "\n",
+      "<br />",
+    );
 
-    const safeEmail =
-      escapeHtml(
-        email,
-      );
+    const receivedAt = new Intl.DateTimeFormat(
+      "en-GB",
+      {
+        dateStyle: "full",
+        timeStyle: "short",
+        timeZone: "Europe/London",
+      },
+    ).format(new Date());
 
-    const safeSubject =
-      escapeHtml(
-        subject,
-      );
+    const replyUrl = escapeHtml(
+      `mailto:${email}?subject=${encodeURIComponent(
+        `Re: ${cleanSubject}`,
+      )}`,
+    );
 
-    const safeMessage =
-      escapeHtml(
+    const resend = new Resend(resendApiKey);
+
+    const { error } = await resend.emails.send({
+      from:
+        "Meet Shawon Portfolio <contact@meetshawon.com>",
+      to: [destination],
+      subject: `Meet Shawon: ${cleanSubject}`,
+
+      text: [
+        "New contact form message",
+        "",
+        "Message:",
         message,
-      ).replaceAll(
-        "\n",
-        "<br />",
-      );
+        "",
+        "Name:",
+        name,
+        "",
+        "Email:",
+        email,
+        "",
+        `Received: ${receivedAt}`,
+        "Source: https://meetshawon.com/contact",
+      ].join("\n"),
 
-    // --------------------------------------------------
-    // RESEND
-    // --------------------------------------------------
+      html: `
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width" />
+            <title>New contact form message</title>
+          </head>
 
-    const resend =
-      new Resend(
-        resendApiKey,
-      );
-
-    const {
-      data,
-      error,
-    } =
-      await resend.emails.send(
-        {
-          from:
-            "Meet Shawon <contact@meetshawon.com>",
-
-          to: [
-            destination,
-          ],
-
-          replyTo:
-            email,
-
-          subject:
-            `Portfolio enquiry: ${subject}`,
-
-          html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-              <h2>New portfolio contact message</h2>
-
-              <p><strong>Name:</strong> ${safeName}</p>
-              <p><strong>Email:</strong> ${safeEmail}</p>
-              <p><strong>Subject:</strong> ${safeSubject}</p>
-
-              <hr />
-
-              <p><strong>Message:</strong></p>
-              <p>${safeMessage}</p>
+          <body
+            style="
+              margin:0;
+              padding:0;
+              background:#041c18;
+              color:#e5e7eb;
+            "
+          >
+            <div
+              style="
+                display:none;
+                max-height:0;
+                overflow:hidden;
+                opacity:0;
+              "
+            >
+              New message from ${safeName}: ${safeSubject}
             </div>
-          `,
-        },
-      );
 
-    if (
-      error
-    ) {
-      console.error(
-        "Resend error:",
-        error,
-      );
+            <table
+              role="presentation"
+              width="100%"
+              cellspacing="0"
+              cellpadding="0"
+              border="0"
+              style="
+                width:100%;
+                background:#041c18;
+                font-family:Arial,Helvetica,sans-serif;
+              "
+            >
+              <tr>
+                <td
+                  align="center"
+                  style="padding:32px 16px;"
+                >
+                  <table
+                    role="presentation"
+                    width="100%"
+                    cellspacing="0"
+                    cellpadding="0"
+                    border="0"
+                    style="
+                      width:100%;
+                      max-width:640px;
+                      overflow:hidden;
+                      border:1px solid #1f3b35;
+                      border-radius:20px;
+                      background:#092923;
+                    "
+                  >
+                    <tr>
+                      <td
+                        style="
+                          padding:30px;
+                          border-bottom:1px solid #1f3b35;
+                          background:#06352b;
+                        "
+                      >
+                        <p
+                          style="
+                            margin:0 0 10px;
+                            color:#4ade80;
+                            font-size:12px;
+                            font-weight:700;
+                            letter-spacing:2px;
+                            text-transform:uppercase;
+                          "
+                        >
+                          Meet Shawon
+                        </p>
+
+                        <h1
+                          style="
+                            margin:0;
+                            color:#ffffff;
+                            font-size:26px;
+                            line-height:1.3;
+                          "
+                        >
+                          New contact form message
+                        </h1>
+
+                        <p
+                          style="
+                            margin:10px 0 0;
+                            color:#a7b7b2;
+                            font-size:15px;
+                            line-height:1.6;
+                          "
+                        >
+                          ${safeSubject}
+                        </p>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td style="padding:30px;">
+                        <p
+                          style="
+                            margin:0 0 10px;
+                            color:#7f9b92;
+                            font-size:12px;
+                            font-weight:700;
+                            letter-spacing:1px;
+                            text-transform:uppercase;
+                          "
+                        >
+                          Message
+                        </p>
+
+                        <div
+                          style="
+                            padding:18px;
+                            border-left:3px solid #22c55e;
+                            border-radius:8px;
+                            background:#061f1a;
+                            color:#d1d5db;
+                            font-size:15px;
+                            line-height:1.8;
+                          "
+                        >
+                          ${safeMessage}
+                        </div>
+
+                        <p
+                          style="
+                            margin:24px 0 6px;
+                            color:#7f9b92;
+                            font-size:12px;
+                            font-weight:700;
+                            letter-spacing:1px;
+                            text-transform:uppercase;
+                          "
+                        >
+                          Name
+                        </p>
+
+                        <p
+                          style="
+                            margin:0;
+                            color:#ffffff;
+                            font-size:16px;
+                            font-weight:700;
+                          "
+                        >
+                          ${safeName}
+                        </p>
+
+                        <p
+                          style="
+                            margin:20px 0 6px;
+                            color:#7f9b92;
+                            font-size:12px;
+                            font-weight:700;
+                            letter-spacing:1px;
+                            text-transform:uppercase;
+                          "
+                        >
+                          Email
+                        </p>
+
+                        <p
+                          style="
+                            margin:0;
+                            color:#4ade80;
+                            font-size:15px;
+                          "
+                        >
+                          ${safeEmail}
+                        </p>
+
+                        <table
+                          role="presentation"
+                          cellspacing="0"
+                          cellpadding="0"
+                          border="0"
+                          style="margin-top:26px;"
+                        >
+                          <tr>
+                            <td
+                              style="
+                                border-radius:10px;
+                                background:#22c55e;
+                              "
+                            >
+                              <a
+                                href="${replyUrl}"
+                                style="
+                                  display:inline-block;
+                                  padding:13px 20px;
+                                  color:#03120e;
+                                  font-size:14px;
+                                  font-weight:700;
+                                  text-decoration:none;
+                                "
+                              >
+                                Reply to ${safeName}
+                              </a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td
+                        style="
+                          padding:20px 30px;
+                          border-top:1px solid #1f3b35;
+                          color:#7f9b92;
+                          font-size:12px;
+                          line-height:1.7;
+                        "
+                      >
+                        Received: ${receivedAt}<br />
+                        Source: meetshawon.com/contact
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error("Resend error:", error);
 
       return jsonResponse(
         {
-          error:
-            "The message could not be sent.",
+          error: "The message could not be sent.",
         },
         500,
       );
@@ -420,26 +510,16 @@ export async function POST(
 
     return jsonResponse(
       {
-        success:
-          true,
-
-        id:
-          data?.id,
+        success: true,
       },
       200,
     );
-  } catch (
-    error
-  ) {
-    console.error(
-      "Contact route error:",
-      error,
-    );
+  } catch (error) {
+    console.error("Contact route error:", error);
 
     return jsonResponse(
       {
-        error:
-          "An unexpected error occurred.",
+        error: "An unexpected error occurred.",
       },
       500,
     );
