@@ -41,7 +41,9 @@ export default async function AdminPage() {
   } = await supabase
     .from("profiles")
     .select(`
-      display_name,
+      first_name,
+      last_name,
+      username,
       role,
       verified
     `)
@@ -212,7 +214,9 @@ export default async function AdminPage() {
       content,
       created_at,
       profile:profiles (
-        display_name,
+        first_name,
+        last_name,
+        username,
         verified
       ),
       post:posts (
@@ -271,16 +275,17 @@ export default async function AdminPage() {
   // RELATIONSHIP HELPERS
   // --------------------------------------------------
 
+  interface RelatedProfile {
+    first_name: string | null;
+    last_name: string | null;
+    username: string | null;
+    verified: boolean;
+  }
+
   const getProfile = (
     profile:
-      | {
-          display_name: string | null;
-          verified: boolean;
-        }
-      | {
-          display_name: string | null;
-          verified: boolean;
-        }[]
+      | RelatedProfile
+      | RelatedProfile[]
       | null,
   ) => {
     return Array.isArray(profile)
@@ -304,6 +309,16 @@ export default async function AdminPage() {
       ? post[0]
       : post;
   };
+
+  const administratorName =
+    [
+      profile?.first_name?.trim(),
+      profile?.last_name?.trim(),
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    profile?.username ||
+    "";
 
   // --------------------------------------------------
   // PAGE
@@ -339,8 +354,8 @@ export default async function AdminPage() {
 
           <p className="mt-4 max-w-2xl leading-7 text-gray-400">
             Welcome back
-            {profile?.display_name
-              ? `, ${profile.display_name}`
+            {administratorName
+              ? `, ${administratorName}`
               : ""}
             . Manage your blog, users, comments, reactions, analytics, and
             publishing activity from one place.
@@ -723,6 +738,21 @@ export default async function AdminPage() {
                           comment.post,
                         );
 
+                      const commenterName =
+                        [
+                          commentProfile?.first_name?.trim(),
+                          commentProfile?.last_name?.trim(),
+                        ]
+                          .filter(Boolean)
+                          .join(" ") ||
+                        commentProfile?.username ||
+                        "User";
+
+                      const commenterUsername =
+                        commentProfile?.username
+                          ? `@${commentProfile.username}`
+                          : null;
+
                       return (
                         <div
                           key={
@@ -731,11 +761,17 @@ export default async function AdminPage() {
                           className="rounded-xl border border-white/10 bg-black/10 p-4"
                         >
                           <div className="flex flex-wrap items-center gap-1.5">
-                            <p className="text-sm font-medium text-white">
-                              {commentProfile
-                                ?.display_name ??
-                                "User"}
-                            </p>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium text-white">
+                                {commenterName}
+                              </p>
+
+                              {commenterUsername && (
+                                <p className="mt-0.5 truncate text-xs text-gray-500">
+                                  {commenterUsername}
+                                </p>
+                              )}
+                            </div>
 
                             {commentProfile
                               ?.verified && (

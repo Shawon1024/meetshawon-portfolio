@@ -20,7 +20,8 @@ import { createClient } from "../../lib/supabase/client";
 
 interface UserProfile {
   id: string;
-  display_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   username: string | null;
   avatar_url: string | null;
   role: string | null;
@@ -63,6 +64,40 @@ interface PendingRoleChange {
 interface PendingVerificationChange {
   user: UserProfile;
   nextVerified: boolean;
+}
+
+function getFullName(
+  user: UserProfile,
+) {
+  return (
+    [
+      user.first_name?.trim(),
+      user.last_name?.trim(),
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    "Name unavailable"
+  );
+}
+
+function getUsernameLabel(
+  user: UserProfile,
+) {
+  return user.username
+    ? `@${user.username}`
+    : "Username unavailable";
+}
+
+function getUserIdentity(
+  user: UserProfile,
+) {
+  const fullName =
+    getFullName(user);
+
+  const username =
+    getUsernameLabel(user);
+
+  return `${fullName} (${username})`;
 }
 
 export default function UserManagementManager({
@@ -121,10 +156,18 @@ export default function UserManagementManager({
 
       return users.filter(
         (user) => {
-          const name =
-            user.display_name
+          const firstName =
+            user.first_name
               ?.toLowerCase() ??
             "";
+
+          const lastName =
+            user.last_name
+              ?.toLowerCase() ??
+            "";
+
+          const fullName =
+            `${firstName} ${lastName}`.trim();
 
           const username =
             user.username
@@ -138,7 +181,9 @@ export default function UserManagementManager({
 
           const matchesSearch =
             !query ||
-            name.includes(query) ||
+            firstName.includes(query) ||
+            lastName.includes(query) ||
+            fullName.includes(query) ||
             username.includes(query) ||
             role.includes(query);
 
@@ -576,7 +621,7 @@ export default function UserManagementManager({
                 event.target.value,
               )
             }
-            placeholder="Search users..."
+            placeholder="Search by name, username, or role..."
             className="w-full rounded-xl border border-white/10 bg-black/10 py-3 pl-11 pr-4 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400"
           />
         </div>
@@ -689,10 +734,11 @@ export default function UserManagementManager({
         <div className="space-y-4">
           {filteredUsers.map(
             (user) => {
-              const name =
-                user.display_name ??
-                user.username ??
-                "Unnamed User";
+              const fullName =
+                getFullName(user);
+
+              const username =
+                getUsernameLabel(user);
 
               const working =
                 workingUserId ===
@@ -728,11 +774,12 @@ export default function UserManagementManager({
                         />
                       ) : (
                         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-400/10 font-semibold text-green-300">
-                          {name
-                            .charAt(
-                              0,
-                            )
-                            .toUpperCase()}
+                          {(
+                            user.first_name?.charAt(0) ||
+                            user.last_name?.charAt(0) ||
+                            user.username?.charAt(0) ||
+                            "?"
+                          ).toUpperCase()}
                         </div>
                       )}
 
@@ -741,9 +788,7 @@ export default function UserManagementManager({
 
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="font-medium text-white">
-                            {
-                              name
-                            }
+                            {fullName}
                           </p>
 
                           {user.verified && (
@@ -768,11 +813,9 @@ export default function UserManagementManager({
                           )}
                         </div>
 
-                        {user.username && (
-                          <p className="mt-1 text-sm text-gray-500">
-                            @{user.username}
-                          </p>
-                        )}
+                        <p className="mt-1 text-sm text-gray-500">
+                          {username}
+                        </p>
 
                         {/* Status */}
 
@@ -822,7 +865,7 @@ export default function UserManagementManager({
                             );
                           }}
                           className="cursor-pointer rounded-xl border border-white/10 bg-[#102A2A] px-4 py-2.5 text-sm text-white outline-none transition focus:border-green-400/40 disabled:cursor-not-allowed disabled:opacity-50"
-                          aria-label={`Change role for ${name}`}
+                          aria-label={`Change role for ${getUserIdentity(user)}`}
                           title={
                             isYou
                               ? "You cannot change your own admin role here."
@@ -961,9 +1004,9 @@ export default function UserManagementManager({
                     : "remove verification from"}
                 </span>{" "}
                 <span className="font-medium text-white">
-                  {pendingVerificationChange.user.display_name ??
-                    pendingVerificationChange.user.username ??
-                    "this user"}
+                  {getUserIdentity(
+                    pendingVerificationChange.user,
+                  )}
                 </span>
                 .
               </p>
@@ -1074,9 +1117,9 @@ export default function UserManagementManager({
               <p className="mt-3 leading-7 text-gray-400">
                 You are about to change{" "}
                 <span className="font-medium text-white">
-                  {pendingRoleChange.user.display_name ??
-                    pendingRoleChange.user.username ??
-                    "this user"}
+                  {getUserIdentity(
+                    pendingRoleChange.user,
+                  )}
                 </span>{" "}
                 from{" "}
                 <span className="font-medium capitalize text-gray-200">

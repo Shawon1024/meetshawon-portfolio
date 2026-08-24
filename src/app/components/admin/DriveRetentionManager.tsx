@@ -12,11 +12,14 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-
+import Image from "next/image";
 import { createClient } from "../../lib/supabase/client";
 
 export interface DriveAccountReview {
   user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
   website_username: string;
   dataset_name: string;
   nextcloud_username: string;
@@ -367,6 +370,22 @@ export default function DriveRetentionManager({
           ) : (
             <div className="space-y-4">
               {reviewAccounts.map((account) => {
+                const fullName =
+                  [
+                    account.first_name?.trim(),
+                    account.last_name?.trim(),
+                  ]
+                    .filter(Boolean)
+                    .join(" ") ||
+                  "Name unavailable";
+
+                const avatarInitial =
+                  (
+                    account.first_name?.charAt(0) ||
+                    account.last_name?.charAt(0) ||
+                    account.website_username?.charAt(0) ||
+                    "?"
+                  ).toUpperCase();
                 const isWorking = workingUserId === account.user_id;
                 const isDeleted = account.lifecycle_status === "deleted";
                 const due = deletionIsDue(account);
@@ -377,18 +396,42 @@ export default function DriveRetentionManager({
                     className="rounded-2xl border border-white/10 bg-black/10 p-5 md:p-6"
                   >
                     <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <h3 className="text-lg font-semibold text-white">
-                            @{account.website_username}
-                          </h3>
-                          <span
-                            className={`rounded-full border px-3 py-1 text-xs font-medium ${statusStyles(
-                              account.lifecycle_status,
-                            )}`}
-                          >
-                            {readableStatus(account.lifecycle_status)}
-                          </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-4">
+                          {account.avatar_url ? (
+                            <Image
+                              src={account.avatar_url}
+                              alt=""
+                              width={52}
+                              height={52}
+                              sizes="52px"
+                              className="h-[52px] w-[52px] shrink-0 rounded-full border border-white/10 object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-white/10 bg-green-400/10 font-semibold text-green-300">
+                              {avatarInitial}
+                            </div>
+                          )}
+
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-3">
+                              <h3 className="truncate text-lg font-semibold text-white">
+                                {fullName}
+                              </h3>
+
+                              <span
+                                className={`rounded-full border px-3 py-1 text-xs font-medium ${statusStyles(
+                                  account.lifecycle_status,
+                                )}`}
+                              >
+                                {readableStatus(account.lifecycle_status)}
+                              </span>
+                            </div>
+
+                            <p className="mt-1 truncate text-sm text-gray-500">
+                              @{account.website_username}
+                            </p>
+                          </div>
                         </div>
 
                         <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">

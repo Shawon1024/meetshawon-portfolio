@@ -60,7 +60,9 @@ export default async function AdminCommentsPage() {
       updated_at,
       edited,
       profile:profiles (
-        display_name,
+        first_name,
+        last_name,
+        username,
         avatar_url,
         verified
       ),
@@ -77,6 +79,13 @@ export default async function AdminCommentsPage() {
       },
     );
 
+  if (error) {
+    console.error(
+      "Admin comments query failed:",
+      error,
+    );
+  }
+
   return (
     <main>
       <section className="px-6 pb-10 pt-16 md:pt-24">
@@ -87,13 +96,16 @@ export default async function AdminCommentsPage() {
           >
             <ArrowLeft
               size={16}
+              aria-hidden="true"
             />
+
             Back to Admin
           </Link>
 
           <div className="mt-8 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-green-400/10 text-green-300">
             <MessageSquareText
               size={24}
+              aria-hidden="true"
             />
           </div>
 
@@ -106,7 +118,8 @@ export default async function AdminCommentsPage() {
           </h1>
 
           <p className="mt-4 max-w-2xl leading-7 text-gray-400">
-            Review, search, filter, and manage comments across all published articles.
+            Review, search, filter, and manage comments across all published
+            articles.
           </p>
         </div>
       </section>
@@ -115,8 +128,17 @@ export default async function AdminCommentsPage() {
         <Container>
           <div className="mx-auto max-w-6xl">
             {error ? (
-              <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-300">
-                Comments could not be loaded.
+              <div
+                role="alert"
+                className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-300"
+              >
+                <p className="font-medium">
+                  Comments could not be loaded.
+                </p>
+
+                <p className="mt-2 text-sm">
+                  Please refresh the page or try again later.
+                </p>
               </div>
             ) : (
               <AdminCommentsManager

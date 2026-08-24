@@ -19,7 +19,9 @@ import VerifiedBadge from "../ui/VerifiedBadge";
 import { createClient } from "../../lib/supabase/client";
 
 interface CommentProfile {
-  display_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  username: string | null;
   avatar_url: string | null;
   verified: boolean;
 }
@@ -152,6 +154,24 @@ export default function AdminCommentsManager({
               comment,
             );
 
+          const firstName =
+            profile?.first_name
+              ?.toLowerCase() ??
+            "";
+
+          const lastName =
+            profile?.last_name
+              ?.toLowerCase() ??
+            "";
+
+          const fullName =
+            `${firstName} ${lastName}`.trim();
+
+          const username =
+            profile?.username
+              ?.toLowerCase() ??
+            "";
+
           const matchesSearch =
             !query ||
             comment.content
@@ -159,12 +179,10 @@ export default function AdminCommentsManager({
               .includes(
                 query,
               ) ||
-            profile
-              ?.display_name
-              ?.toLowerCase()
-              .includes(
-                query,
-              ) ||
+            firstName.includes(query) ||
+            lastName.includes(query) ||
+            fullName.includes(query) ||
+            username.includes(query) ||
             post?.title
               .toLowerCase()
               .includes(
@@ -385,10 +403,27 @@ export default function AdminCommentsManager({
                     comment,
                   );
 
-                const name =
-                  profile
-                    ?.display_name ??
-                  "User";
+                const fullName =
+                  [
+                    profile?.first_name?.trim(),
+                    profile?.last_name?.trim(),
+                  ]
+                    .filter(Boolean)
+                    .join(" ") ||
+                  "Name unavailable";
+
+                const username =
+                  profile?.username
+                    ? `@${profile.username}`
+                    : "Username unavailable";
+
+                const avatarInitial =
+                  (
+                    profile?.first_name?.charAt(0) ||
+                    profile?.last_name?.charAt(0) ||
+                    profile?.username?.charAt(0) ||
+                    "?"
+                  ).toUpperCase();
 
                 return (
                   <article
@@ -416,11 +451,7 @@ export default function AdminCommentsManager({
                               />
                           ) : (
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-400/10 text-sm font-semibold text-green-300">
-                              {name
-                                .charAt(
-                                  0,
-                                )
-                                .toUpperCase()}
+                              {avatarInitial}
                             </div>
                           )}
 
@@ -428,7 +459,7 @@ export default function AdminCommentsManager({
                             <div className="flex items-center gap-1.5">
                               <p className="font-medium text-white">
                                 {
-                                  name
+                                  fullName
                                 }
                               </p>
 
@@ -442,7 +473,11 @@ export default function AdminCommentsManager({
                               )}
                             </div>
 
-                            <p className="mt-1 text-xs text-gray-500">
+                            <p className="mt-1 text-sm text-gray-500">
+                              {username}
+                            </p>
+
+                            <p className="mt-1 text-xs text-gray-600">
                               {formatDate(
                                 comment.created_at,
                               )}

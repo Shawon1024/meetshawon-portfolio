@@ -41,13 +41,17 @@ export default async function AdminUsersPage() {
         .from("profiles")
         .select(`
           id,
-          display_name,
+          first_name,
+          last_name,
           username,
           avatar_url,
           role,
           verified
         `)
-        .order("display_name", { ascending: true }),
+        .order("username", {
+          ascending: true,
+          nullsFirst: false,
+        }),
 
       supabase
         .from("account_block_appeals")
@@ -60,8 +64,44 @@ export default async function AdminUsersPage() {
   const users = usersResult.data;
   const usersError = usersResult.error;
   const pendingAppeals = pendingAppealsResult.count ?? 0;
+  const profileById =
+    new Map(
+      (users ?? []).map(
+        (profile) => [
+          profile.id,
+          profile,
+        ],
+      ),
+    );
+
   const driveAccounts =
-    (driveAccountsResult.data as DriveAccountReview[] | null) ?? [];
+  (
+    (driveAccountsResult.data as DriveAccountReview[] | null) ??
+    []
+  ).map((account) => {
+    const accountProfile =
+      profileById.get(account.user_id);
+
+    return {
+      ...account,
+
+      first_name:
+        accountProfile?.first_name ??
+        null,
+
+      last_name:
+        accountProfile?.last_name ??
+        null,
+
+      website_username:
+        accountProfile?.username ??
+        account.website_username,
+
+      avatar_url:
+        accountProfile?.avatar_url ??
+        null,
+    };
+  });
 
   if (usersError) {
     console.error("Admin users query failed:", usersError);

@@ -125,7 +125,8 @@ export default async function AdminAppealsPage() {
           .from("profiles")
           .select(`
             id,
-            display_name,
+            first_name,
+            last_name,
             username,
             avatar_url,
             verified,
@@ -180,7 +181,8 @@ export default async function AdminAppealsPage() {
           .from("profiles")
           .select(`
             id,
-            display_name,
+            first_name,
+            last_name,
             username
           `)
           .in(

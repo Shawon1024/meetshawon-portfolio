@@ -24,7 +24,9 @@ type AppealStatus =
 
 interface AppealUser {
   id: string;
-  display_name:
+  first_name:
+    string | null;
+  last_name:
     string | null;
   username:
     string | null;
@@ -38,7 +40,9 @@ interface AppealUser {
 
 interface AppealReviewer {
   id: string;
-  display_name:
+  first_name:
+    string | null;
+  last_name:
     string | null;
   username:
     string | null;
@@ -204,11 +208,20 @@ export default function AppealReviewManager({
           (
             appeal,
           ) => {
-            const name =
+            const firstName =
               appeal.user
-                ?.display_name
+                ?.first_name
                 ?.toLowerCase() ??
               "";
+
+            const lastName =
+              appeal.user
+                ?.last_name
+                ?.toLowerCase() ??
+              "";
+
+            const fullName =
+              `${firstName} ${lastName}`.trim();
 
             const username =
               appeal.user
@@ -222,15 +235,11 @@ export default function AppealReviewManager({
 
             const matchesSearch =
               !query ||
-              name.includes(
-                query,
-              ) ||
-              username.includes(
-                query,
-              ) ||
-              message.includes(
-                query,
-              );
+              firstName.includes(query) ||
+              lastName.includes(query) ||
+              fullName.includes(query) ||
+              username.includes(query) ||
+              message.includes(query);
 
             const matchesFilter =
               filter ===
@@ -643,12 +652,27 @@ export default function AppealReviewManager({
             (
               appeal,
             ) => {
-              const name =
-                appeal.user
-                  ?.display_name ??
-                appeal.user
-                  ?.username ??
-                "User";
+              const fullName =
+                [
+                  appeal.user?.first_name?.trim(),
+                  appeal.user?.last_name?.trim(),
+                ]
+                  .filter(Boolean)
+                  .join(" ") ||
+                "Name unavailable";
+
+              const username =
+                appeal.user?.username
+                  ? `@${appeal.user.username}`
+                  : "Username unavailable";
+
+              const avatarInitial =
+                (
+                  appeal.user?.first_name?.charAt(0) ||
+                  appeal.user?.last_name?.charAt(0) ||
+                  appeal.user?.username?.charAt(0) ||
+                  "?"
+                ).toUpperCase();
 
               return (
                 <article
@@ -675,20 +699,14 @@ export default function AppealReviewManager({
                             />
                         ) : (
                           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-400/10 font-semibold text-green-300">
-                            {name
-                              .charAt(
-                                0,
-                              )
-                              .toUpperCase()}
+                            {avatarInitial}
                           </div>
                         )}
 
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="font-medium text-white">
-                              {
-                                name
-                              }
+                              {fullName}
                             </p>
 
                             {appeal.user
@@ -730,16 +748,9 @@ export default function AppealReviewManager({
                             </span>
                           </div>
 
-                          {appeal.user
-                            ?.username && (
-                            <p className="mt-1 text-sm text-gray-500">
-                              @
-                              {
-                                appeal.user
-                                  .username
-                              }
-                            </p>
-                          )}
+                          <p className="mt-1 text-sm text-gray-500">
+                            {username}
+                          </p>
 
                           <p className="mt-2 text-xs text-gray-600">
                             Submitted{" "}
