@@ -30,7 +30,7 @@ export const projects: Project[] = [
       "A full-stack professional platform built to showcase projects, skills, qualifications, and technical writing while demonstrating secure application architecture, operational monitoring, and production deployment.",
 
     image:
-      "/projects/placeholder.jpg",
+      "/projects/professional-portfolio/web-interface.png",
 
     status:
       "Active",
