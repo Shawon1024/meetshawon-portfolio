@@ -65,28 +65,51 @@ interface RecentNotification {
 
 const navLinks = [
   {
-    href: "/",
-    label: "Home",
+    label:
+      "About",
+
+    href:
+      "/about",
   },
+
   {
-    href: "/about",
-    label: "About",
+    label:
+      "Skills",
+
+    href:
+      "/skills",
   },
+
   {
-    href: "/projects",
-    label: "Projects",
+    label:
+      "Projects",
+
+    href:
+      "/projects",
   },
+
   {
-    href: "/skills",
-    label: "Skills",
+    label:
+      "Certifications",
+
+    href:
+      "/certifications",
   },
+
   {
-    href: "/blog",
-    label: "Blog",
+    label:
+      "Blog",
+
+    href:
+      "/blog",
   },
+
   {
-    href: "/contact",
-    label: "Contact",
+    label:
+      "Contact",
+
+    href:
+      "/contact",
   },
 ];
 
