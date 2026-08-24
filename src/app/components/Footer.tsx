@@ -55,13 +55,6 @@ const footerLinks = [
     href:
       "/blog",
   },
-  {
-    name:
-      "Contact",
-
-    href:
-      "/contact",
-  },
 ];
 
 function GitHubIcon({
@@ -151,21 +144,24 @@ export default function Footer() {
                 href="https://github.com/shawon1024"
                 newTab
                 label="Open Md Samsudduha Shawon's GitHub profile"
+                hoverClassName="hover:border-white/30 hover:bg-[#181717] hover:text-white"
               >
-                <GitHubIcon/>
+                <GitHubIcon />
               </IconButton>
 
               <IconButton
                 href="https://www.linkedin.com/in/shawon1024/"
                 newTab
                 label="Open Md Samsudduha Shawon's LinkedIn profile"
+                hoverClassName="hover:border-[#0A66C2] hover:bg-[#0A66C2] hover:text-white"
               >
-                <LinkedInIcon/>
+                <LinkedInIcon />
               </IconButton>
 
               <IconButton
                 href="mailto:contact@meetshawon.com"
                 label="Email Md Samsudduha Shawon"
+                hoverClassName="hover:border-[#EA4335] hover:bg-[#EA4335] hover:text-white"
               >
                 <Mail
                   size={19}
@@ -263,10 +259,10 @@ export default function Footer() {
               </Link>
 
               <Link
-                href="/contact"
+                href="/terms"
                 className="transition hover:text-green-300"
               >
-                Contact
+                Terms of Use
               </Link>
             </div>
           </div>

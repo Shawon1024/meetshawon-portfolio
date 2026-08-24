@@ -152,6 +152,20 @@ export default async function sitemap(): Promise<
       priority:
         0.3,
     },
+
+        {
+      url:
+        `${siteUrl}/terms`,
+
+      lastModified:
+        STATIC_LAST_MODIFIED,
+
+      changeFrequency:
+        "yearly",
+
+      priority:
+        0.3,
+    },
   ];
 
   // --------------------------------------------------
