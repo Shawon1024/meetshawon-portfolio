@@ -1,26 +1,67 @@
 interface SectionHeadingProps {
-    number: string;
-    title: string;
-    description?: string;
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  alignment?: "left" | "center";
 }
 
-export default function SectionHeading({ number, title, description }: SectionHeadingProps) {
-    return (
-        <div className="mb-12 space-y-4">
+export default function SectionHeading({
+  eyebrow,
+  title,
+  description,
+  alignment = "left",
+}: SectionHeadingProps) {
+  const centered =
+    alignment === "center";
 
-            <p className="text-green-400 text-sm">
-                {number}
-            </p>
+  return (
+    <div
+      className={`mb-12 ${
+        centered
+          ? "mx-auto max-w-3xl text-center"
+          : "max-w-3xl"
+      }`}
+    >
+      {eyebrow && (
+        <div
+          className={`flex items-center gap-3 ${
+            centered
+              ? "justify-center"
+              : ""
+          }`}
+        >
+          <span
+            className="h-px w-8 bg-green-400"
+            aria-hidden="true"
+          />
 
-            <h2 className="text-3xl md:text-4xl font-bold">
-                {title}
-            </h2>
-
-            {description && (
-            <p className="mx-w-2xl text-gray-400">
-                {description}
-            </p>
-            )}
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-green-400">
+            {eyebrow}
+          </p>
         </div>
-    );
+      )}
+
+      <h2
+        className={`text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-[2.75rem] lg:leading-tight ${
+          eyebrow
+            ? "mt-4"
+            : ""
+        }`}
+      >
+        {title}
+      </h2>
+
+      {description && (
+        <p
+          className={`mt-5 text-base leading-7 text-gray-400 md:text-lg md:leading-8 ${
+            centered
+              ? "mx-auto max-w-2xl"
+              : "max-w-2xl"
+          }`}
+        >
+          {description}
+        </p>
+      )}
+    </div>
+  );
 }
