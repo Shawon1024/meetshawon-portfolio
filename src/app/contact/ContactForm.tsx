@@ -211,21 +211,21 @@ export default function ContactForm() {
     }
   };
 
-  const inputStyles =
-    "mt-2 w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-green-400 focus:ring-1 focus:ring-green-400/30 disabled:cursor-not-allowed disabled:opacity-60";
+   const inputStyles =
+    "mt-2 w-full rounded-xl border border-white/10 bg-[var(--surface)]/50 px-4 py-3.5 text-white outline-none transition placeholder:text-gray-600 hover:border-white/20 focus:border-green-400 focus:bg-black/10 focus:ring-1 focus:ring-green-400/30 disabled:cursor-not-allowed disabled:opacity-60";
 
   return (
     <div>
       <p className="text-sm font-medium uppercase tracking-[0.25em] text-green-400">
         Send a Message
       </p>
+        <h2 className="mt-3 text-3xl font-bold text-white">
+          Contact Form
+        </h2>
 
-      <h2 className="mt-3 text-3xl font-bold text-white">
-        Contact form
-      </h2>
-
-      <p className="mt-4 leading-7 text-gray-400">
-        Complete the form below and I&apos;ll respond as soon as possible.
+      <p className="mt-4 max-w-2xl leading-7 text-gray-400">
+        Share a few details about the opportunity, project, or reason for
+        getting in touch.
       </p>
 
       <Script
@@ -344,7 +344,7 @@ export default function ContactForm() {
           />
         </label>
 
-        <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+        <div className="rounded-2xl border border-white/10 bg-[var(--surface)]/40 p-5">
           <div className="flex flex-col gap-3">
             <div>
               <p className="text-sm font-medium text-white">
@@ -407,11 +407,16 @@ export default function ContactForm() {
             !siteKey ||
             !turnstileToken
           }
-          className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-6 py-3 font-medium text-black transition hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-500 px-6 py-3.5 font-semibold text-black transition hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {submitting ? "Sending..." : "Send Message"}
+          {submitting
+            ? "Sending..."
+            : "Send Message"}
 
-          <Send size={18} aria-hidden="true" />
+          <Send
+            size={18}
+            aria-hidden="true"
+          />
         </button>
       </form>
     </div>
