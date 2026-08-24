@@ -1091,7 +1091,7 @@ if (popularPostsError) {
 
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                   {paginatedPosts.map(
-                    (post) => {
+                    (post, index) => {
                       const category =
                         Array.isArray(
                           post.category,
@@ -1160,6 +1160,16 @@ if (popularPostsError) {
                               width={1200}
                               height={675}
                               sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                              loading={
+                                index < 3
+                                  ? "eager"
+                                  : "lazy"
+                              }
+                              fetchPriority={
+                                index === 0
+                                  ? "high"
+                                  : "auto"
+                              }
                               className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                             />
                           </Link>

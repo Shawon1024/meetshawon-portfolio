@@ -97,6 +97,12 @@ export default function PopularArticles({
                     width={1200}
                     height={675}
                     sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    loading="eager"
+                    fetchPriority={
+                      index === 0
+                        ? "high"
+                        : "auto"
+                    }
                     className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                   />
                 </Link>
@@ -129,9 +135,9 @@ export default function PopularArticles({
                   )}
 
                   <div className="mt-auto">
-                    <div className="mt-6 grid grid-cols-3 divide-x divide-white/10 rounded-xl border border-white/10 bg-black/10 py-3">
+                    <div className="mt-6 flex items-center gap-5 border-t border-white/10 pt-4">
                       <div
-                        className="flex items-center justify-center gap-1.5 px-2 text-sm text-gray-400"
+                        className="inline-flex items-center gap-1.5 text-sm text-gray-500"
                         title={`${views.toLocaleString("en-GB")} views`}
                       >
                         <Eye
@@ -151,7 +157,7 @@ export default function PopularArticles({
                       </div>
 
                       <div
-                        className="flex items-center justify-center gap-1.5 px-2 text-sm text-gray-400"
+                        className="inline-flex items-center gap-1.5 text-sm text-gray-500"
                         title={`${reactions.toLocaleString("en-GB")} reactions`}
                       >
                         <Heart
@@ -171,7 +177,7 @@ export default function PopularArticles({
                       </div>
 
                       <div
-                        className="flex items-center justify-center gap-1.5 px-2 text-sm text-gray-400"
+                        className="inline-flex items-center gap-1.5 text-sm text-gray-500"
                         title={`${comments.toLocaleString("en-GB")} comments`}
                       >
                         <MessageCircle
