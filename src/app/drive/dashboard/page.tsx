@@ -231,7 +231,7 @@ export default async function DriveDashboardPage() {
               <Link
                 href="https://files.meetshawon.com/apps/files/files"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:brightness-110"
               >
                 <Cloud

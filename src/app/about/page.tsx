@@ -5,9 +5,9 @@ import InterestsValues from "../components/about/InterestsValues";
 import Journey from "../components/about/Journey";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: "About Md Samsudduha Shawon",
   description:
-    "Learn about Shawon's academic journey, cybersecurity interests, practical projects, professional values, and goal of building a career in ethical hacking and penetration testing.",
+    "Learn about Md Samsudduha Shawon's academic journey, cybersecurity interests, practical projects, professional values, and goal of building a career in ethical hacking and penetration testing.",
 
   alternates: {
     canonical: "/about",

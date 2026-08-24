@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     title:
       "Cybersecurity Home Lab",
     description:
-      "Explore the hardware, research, planned architecture, safety boundaries, and learning roadmap behind Shawon's cybersecurity home lab.",
+      "Explore the hardware, research, planned architecture, safety boundaries, and learning roadmap behind Md Samsudduha Shawon's cybersecurity home lab.",
     url:
       "/projects/cybersecurity-home-lab",
     type:

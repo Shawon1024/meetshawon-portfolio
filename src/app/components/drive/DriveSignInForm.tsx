@@ -500,7 +500,7 @@ export default function DriveSignInForm() {
             </div>
 
             <p className="mt-4 leading-7 text-slate-300">
-              Authenticate with an authorized Meet Shawon account to access
+              Authenticate with an authorised Meet Shawon account to access
               your assigned private storage.
             </p>
 
@@ -521,7 +521,7 @@ export default function DriveSignInForm() {
             </div>
 
             {/* =============================================
-                LOGIN FORM
+                SIGN-IN FORM
             ============================================= */}
 
             <form
@@ -636,7 +636,7 @@ export default function DriveSignInForm() {
                     size={13}
                   />
 
-                  Authorized users only
+                  Authorised users only
                 </div>
 
                 <Link

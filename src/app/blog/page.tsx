@@ -128,7 +128,7 @@ export const metadata: Metadata = {
     title: "Cybersecurity Blog — Meet Shawon",
 
     description:
-      "Cybersecurity articles, ethical hacking notes, technical projects, infrastructure documentation, and security research.",
+      "Cybersecurity articles, ethical hacking notes, technical projects, infrastructure documentation, and security research by Md Samsudduha Shawon.",
 
     url: "/blog",
 

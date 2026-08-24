@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   title:
     "Drive Access Denied",
   description:
-    "Your account is not authorized to access Meet Shawon Drive.",
+    "Your account is not authorised to access Meet Shawon Drive.",
   robots: {
     index: false,
     follow: false,
@@ -133,7 +133,7 @@ export default async function DriveAccessDeniedPage({
           </div>
 
           <p className="mt-7 text-sm font-medium uppercase tracking-[0.22em] text-red-300">
-            Authorization rejected
+            Authorisation rejected
           </p>
 
           <h1 className="mt-3 text-4xl font-bold text-white sm:text-5xl">
@@ -157,7 +157,7 @@ export default async function DriveAccessDeniedPage({
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-slate-400">
-                Drive is currently restricted to authorized Admin and Partner
+                Drive is currently restricted to authorised Admin and Partner
                 accounts.
               </p>
             </div>
@@ -174,7 +174,7 @@ export default async function DriveAccessDeniedPage({
 
               <p className="mt-2 text-sm leading-6 text-slate-400">
                 Storage is only assigned after an account has received Drive
-                authorization.
+                authorisation.
               </p>
             </div>
           </div>
@@ -200,7 +200,7 @@ export default async function DriveAccessDeniedPage({
 
           <p className="mt-6 text-xs leading-5 text-slate-500">
             Signed in as {user.email}. Authentication does not automatically
-            provide Drive authorization.
+            provide Drive authorisation.
           </p>
         </section>
       </div>

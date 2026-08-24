@@ -57,7 +57,7 @@ export const metadata: Metadata =
     },
 
     description:
-      "Personal portfolio of Shawon, featuring cybersecurity, ethical hacking, software development, projects, certifications, technical articles, and professional experience.",
+      "Personal portfolio of Md Samsudduha Shawon, featuring cybersecurity, ethical hacking, software development, projects, certifications, technical articles, and professional experience.",
 
     applicationName:
       "Meet Shawon",
@@ -65,14 +65,14 @@ export const metadata: Metadata =
     authors: [
       {
         name:
-          "Shawon",
+          "Md Samsudduha Shawon",
         url:
           siteUrl,
       },
     ],
 
     creator:
-      "Shawon",
+      "Md Samsudduha Shawon",
 
     publisher:
       "Meet Shawon",

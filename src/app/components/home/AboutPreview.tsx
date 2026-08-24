@@ -7,13 +7,15 @@ export default function AboutPreview() {
     <section className="px-8 py-20">
       <Container>
 
-        <SectionHeading number="01" title="About Me" description="I am a Cybersecurity student with a background in Computer Science, passionate about ethical hacking, secure infrastructure, and cybersecurity research." />
+        <SectionHeading
+          number="01"
+          title="About Me"
+          description="I am a cybersecurity postgraduate student and First-Class Computer Science graduate focused on ethical hacking, secure infrastructure, and practical cybersecurity development."
+        />
 
         <div className="max-w-3xl text-gray-300 space-y-4">
           <p>
-            I am a Cybersecurity student with a background in Computer Science,
-            passionate about ethical hacking, secure infrastructure, and
-            cybersecurity research.
+            I am a cybersecurity postgraduate student and First-Class Computer Science graduate focused on ethical hacking, secure infrastructure, and practical cybersecurity development.
           </p>
 
           <p>

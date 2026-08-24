@@ -1054,7 +1054,7 @@ export default function AccountSecurity({
           )}
 
           <p className="mt-5 text-xs leading-5 text-gray-500">
-            Your login email is private and is not displayed on your public
+            Your sign-in email is private and is not displayed on your public
             profile. After the change is completed, your previous email address
             can receive a security notification if Email address changed
             notifications are enabled in Supabase.
@@ -1486,7 +1486,7 @@ export default function AccountSecurity({
             </h2>
 
             <p className="mt-4 leading-7 text-gray-400">
-              This permanently removes your login account. You will not be able
+              This permanently removes your website account. You will not be able
               to recover it after deletion.
             </p>
 

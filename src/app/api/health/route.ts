@@ -10,7 +10,7 @@ export async function GET() {
     {
       status: "ok",
       service:
-        "MeetShawon.Com",
+        "Meet Shawon",
       timestamp:
         new Date().toISOString(),
     },

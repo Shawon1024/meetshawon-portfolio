@@ -341,13 +341,20 @@ export default function ProfileEditor({
 
     if (
       clean.startsWith(
-        "http://",
-      ) ||
-      clean.startsWith(
         "https://",
       )
     ) {
       return clean;
+    }
+
+    if (
+      clean.startsWith(
+        "http://",
+      )
+    ) {
+      return `https://${clean.slice(
+        7,
+      )}`;
     }
 
     return `https://${clean}`;
@@ -366,9 +373,8 @@ export default function ProfileEditor({
 
       return (
         url.protocol ===
-          "http:" ||
-        url.protocol ===
-          "https:"
+          "https:" &&
+        Boolean(url.hostname)
       );
     } catch {
       return false;

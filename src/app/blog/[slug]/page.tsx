@@ -378,7 +378,7 @@ const {
       .join(" ")
       .trim() ||
     author?.username ||
-    "Shawon";
+    "Md Samsudduha Shawon";
 
   // --------------------------------------------------
   // CATEGORY
@@ -464,14 +464,13 @@ const {
   return (
     <main>
       <script
-  type="application/ld+json"
-  dangerouslySetInnerHTML={{
-    __html:
-      JSON.stringify(
-        articleStructuredData,
-      ),
-  }}
-/>
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            articleStructuredData,
+          ).replace(/</g, "\\u003c"),
+        }}
+      />
       {/* =================================================
           ARTICLE HEADER
       ================================================= */}

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Projects",
   description:
-    "Explore Shawon's cybersecurity, secure infrastructure, self-hosting, networking, software development, and technical projects.",
+    "Explore Md Samsudduha Shawon's cybersecurity, secure infrastructure, self-hosting, networking, software development, and technical projects.",
 
   alternates: {
     canonical: "/projects",
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Cybersecurity & Technical Projects",
     description:
-      "Explore cybersecurity, secure infrastructure, self-hosting, networking, software development, and technical projects by Shawon.",
+      "Explore cybersecurity, secure infrastructure, self-hosting, networking, software development, and technical projects by Md Samsudduha Shawon.",
     url: "/projects",
     type: "website",
   },
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Cybersecurity & Technical Projects",
     description:
-      "Cybersecurity, infrastructure, networking, self-hosting, software development, and technical projects by Shawon.",
+      "Cybersecurity, infrastructure, networking, self-hosting, software development, and technical projects by Md Samsudduha Shawon.",
   },
 };
 

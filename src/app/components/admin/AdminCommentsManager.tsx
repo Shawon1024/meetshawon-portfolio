@@ -472,6 +472,7 @@ export default function AdminCommentsManager({
                             <Link
                               href={`/blog/${post.slug}`}
                               target="_blank"
+                              rel="noopener noreferrer"
                               className="inline-flex items-center gap-1.5 font-medium text-green-400 transition hover:text-green-300"
                             >
                               {

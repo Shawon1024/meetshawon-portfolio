@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Skills & Technologies",
   description:
-    "Explore Shawon's cybersecurity, ethical hacking, networking, Linux, secure infrastructure, software development, and technical skills.",
+    "Explore Md Samsudduha Shawon's cybersecurity, ethical hacking, networking, Linux, secure infrastructure, software development, and technical skills.",
 
   alternates: {
     canonical: "/skills",
