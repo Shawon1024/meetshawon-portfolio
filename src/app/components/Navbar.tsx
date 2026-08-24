@@ -863,6 +863,38 @@ export default function Navbar() {
   }, []);
 
   // --------------------------------------------------
+  // MOBILE MENU SCROLL LOCK
+  // --------------------------------------------------
+
+  useEffect(() => {
+    if (!mobileOpen) {
+      return;
+    }
+
+    const previousBodyOverflow =
+      document.body.style.overflow;
+
+    const previousHtmlOverflow =
+      document.documentElement.style.overflow;
+
+    document.body.style.overflow =
+      "hidden";
+
+    document.documentElement.style.overflow =
+      "hidden";
+
+    return () => {
+      document.body.style.overflow =
+        previousBodyOverflow;
+
+      document.documentElement.style.overflow =
+        previousHtmlOverflow;
+    };
+  }, [
+    mobileOpen,
+  ]);
+
+  // --------------------------------------------------
   // ACTIVE LINK
   // --------------------------------------------------
 
@@ -1976,13 +2008,13 @@ export default function Navbar() {
       ================================================= */}
 
       <div
-        className={`overflow-hidden border-t transition-all duration-300 ease-out lg:hidden ${
+        className={`border-t transition-all duration-300 ease-out lg:hidden ${
           mobileOpen
-            ? "max-h-[1000px] translate-y-0 border-white/5 opacity-100"
-            : "pointer-events-none max-h-0 -translate-y-2 border-transparent opacity-0"
+            ? "max-h-[calc(100dvh-4.5rem)] translate-y-0 overflow-y-auto overscroll-contain border-white/5 opacity-100"
+            : "pointer-events-none max-h-0 -translate-y-2 overflow-hidden border-transparent opacity-0"
         }`}
       >
-        <div className="px-6 py-5">
+        <div className="px-6 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5">
           <div className="mx-auto max-w-7xl">
             {/* Main navigation */}
 
