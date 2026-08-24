@@ -13,27 +13,31 @@ export default function Hero() {
     <section className="flex min-h-screen items-center py-16">
       <Container>
         <div className="grid items-center gap-12 lg:grid-cols-2">
-          {/* Left side */}
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 rounded-full border border-green-400/20 bg-green-400/10 px-4 py-2 text-sm font-medium text-green-300">
-              <span className="h-2 w-2 rounded-full bg-green-400" />
-              Available for Cyber Security Graduate Roles
+              <span
+                className="h-2 w-2 rounded-full bg-green-400"
+                aria-hidden="true"
+              />
+              Available for Cybersecurity Graduate Roles
             </div>
 
             <h1 className="text-5xl font-bold leading-tight text-white md:text-6xl lg:text-5xl">
               Building
               <span className="text-green-400">
-                {" "}Secure Infrastructure{" "}
+                {" "}
+                Secure Infrastructure{" "}
               </span>
               & Cybersecurity Solutions
             </h1>
 
             <p className="max-w-2xl text-lg leading-8 text-gray-300">
-              I&apos;m Shawon, an MSc Cyber Security Management student
-              passionate about ethical hacking, enterprise infrastructure,
-              self-hosted cloud solutions, and modern web technologies. I
-              enjoy building secure, scalable systems while continuously
-              expanding my knowledge through hands-on projects.
+              I&apos;m Md Samsudduha Shawon, a First-Class Computer Science
+              graduate currently pursuing an MSc in Cyber Security Management
+              with Professional Practice. I&apos;m developing practical
+              capability across ethical hacking, network security, secure
+              infrastructure, self-hosted services, and modern web
+              technologies.
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -41,41 +45,42 @@ export default function Hero() {
                 View My Projects
               </Button>
 
-              <Button href="/Shawon-CV.pdf">
-                Download CV
+              <Button href="/resume">
+                View My Resume
               </Button>
             </div>
 
             <div className="flex gap-5 pt-4">
               <IconButton
-                href="https://github.com/Shawon1024"
-                label="GitHub"
+                href="https://github.com/shawon1024"
+                label="Open Md Samsudduha Shawon's GitHub profile"
                 newTab
               >
-                <Code2 size={28} />
+                <Code2 size={28} aria-hidden="true" />
               </IconButton>
 
               <IconButton
                 href="https://www.linkedin.com/in/shawon1024/"
-                label="LinkedIn"
+                label="Open Md Samsudduha Shawon's LinkedIn profile"
                 newTab
               >
-                <BriefcaseBusiness size={28} />
+                <BriefcaseBusiness
+                  size={28}
+                  aria-hidden="true"
+                />
               </IconButton>
 
               <IconButton
                 href="mailto:contact@meetshawon.com"
-                label="Email"
+                label="Email Md Samsudduha Shawon"
               >
-                <Mail size={28} />
+                <Mail size={28} aria-hidden="true" />
               </IconButton>
             </div>
           </div>
 
-          {/* Right-side professional dashboard */}
           <div className="hidden items-center justify-center lg:flex">
             <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-[var(--surface)]/80 p-8 shadow-2xl backdrop-blur-sm">
-              {/* Dashboard header */}
               <div className="mb-8 flex items-center justify-between gap-4 py-3">
                 <div>
                   <p className="text-sm text-gray-400">
@@ -88,12 +93,14 @@ export default function Hero() {
                 </div>
 
                 <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-green-400/10 px-4 py-2.5 text-sm font-medium text-green-300">
-                  <span className="h-2 w-2 rounded-full bg-green-400" />
+                  <span
+                    className="h-2 w-2 rounded-full bg-green-400"
+                    aria-hidden="true"
+                  />
                   Active
                 </span>
               </div>
 
-              {/* Information cards */}
               <div className="space-y-3">
                 <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
                   <p className="text-sm text-gray-400">
@@ -111,22 +118,21 @@ export default function Hero() {
                   </p>
 
                   <p className="mt-1 font-medium text-white">
-                    Security • Networks • Cloud
+                    Security • Networks • Infrastructure
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
                   <p className="text-sm text-gray-400">
-                    Currently Building
+                    Current Development
                   </p>
 
                   <p className="mt-1 font-medium text-white">
-                    Security Labs & Infrastructure
+                    Cybersecurity Study & Technical Projects
                   </p>
                 </div>
               </div>
 
-              {/* Statistics */}
               <div className="mt-6 grid grid-cols-3 gap-3 text-center">
                 <div className="rounded-xl border border-white/10 p-3">
                   <p className="text-lg font-semibold text-green-400">
@@ -134,7 +140,7 @@ export default function Hero() {
                   </p>
 
                   <p className="text-xs text-gray-400">
-                    Graduate
+                    First-Class
                   </p>
                 </div>
 
@@ -150,11 +156,11 @@ export default function Hero() {
 
                 <div className="rounded-xl border border-white/10 p-3">
                   <p className="text-lg font-semibold text-green-400">
-                    LAB
+                    3
                   </p>
 
                   <p className="text-xs text-gray-400">
-                    Hands-on
+                    Credentials
                   </p>
                 </div>
               </div>

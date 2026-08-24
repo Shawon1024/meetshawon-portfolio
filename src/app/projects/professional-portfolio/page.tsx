@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Cloud,
   Database,
+  ExternalLink,
   GitBranch,
   HardDrive,
   LayoutDashboard,
@@ -20,6 +21,24 @@ import {
 
 import Badge from "../../components/ui/Badge";
 import Container from "../../components/Container";
+
+function GitHubIcon({
+  size = 18,
+}: {
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58 0-.29-.01-1.04-.02-2.04-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 4.81c1.02 0 2.05.14 3.01.41 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.81 1.1.81 2.22 0 1.6-.01 2.89-.01 3.28 0 .32.22.7.82.58A12 12 0 0 0 24 12C24 5.37 18.63 0 12 0Z" />
+    </svg>
+  );
+}
 
 export const metadata: Metadata = {
   title:
@@ -37,7 +56,7 @@ export const metadata: Metadata = {
     title:
       "Professional Portfolio Platform",
     description:
-      "Explore the architecture, security controls, challenges, and operational practices behind MeetShawon.Com.",
+      "Explore the architecture, security controls, challenges, and operational practices behind meetshawon.com.",
     url:
       "/projects/professional-portfolio",
     type:
@@ -60,7 +79,7 @@ const objectives = [
   "Create a professional platform for cybersecurity projects, qualifications, skills, and technical writing",
   "Build secure authentication, profiles, and role-based access",
   "Support blogging, community interaction, administration, and moderation",
-  "Provide an authenticated web gateway for a future private-cloud service",
+  "Provide a secure, role-authorised gateway to the self-hosted private-cloud service",
   "Operate the platform with monitoring, backups, security controls, and documented maintenance",
 ];
 
@@ -113,7 +132,7 @@ const platformFeatures = [
       "Private Drive Gateway",
 
     description:
-      "The drive.meetshawon.com subdomain provides authenticated, role-authorised access while the live NAS connection remains in development.",
+      "The drive.meetshawon.com subdomain provides authenticated, role-authorised access to the operational self-hosted TrueNAS and Nextcloud service.",
   },
   {
     icon:
@@ -345,12 +364,12 @@ const outcomes = [
 ];
 
 const futureDevelopment = [
-  "Complete final professional portfolio content",
-  "Add more documented cybersecurity projects and lab reports",
-  "Connect the Drive gateway to the self-hosted NAS platform",
+  "Add more documented cybersecurity projects and technical case studies",
+  "Expand technical writing and practical project evidence",
   "Continue accessibility and performance reviews",
-  "Expand technical writing and project evidence",
+  "Strengthen monitoring and recovery procedures",
   "Review individual dependencies before major upgrades",
+  "Continue improving security controls and operational documentation",
 ];
 
 export default function ProfessionalPortfolioPage() {
@@ -386,7 +405,7 @@ export default function ProfessionalPortfolioPage() {
               A production-deployed cybersecurity portfolio and community
               platform combining professional content, authentication,
               role-based access, blogging, moderation, monitoring, backups, and
-              a private Drive gateway.
+              an operational private-cloud Drive gateway.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-2">
@@ -399,6 +418,28 @@ export default function ProfessionalPortfolioPage() {
                   </Badge>
                 ),
               )}
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-4">
+              <a
+                href="https://meetshawon.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-5 py-3 font-medium text-black transition hover:bg-green-400"
+              >
+                View Live Platform
+                <ExternalLink size={17} aria-hidden="true" />
+              </a>
+
+              <a
+                href="https://github.com/shawon1024/meetshawon-portfolio"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 font-medium text-white transition hover:border-green-400 hover:text-green-300"
+              >
+                View Source on GitHub
+                <GitHubIcon size={18} />
+              </a>
             </div>
           </div>
         </div>
