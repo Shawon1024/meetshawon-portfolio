@@ -10,7 +10,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AnimatedBackground from "./components/background/AnimatedBackground";
 import FloatingNotifications from "./components/account/FloatingNotifications";
-
+import SiteNotice from "./components/SiteNotice";
 import "./globals.css";
 import "highlight.js/styles/github-dark.css";
 
@@ -207,6 +207,8 @@ export default function RootLayout({
 
         <div className="relative z-10 flex min-h-screen flex-col">
           <Navbar />
+
+          <SiteNotice />
 
           <FloatingNotifications />
 
