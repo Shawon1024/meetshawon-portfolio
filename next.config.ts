@@ -56,7 +56,7 @@ const contentSecurityPolicy = `
   frame-ancestors
     'none';
 
-  upgrade-insecure-requests;
+  ${isDev ? "" : "upgrade-insecure-requests;"}
 `
   .replace(
     /\s{2,}/g,

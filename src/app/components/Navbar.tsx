@@ -874,21 +874,12 @@ export default function Navbar() {
     const previousBodyOverflow =
       document.body.style.overflow;
 
-    const previousHtmlOverflow =
-      document.documentElement.style.overflow;
-
     document.body.style.overflow =
-      "hidden";
-
-    document.documentElement.style.overflow =
       "hidden";
 
     return () => {
       document.body.style.overflow =
         previousBodyOverflow;
-
-      document.documentElement.style.overflow =
-        previousHtmlOverflow;
     };
   }, [
     mobileOpen,
@@ -1258,7 +1249,13 @@ export default function Navbar() {
   // --------------------------------------------------
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-[var(--background)]/90 backdrop-blur-xl">
+    <header
+      className={`top-0 z-50 border-b border-white/5 bg-[var(--background)]/95 backdrop-blur-xl ${
+        mobileOpen
+          ? "fixed inset-x-0"
+          : "sticky"
+      } lg:sticky`}
+    >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
         {/* =================================================
             LOGO
@@ -1275,7 +1272,7 @@ export default function Navbar() {
             width={220}
             height={80}
             priority
-            className="h-20 w-auto object-contain md:h-12"
+            className="h-12 w-auto object-contain"
           />
         </Link>
 
@@ -2008,10 +2005,10 @@ export default function Navbar() {
       ================================================= */}
 
       <div
-        className={`border-t transition-all duration-300 ease-out lg:hidden ${
+        className={`absolute inset-x-0 top-full border-t bg-[var(--background)]/98 shadow-2xl shadow-black/30 transition-all duration-300 ease-out lg:hidden ${
           mobileOpen
-            ? "max-h-[calc(100dvh-4.5rem)] translate-y-0 overflow-y-auto overscroll-contain border-white/5 opacity-100"
-            : "pointer-events-none max-h-0 -translate-y-2 overflow-hidden border-transparent opacity-0"
+            ? "h-[calc(100dvh-4.5rem)] translate-y-0 touch-pan-y overflow-y-auto overscroll-contain border-white/5 opacity-100 [-webkit-overflow-scrolling:touch]"
+            : "pointer-events-none h-0 -translate-y-2 overflow-hidden border-transparent opacity-0"
         }`}
       >
         <div className="px-6 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5">
