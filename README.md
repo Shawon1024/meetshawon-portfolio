@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./public/logo.png" alt="Meet Shawon logo" width="250" />
+<img src="./public/logo.png" alt="Meet Shawon logo" width="320" />
 
 # Meet Shawon
 
