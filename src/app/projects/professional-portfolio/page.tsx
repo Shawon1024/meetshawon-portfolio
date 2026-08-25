@@ -10,6 +10,7 @@ import {
   Cloud,
   Database,
   ExternalLink,
+  FileText,
   GitBranch,
   HardDrive,
   LayoutDashboard,
@@ -55,10 +56,13 @@ export const metadata: Metadata = {
   openGraph: {
     title:
       "Professional Portfolio Platform",
+
     description:
       "Explore the architecture, security controls, challenges, and operational practices behind meetshawon.com.",
+
     url:
       "/projects/professional-portfolio",
+
     type:
       "article",
   },
@@ -94,6 +98,7 @@ const platformFeatures = [
     description:
       "Responsive pages present my background, skills, projects, certifications, CV, contact information, and professional development.",
   },
+
   {
     icon:
       Users,
@@ -104,6 +109,7 @@ const platformFeatures = [
     description:
       "Supabase authentication supports registration, sign-in, password recovery, user profiles, account settings, and public profile pages.",
   },
+
   {
     icon:
       BookOpen,
@@ -114,6 +120,7 @@ const platformFeatures = [
     description:
       "The platform includes articles, categories, tags, saved posts, reactions, comments, notifications, related content, and reading features.",
   },
+
   {
     icon:
       ShieldCheck,
@@ -124,6 +131,7 @@ const platformFeatures = [
     description:
       "Protected interfaces support post management, user administration, comment review, appeals, restrictions, and content moderation.",
   },
+
   {
     icon:
       HardDrive,
@@ -134,6 +142,7 @@ const platformFeatures = [
     description:
       "The drive.meetshawon.com subdomain provides authenticated, role-authorised access to the operational self-hosted TrueNAS and Nextcloud service.",
   },
+
   {
     icon:
       MessageSquare,
@@ -157,6 +166,7 @@ const architecture = [
     description:
       "Manages DNS for meetshawon.com and drive.meetshawon.com while supporting the wider domain and email-routing configuration.",
   },
+
   {
     step:
       "02",
@@ -167,6 +177,7 @@ const architecture = [
     description:
       "Builds and hosts the production Next.js application, manages deployments, custom domains, runtime logs, and observability.",
   },
+
   {
     step:
       "03",
@@ -177,6 +188,7 @@ const architecture = [
     description:
       "Provides App Router pages, server and client components, APIs, metadata, proxy routing, security headers, and application logic.",
   },
+
   {
     step:
       "04",
@@ -187,6 +199,7 @@ const architecture = [
     description:
       "Provides authentication, PostgreSQL data, user profiles, role information, Storage, and application access controls.",
   },
+
   {
     step:
       "05",
@@ -207,6 +220,7 @@ const securityControls = [
     description:
       "Protected routes verify the authenticated user on the server instead of relying only on browser state.",
   },
+
   {
     title:
       "Role-Based Access",
@@ -214,6 +228,7 @@ const securityControls = [
     description:
       "Administrative, moderation, and Drive functionality is restricted according to profile roles and server-side authorisation checks.",
   },
+
   {
     title:
       "Security Headers",
@@ -221,6 +236,7 @@ const securityControls = [
     description:
       "Content Security Policy, frame protection, content-type protection, referrer rules, permissions restrictions, and HTTPS upgrading reduce browser-side risk.",
   },
+
   {
     title:
       "Contact Protection",
@@ -228,6 +244,7 @@ const securityControls = [
     description:
       "Cloudflare Turnstile, validation, controlled error responses, and limited logging protect the public contact endpoint.",
   },
+
   {
     title:
       "Dependency & Repository Security",
@@ -235,6 +252,7 @@ const securityControls = [
     description:
       "Dependabot, CodeQL, Secret Protection, Push Protection, npm audit, and controlled dependency updates support repository security.",
   },
+
   {
     title:
       "Backups & Recovery Planning",
@@ -255,6 +273,7 @@ const monitoringTools = [
     description:
       "Captures production exceptions, stack traces, performance information, logs, and error notifications.",
   },
+
   {
     icon:
       Cloud,
@@ -265,6 +284,7 @@ const monitoringTools = [
     description:
       "Monitors the application health endpoint and provides failure and recovery alerts.",
   },
+
   {
     icon:
       Database,
@@ -275,6 +295,7 @@ const monitoringTools = [
     description:
       "Reports and service logs provide visibility across authentication, database, API, Storage, and Realtime services.",
   },
+
   {
     icon:
       GitBranch,
@@ -298,6 +319,7 @@ const challenges = [
     solution:
       "Hostname-aware proxy routing was implemented and the Next.js 16 proxy convention was applied correctly.",
   },
+
   {
     title:
       "Cross-Domain Authentication",
@@ -308,6 +330,7 @@ const challenges = [
     solution:
       "The sign-in flow was updated to allow a controlled Drive return destination while rejecting unsafe redirect values.",
   },
+
   {
     title:
       "Role-Based Drive Access",
@@ -318,6 +341,7 @@ const challenges = [
     solution:
       "Server-side profile checks now permit only admin and partner roles while other users return to the main site.",
   },
+
   {
     title:
       "Production Error Monitoring",
@@ -328,6 +352,7 @@ const challenges = [
     solution:
       "Sentry was integrated, tested in production, connected to deployment monitoring, and the temporary validation routes were removed.",
   },
+
   {
     title:
       "Database & Storage Backups",
@@ -338,6 +363,7 @@ const challenges = [
     solution:
       "Documented database and Storage backup procedures were created using the Supabase CLI and an isolated Docker-based dump process.",
   },
+
   {
     title:
       "Production Code Quality",
@@ -376,13 +402,18 @@ export default function ProfessionalPortfolioPage() {
   return (
     <main>
       {/* Project header */}
+
       <section className="px-6 pb-16 pt-16 md:pb-20 md:pt-24">
         <div className="mx-auto max-w-5xl">
           <Link
             href="/projects"
             className="inline-flex items-center gap-2 text-sm font-medium text-gray-400 transition hover:text-green-400"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft
+              size={16}
+              aria-hidden="true"
+            />
+
             Back to Projects
           </Link>
 
@@ -410,11 +441,17 @@ export default function ProfessionalPortfolioPage() {
 
             <div className="mt-8 flex flex-wrap gap-2">
               {technologies.map(
-                (technology) => (
+                (
+                  technology,
+                ) => (
                   <Badge
-                    key={technology}
+                    key={
+                      technology
+                    }
                   >
-                    {technology}
+                    {
+                      technology
+                    }
                   </Badge>
                 ),
               )}
@@ -428,7 +465,11 @@ export default function ProfessionalPortfolioPage() {
                 className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-5 py-3 font-medium text-black transition hover:bg-green-400"
               >
                 View Live Platform
-                <ExternalLink size={17} aria-hidden="true" />
+
+                <ExternalLink
+                  size={17}
+                  aria-hidden="true"
+                />
               </a>
 
               <a
@@ -438,7 +479,24 @@ export default function ProfessionalPortfolioPage() {
                 className="inline-flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 font-medium text-white transition hover:border-green-400 hover:text-green-300"
               >
                 View Source on GitHub
-                <GitHubIcon size={18} />
+
+                <GitHubIcon
+                  size={18}
+                />
+              </a>
+
+              <a
+                href="/documents/professional-portfolio-platform-documentation.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[0.06] px-5 py-3 font-medium text-cyan-200 transition hover:border-cyan-400/50 hover:bg-cyan-400/10 hover:text-cyan-100"
+              >
+                View Technical Documentation
+
+                <FileText
+                  size={17}
+                  aria-hidden="true"
+                />
               </a>
             </div>
           </div>
@@ -446,6 +504,7 @@ export default function ProfessionalPortfolioPage() {
       </section>
 
       {/* Project overview */}
+
       <section className="border-t border-white/5 py-20">
         <Container>
           <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
@@ -461,26 +520,33 @@ export default function ProfessionalPortfolioPage() {
               <p className="mt-5 leading-7 text-gray-400">
                 What began as a personal portfolio developed into a broader
                 production platform. It now demonstrates web development,
-                secure authentication, application architecture, infrastructure
-                integration, operational monitoring, and long-term technical
-                maintenance.
+                secure authentication, application architecture,
+                infrastructure integration, operational monitoring, and
+                long-term technical maintenance.
               </p>
             </div>
 
             <div className="space-y-4">
               {objectives.map(
-                (objective) => (
+                (
+                  objective,
+                ) => (
                   <div
-                    key={objective}
+                    key={
+                      objective
+                    }
                     className="flex gap-3 rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-5"
                   >
                     <CheckCircle2
                       size={20}
                       className="mt-0.5 shrink-0 text-green-400"
+                      aria-hidden="true"
                     />
 
                     <p className="leading-7 text-gray-300">
-                      {objective}
+                      {
+                        objective
+                      }
                     </p>
                   </div>
                 ),
@@ -491,6 +557,7 @@ export default function ProfessionalPortfolioPage() {
       </section>
 
       {/* Platform features */}
+
       <section className="border-t border-white/5 py-20">
         <Container>
           <div className="mb-12 max-w-3xl">
@@ -511,25 +578,36 @@ export default function ProfessionalPortfolioPage() {
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {platformFeatures.map(
-              (feature) => {
+              (
+                feature,
+              ) => {
                 const Icon =
                   feature.icon;
 
                 return (
                   <article
-                    key={feature.title}
+                    key={
+                      feature.title
+                    }
                     className="rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-6 transition hover:-translate-y-1 hover:border-green-400/40"
                   >
                     <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-green-400/10 text-green-300">
-                      <Icon size={22} />
+                      <Icon
+                        size={22}
+                        aria-hidden="true"
+                      />
                     </div>
 
                     <h3 className="mt-5 text-lg font-semibold text-white">
-                      {feature.title}
+                      {
+                        feature.title
+                      }
                     </h3>
 
                     <p className="mt-3 leading-7 text-gray-400">
-                      {feature.description}
+                      {
+                        feature.description
+                      }
                     </p>
                   </article>
                 );
@@ -540,6 +618,7 @@ export default function ProfessionalPortfolioPage() {
       </section>
 
       {/* Architecture */}
+
       <section className="border-t border-white/5 py-20">
         <Container>
           <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
@@ -561,18 +640,26 @@ export default function ProfessionalPortfolioPage() {
 
             <div className="space-y-4">
               {architecture.map(
-                (item) => (
+                (
+                  item,
+                ) => (
                   <article
-                    key={item.step}
+                    key={
+                      item.step
+                    }
                     className="flex gap-5 rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-5"
                   >
                     <span className="text-lg font-semibold text-green-400">
-                      {item.step}
+                      {
+                        item.step
+                      }
                     </span>
 
                     <div>
                       <h3 className="font-semibold text-white">
-                        {item.title}
+                        {
+                          item.title
+                        }
                       </h3>
 
                       <p className="mt-2 leading-7 text-gray-400">
@@ -590,6 +677,7 @@ export default function ProfessionalPortfolioPage() {
       </section>
 
       {/* Security */}
+
       <section className="border-t border-white/5 py-20">
         <Container>
           <div className="mb-12 max-w-3xl">
@@ -610,24 +698,33 @@ export default function ProfessionalPortfolioPage() {
 
           <div className="grid gap-6 md:grid-cols-2">
             {securityControls.map(
-              (control) => (
+              (
+                control,
+              ) => (
                 <article
-                  key={control.title}
+                  key={
+                    control.title
+                  }
                   className="rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-6"
                 >
                   <div className="flex items-center gap-3">
                     <LockKeyhole
                       size={20}
                       className="text-green-300"
+                      aria-hidden="true"
                     />
 
                     <h3 className="text-lg font-semibold text-white">
-                      {control.title}
+                      {
+                        control.title
+                      }
                     </h3>
                   </div>
 
                   <p className="mt-4 leading-7 text-gray-400">
-                    {control.description}
+                    {
+                      control.description
+                    }
                   </p>
                 </article>
               ),
@@ -637,6 +734,7 @@ export default function ProfessionalPortfolioPage() {
       </section>
 
       {/* Monitoring */}
+
       <section className="border-t border-white/5 py-20">
         <Container>
           <div className="mb-12 max-w-3xl">
@@ -657,25 +755,36 @@ export default function ProfessionalPortfolioPage() {
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {monitoringTools.map(
-              (tool) => {
+              (
+                tool,
+              ) => {
                 const Icon =
                   tool.icon;
 
                 return (
                   <article
-                    key={tool.title}
+                    key={
+                      tool.title
+                    }
                     className="rounded-2xl border border-white/10 bg-black/10 p-6"
                   >
                     <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-green-400/10 text-green-300">
-                      <Icon size={22} />
+                      <Icon
+                        size={22}
+                        aria-hidden="true"
+                      />
                     </div>
 
                     <h3 className="mt-5 text-lg font-semibold text-white">
-                      {tool.title}
+                      {
+                        tool.title
+                      }
                     </h3>
 
                     <p className="mt-3 leading-7 text-gray-400">
-                      {tool.description}
+                      {
+                        tool.description
+                      }
                     </p>
                   </article>
                 );
@@ -686,6 +795,7 @@ export default function ProfessionalPortfolioPage() {
       </section>
 
       {/* Challenges */}
+
       <section className="border-t border-white/5 py-20">
         <Container>
           <div className="mb-12 max-w-3xl">
@@ -705,13 +815,19 @@ export default function ProfessionalPortfolioPage() {
 
           <div className="grid gap-6 lg:grid-cols-2">
             {challenges.map(
-              (challenge) => (
+              (
+                challenge,
+              ) => (
                 <article
-                  key={challenge.title}
+                  key={
+                    challenge.title
+                  }
                   className="rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-6"
                 >
                   <h3 className="text-xl font-semibold text-white">
-                    {challenge.title}
+                    {
+                      challenge.title
+                    }
                   </h3>
 
                   <div className="mt-5">
@@ -720,7 +836,9 @@ export default function ProfessionalPortfolioPage() {
                     </p>
 
                     <p className="mt-2 leading-7 text-gray-400">
-                      {challenge.problem}
+                      {
+                        challenge.problem
+                      }
                     </p>
                   </div>
 
@@ -730,7 +848,9 @@ export default function ProfessionalPortfolioPage() {
                     </p>
 
                     <p className="mt-2 leading-7 text-gray-300">
-                      {challenge.solution}
+                      {
+                        challenge.solution
+                      }
                     </p>
                   </div>
                 </article>
@@ -741,6 +861,7 @@ export default function ProfessionalPortfolioPage() {
       </section>
 
       {/* Outcomes */}
+
       <section className="border-t border-white/5 py-20">
         <Container>
           <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
@@ -762,18 +883,25 @@ export default function ProfessionalPortfolioPage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               {outcomes.map(
-                (outcome) => (
+                (
+                  outcome,
+                ) => (
                   <div
-                    key={outcome}
+                    key={
+                      outcome
+                    }
                     className="flex gap-3 rounded-xl border border-white/10 bg-black/10 p-4"
                   >
                     <CheckCircle2
                       size={18}
                       className="mt-0.5 shrink-0 text-green-400"
+                      aria-hidden="true"
                     />
 
                     <p className="text-sm leading-6 text-gray-300">
-                      {outcome}
+                      {
+                        outcome
+                      }
                     </p>
                   </div>
                 ),
@@ -783,7 +911,69 @@ export default function ProfessionalPortfolioPage() {
         </Container>
       </section>
 
+      {/* Public documentation */}
+
+      <section className="border-t border-white/5 py-20">
+        <Container>
+          <div className="overflow-hidden rounded-3xl border border-cyan-400/15 bg-cyan-400/[0.04]">
+            <div className="grid gap-8 p-8 md:p-10 lg:grid-cols-[1fr_auto] lg:items-center lg:p-12">
+              <div className="max-w-3xl">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
+                  <FileText
+                    size={24}
+                    aria-hidden="true"
+                  />
+                </div>
+
+                <p className="mt-6 text-sm font-medium uppercase tracking-[0.25em] text-cyan-300">
+                  Public Technical Documentation
+                </p>
+
+                <h2 className="mt-3 text-3xl font-bold text-white">
+                  Explore the platform in greater technical depth
+                </h2>
+
+                <p className="mt-5 leading-7 text-gray-300">
+                  The public documentation provides a structured overview of
+                  the project objectives, platform capabilities, architecture,
+                  technology decisions, identity and access controls,
+                  publishing workflows, security engineering, deployment,
+                  monitoring, testing, lessons learned, and future roadmap.
+                </p>
+
+                <p className="mt-4 text-sm leading-6 text-gray-500">
+                  Sensitive credentials, private infrastructure details,
+                  internal paths, and operational secrets are intentionally
+                  excluded from the public edition.
+                </p>
+              </div>
+
+              <div className="lg:text-right">
+                <a
+                  href="/documents/professional-portfolio-platform-documentation.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-400 px-6 py-3 font-semibold text-[#06211d] transition hover:bg-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]"
+                >
+                  Read Documentation
+
+                  <ExternalLink
+                    size={17}
+                    aria-hidden="true"
+                  />
+                </a>
+
+                <p className="mt-3 text-xs text-gray-500">
+                  PDF · 20 pages · Public edition
+                </p>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
       {/* Future development */}
+
       <section className="border-t border-white/5 py-20">
         <Container>
           <div className="rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-8 md:p-12">
@@ -806,12 +996,18 @@ export default function ProfessionalPortfolioPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 {futureDevelopment.map(
-                  (item) => (
+                  (
+                    item,
+                  ) => (
                     <div
-                      key={item}
+                      key={
+                        item
+                      }
                       className="rounded-xl border border-white/10 bg-black/10 p-4 text-gray-300"
                     >
-                      {item}
+                      {
+                        item
+                      }
                     </div>
                   ),
                 )}
@@ -824,9 +1020,11 @@ export default function ProfessionalPortfolioPage() {
                 className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-6 py-3 font-medium text-black transition hover:bg-green-400"
               >
                 View All Projects
+
                 <ArrowLeft
                   className="rotate-180"
                   size={18}
+                  aria-hidden="true"
                 />
               </Link>
             </div>
