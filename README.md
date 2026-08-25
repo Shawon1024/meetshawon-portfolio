@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./public/logo.png" alt="Meet Shawon logo" width="320" />
+<img src="./public/logo.png" alt="Meet Shawon logo" width="300" />
 
 # Meet Shawon
 
@@ -413,11 +413,27 @@ For significant changes, opening an issue before submitting a pull request is re
 
 ## Licence
 
-This project is available under the [MIT Licence](./LICENSE).
+The source code in this repository is licensed under the [MIT Licence](./LICENSE).
 
 Copyright © 2026 **Md Samsudduha Shawon**.
 
-The MIT Licence applies to the software contained in this repository. Personal information, written portfolio content, branding, photographs, certificates, resume documents, and other personal assets remain the property of their respective owners and should not be reused as another person’s identity or portfolio content.
+### Personal Content and Assets
+
+The MIT Licence applies only to the original software source code unless expressly stated otherwise.
+
+The following materials are excluded from the MIT Licence and remain protected by copyright and other applicable rights:
+
+- Personal photographs and profile images
+- Curriculum vitae and resume documents
+- Certificates and credential documents
+- Personal biography and portfolio content
+- Technical articles and original written content
+- Meet Shawon name, logo, branding, and visual identity
+- Project screenshots containing personal or proprietary content
+
+These materials may not be copied, redistributed, impersonated, republished, or used commercially without prior written permission from Md Samsudduha Shawon.
+
+Third-party names, trademarks, packages, icons, fonts, and other materials remain subject to their respective owners’ licences and terms.
 
 ---
 
