@@ -10,6 +10,10 @@ import type {
   NextRequest,
 } from "next/server";
 
+import {
+  SITE_STATUS,
+} from "./app/config/siteStatus";
+
 const DRIVE_HOSTNAME =
   "drive.meetshawon.com";
 
@@ -32,7 +36,10 @@ function getHostname(
 function getDriveRewritePath(
   pathname: string,
 ) {
-  if (pathname === "/") {
+  if (
+    pathname ===
+    "/"
+  ) {
     return "/drive";
   }
 
@@ -53,17 +60,99 @@ function getDriveRewritePath(
   return null;
 }
 
+function pathMatches(
+  pathname: string,
+  allowedPath: string,
+) {
+  return (
+    pathname ===
+      allowedPath ||
+    pathname.startsWith(
+      `${allowedPath}/`,
+    )
+  );
+}
+
+function maintenancePathIsAllowed(
+  pathname: string,
+) {
+  return (
+    pathMatches(
+      pathname,
+      "/maintenance",
+    ) ||
+    pathMatches(
+      pathname,
+      "/contact",
+    ) ||
+    pathMatches(
+      pathname,
+      "/api/contact",
+    ) ||
+    pathMatches(
+      pathname,
+      "/api/health",
+    )
+  );
+}
+
+function getRetryAfterValue() {
+  const returnDate =
+    new Date(
+      SITE_STATUS
+        .maintenance
+        .expectedReturnAt,
+    );
+
+  if (
+    Number.isNaN(
+      returnDate.getTime(),
+    )
+  ) {
+    return "3600";
+  }
+
+  return returnDate.toUTCString();
+}
+
+function applyMaintenanceHeaders(
+  response: NextResponse,
+) {
+  response.headers.set(
+    "Cache-Control",
+    "no-store",
+  );
+
+  response.headers.set(
+    "Retry-After",
+    getRetryAfterValue(),
+  );
+
+  response.headers.set(
+    "X-Robots-Tag",
+    "noindex, noarchive",
+  );
+
+  return response;
+}
+
 export async function proxy(
   request: NextRequest,
 ) {
   const hostname =
-    getHostname(request);
+    getHostname(
+      request,
+    );
+
+  const pathname =
+    request.nextUrl
+      .pathname;
 
   const isDriveDomain =
     hostname ===
-    DRIVE_HOSTNAME ||
-      hostname ===
-    "drive.localhost";
+      DRIVE_HOSTNAME ||
+    hostname ===
+      "drive.localhost";
 
   const isMeetShawonDomain =
     hostname ===
@@ -71,6 +160,128 @@ export async function proxy(
     hostname ===
       "www.meetshawon.com" ||
     isDriveDomain;
+
+  // --------------------------------------------------
+  // HIDE MAINTENANCE PAGE DURING NORMAL OPERATION
+  // --------------------------------------------------
+  //
+  // When the website is operating normally, visitors
+  // should not be able to open /maintenance directly.
+  //
+  // Proxy performs a real HTTP 307 redirect to the
+  // homepage before the maintenance page is rendered.
+  // --------------------------------------------------
+
+  if (
+    SITE_STATUS.mode ===
+      "normal" &&
+    !isDriveDomain &&
+    pathMatches(
+      pathname,
+      "/maintenance",
+    )
+  ) {
+    const homeUrl =
+      request.nextUrl.clone();
+
+    homeUrl.pathname =
+      "/";
+
+    homeUrl.search =
+      "";
+
+    return NextResponse.redirect(
+      homeUrl,
+      {
+        status:
+          307,
+      },
+    );
+  }
+
+  // --------------------------------------------------
+  // FULL WEBSITE MAINTENANCE
+  // --------------------------------------------------
+  //
+  // This block operates only when:
+  //
+  //   SITE_STATUS.mode === "maintenance"
+  //
+  // Drive is excluded because it uses a separate
+  // subdomain and separate infrastructure.
+  //
+  // Contact and health checks remain available.
+  //
+  // Newsletter routes, account routes, content pages
+  // and all other main-site features are unavailable.
+  // --------------------------------------------------
+
+  if (
+    SITE_STATUS.mode ===
+      "maintenance" &&
+    !isDriveDomain &&
+    !maintenancePathIsAllowed(
+      pathname,
+    )
+  ) {
+    // API requests receive a structured maintenance
+    // response instead of maintenance-page HTML.
+
+    if (
+      pathname.startsWith(
+        "/api/",
+      )
+    ) {
+      const apiResponse =
+        NextResponse.json(
+          {
+            error:
+              "The website is temporarily unavailable for scheduled maintenance.",
+
+            maintenance:
+              true,
+
+            expectedReturnAt:
+              SITE_STATUS
+                .maintenance
+                .expectedReturnAt,
+          },
+          {
+            status:
+              503,
+          },
+        );
+
+      return applyMaintenanceHeaders(
+        apiResponse,
+      );
+    }
+
+    // Website pages are internally rewritten to the
+    // maintenance page while keeping a 503 response.
+
+    const maintenanceUrl =
+      request.nextUrl.clone();
+
+    maintenanceUrl.pathname =
+      "/maintenance";
+
+    maintenanceUrl.search =
+      "";
+
+    const maintenanceResponse =
+      NextResponse.rewrite(
+        maintenanceUrl,
+        {
+          status:
+            503,
+        },
+      );
+
+    return applyMaintenanceHeaders(
+      maintenanceResponse,
+    );
+  }
 
   // --------------------------------------------------
   // INITIAL RESPONSE
@@ -82,12 +293,13 @@ export async function proxy(
   const driveRewritePath =
     isDriveDomain
       ? getDriveRewritePath(
-          request.nextUrl
-            .pathname,
+          pathname,
         )
       : null;
 
-  if (driveRewritePath) {
+  if (
+    driveRewritePath
+  ) {
     const rewriteUrl =
       request.nextUrl.clone();
 
@@ -138,10 +350,15 @@ export async function proxy(
               cookieOptions: {
                 domain:
                   ".meetshawon.com",
-                path: "/",
+
+                path:
+                  "/",
+
                 sameSite:
                   "lax" as const,
-                secure: true,
+
+                secure:
+                  true,
               },
             }
           : {}),
@@ -182,10 +399,15 @@ export async function proxy(
                       ? {
                           domain:
                             ".meetshawon.com",
-                          path: "/",
+
+                          path:
+                            "/",
+
                           sameSite:
                             "lax" as const,
-                          secure: true,
+
+                          secure:
+                            true,
                         }
                       : {}),
                   },

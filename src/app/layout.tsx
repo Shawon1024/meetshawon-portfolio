@@ -5,7 +5,9 @@ import {
   Geist,
   Geist_Mono,
 } from "next/font/google";
-
+import {
+  SITE_STATUS,
+} from "./config/siteStatus";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AnimatedBackground from "./components/background/AnimatedBackground";
@@ -205,6 +207,15 @@ export default function RootLayout({
       <body className="min-h-full">
         <AnimatedBackground />
 
+        {SITE_STATUS.mode ===
+          "maintenance" ? (
+            <div className="relative z-10 flex min-h-screen flex-col">
+              <div className="flex-1">
+                {children}
+              </div>
+            </div>
+          ) : (
+
         <div className="relative z-10 flex min-h-screen flex-col">
           <Navbar />
 
@@ -218,6 +229,7 @@ export default function RootLayout({
 
           <Footer />
         </div>
+          )}
       </body>
     </html>
   );
