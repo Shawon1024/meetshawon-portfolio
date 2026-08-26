@@ -213,3 +213,19 @@ body {
     stroke-dashoffset: 0;
   }
 }
+
+/* ==================================================
+   PRIVATE SERVICE SHELL
+   ==================================================
+
+   Lab pages provide their own restricted-service
+   header and footer. Hide the public portfolio chrome
+   only when a Lab shell marker is present.
+
+   Keep this rule while lab.meetshawon.com is served
+   by this Next.js application.
+   ================================================== */
+
+body:has([data-service-shell="lab"]) .portfolio-global-chrome {
+  display: none;
+}

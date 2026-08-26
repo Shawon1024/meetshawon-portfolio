@@ -1,10 +1,5 @@
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Scale,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, Scale, ShieldCheck, Users } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import Container from "../../components/Container";
@@ -35,71 +30,69 @@ export default async function AdminUsersPage() {
     redirect("/account");
   }
 
-  const [usersResult, pendingAppealsResult, driveAccountsResult] =
-    await Promise.all([
-      supabase
-        .from("profiles")
-        .select(`
-          id,
-          first_name,
-          last_name,
-          username,
-          avatar_url,
-          role,
-          verified
-        `)
-        .order("username", {
-          ascending: true,
-          nullsFirst: false,
-        }),
-
-      supabase
-        .from("account_block_appeals")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending"),
-
-      supabase.rpc("admin_list_drive_accounts"),
-    ]);
+  const [
+    usersResult,
+    pendingAppealsResult,
+    driveAccountsResult,
+    labAccessResult,
+  ] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select(`
+        id,
+        first_name,
+        last_name,
+        username,
+        avatar_url,
+        role,
+        verified
+      `)
+      .order("username", {
+        ascending: true,
+        nullsFirst: false,
+      }),
+    supabase
+      .from("account_block_appeals")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
+    supabase.rpc("admin_list_drive_accounts"),
+    supabase
+      .from("lab_access_members")
+      .select("user_id, access_level, status"),
+  ]);
 
   const users = usersResult.data;
   const usersError = usersResult.error;
   const pendingAppeals = pendingAppealsResult.count ?? 0;
-  const profileById =
-    new Map(
-      (users ?? []).map(
-        (profile) => [
-          profile.id,
-          profile,
-        ],
-      ),
-    );
 
-  const driveAccounts =
-  (
-    (driveAccountsResult.data as DriveAccountReview[] | null) ??
-    []
+  const profileById = new Map(
+    (users ?? []).map((userProfile) => [userProfile.id, userProfile]),
+  );
+
+  const labAccessByUserId = new Map(
+    (labAccessResult.data ?? []).map((membership) => [
+      membership.user_id,
+      membership,
+    ]),
+  );
+
+  const usersWithLabAccess = (users ?? []).map((userProfile) => ({
+    ...userProfile,
+    lab_access: labAccessByUserId.get(userProfile.id) ?? null,
+  }));
+
+  const driveAccounts = (
+    (driveAccountsResult.data as DriveAccountReview[] | null) ?? []
   ).map((account) => {
-    const accountProfile =
-      profileById.get(account.user_id);
+    const accountProfile = profileById.get(account.user_id);
 
     return {
       ...account,
-
-      first_name:
-        accountProfile?.first_name ??
-        null,
-
-      last_name:
-        accountProfile?.last_name ??
-        null,
-
+      first_name: accountProfile?.first_name ?? null,
+      last_name: accountProfile?.last_name ?? null,
       website_username:
-        accountProfile?.username ??
-        account.website_username,
-
-      avatar_url:
-        accountProfile?.avatar_url ??
-        null,
+        accountProfile?.username ?? account.website_username,
+      avatar_url: accountProfile?.avatar_url ?? null,
     };
   });
 
@@ -121,6 +114,15 @@ export default async function AdminUsersPage() {
     );
   }
 
+  if (labAccessResult.error) {
+    console.error(
+      "Admin Lab access query failed:",
+      labAccessResult.error,
+    );
+  }
+
+  const userManagementError = usersError ?? labAccessResult.error;
+
   return (
     <main>
       <section className="px-6 pb-10 pt-16 md:pt-24">
@@ -129,14 +131,14 @@ export default async function AdminUsersPage() {
             href="/admin"
             className="inline-flex items-center gap-2 text-sm text-gray-400 transition hover:text-green-400"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={16} aria-hidden="true" />
             Back to Admin
           </Link>
 
           <div className="mt-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-green-400/10 text-green-300">
-                <Users size={24} />
+                <Users size={24} aria-hidden="true" />
               </div>
 
               <p className="mt-6 text-sm font-medium uppercase tracking-[0.25em] text-green-400">
@@ -148,8 +150,8 @@ export default async function AdminUsersPage() {
               </h1>
 
               <p className="mt-4 max-w-2xl leading-7 text-gray-400">
-                Search users, manage verification and roles, review Drive
-                retention, and handle blocked-account appeals.
+                Search users, manage verification, roles and Lab access, review
+                Drive retention, and handle blocked-account appeals.
               </p>
             </div>
 
@@ -161,14 +163,15 @@ export default async function AdminUsersPage() {
                 <Scale
                   size={17}
                   className="transition-transform duration-200 group-hover:scale-110"
+                  aria-hidden="true"
                 />
                 <span>Account Appeals</span>
 
-                {pendingAppeals > 0 && (
+                {pendingAppeals > 0 ? (
                   <span className="ml-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full border border-red-400/20 bg-red-400/10 px-1.5 text-[11px] font-bold leading-none text-red-300">
                     {pendingAppeals > 99 ? "99+" : pendingAppeals}
                   </span>
-                )}
+                ) : null}
               </Link>
 
               <Link
@@ -178,6 +181,7 @@ export default async function AdminUsersPage() {
                 <ShieldCheck
                   size={17}
                   className="transition-transform duration-200 group-hover:scale-110"
+                  aria-hidden="true"
                 />
                 <span>Moderation</span>
               </Link>
@@ -206,14 +210,18 @@ export default async function AdminUsersPage() {
             )}
 
             <div className="mt-12">
-              {usersError ? (
+              {userManagementError ? (
                 <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-300">
-                  <p className="font-medium">Users could not be loaded.</p>
-                  <p className="mt-2 text-sm">{usersError.message}</p>
+                  <p className="font-medium">
+                    Users or Lab access records could not be loaded.
+                  </p>
+                  <p className="mt-2 text-sm">
+                    {userManagementError.message}
+                  </p>
                 </div>
               ) : (
                 <UserManagementManager
-                  initialUsers={users ?? []}
+                  initialUsers={usersWithLabAccess}
                   currentUserId={user.id}
                 />
               )}

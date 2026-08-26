@@ -1,338 +1,182 @@
-import {
-  createServerClient,
-} from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-import {
-  NextResponse,
-} from "next/server";
+import { SITE_STATUS } from "./app/config/siteStatus";
 
-import type {
-  NextRequest,
-} from "next/server";
+const DRIVE_HOSTNAME = "drive.meetshawon.com";
+const LAB_HOSTNAME = "lab.meetshawon.com";
 
-import {
-  SITE_STATUS,
-} from "./app/config/siteStatus";
-
-const DRIVE_HOSTNAME =
-  "drive.meetshawon.com";
-
-function getHostname(
-  request: NextRequest,
-) {
+function getHostname(request: NextRequest) {
   return (
-    request.headers.get(
-      "x-forwarded-host",
-    ) ??
-    request.headers.get(
-      "host",
-    ) ??
+    request.headers.get("x-forwarded-host") ??
+    request.headers.get("host") ??
     ""
   )
     .split(":")[0]
     .toLowerCase();
 }
 
-function getDriveRewritePath(
-  pathname: string,
-) {
-  if (
-    pathname ===
-    "/"
-  ) {
+function getDriveRewritePath(pathname: string) {
+  if (pathname === "/") {
     return "/drive";
   }
 
-  if (
-    pathname ===
-    "/dashboard"
-  ) {
+  if (pathname === "/dashboard") {
     return "/drive/dashboard";
   }
 
-  if (
-    pathname ===
-    "/access-denied"
-  ) {
+  if (pathname === "/access-denied") {
     return "/drive/access-denied";
   }
 
   return null;
 }
 
-function pathMatches(
-  pathname: string,
-  allowedPath: string,
-) {
-  return (
-    pathname ===
-      allowedPath ||
-    pathname.startsWith(
-      `${allowedPath}/`,
-    )
-  );
+function getLabRewritePath(pathname: string) {
+  if (pathname === "/") {
+    return "/lab";
+  }
+
+  if (pathname === "/access-denied") {
+    return "/lab/access-denied";
+  }
+
+  return null;
 }
 
-function maintenancePathIsAllowed(
-  pathname: string,
-) {
+function pathMatches(pathname: string, allowedPath: string) {
+  return pathname === allowedPath || pathname.startsWith(`${allowedPath}/`);
+}
+
+function maintenancePathIsAllowed(pathname: string) {
   return (
-    pathMatches(
-      pathname,
-      "/maintenance",
-    ) ||
-    pathMatches(
-      pathname,
-      "/contact",
-    ) ||
-    pathMatches(
-      pathname,
-      "/api/contact",
-    ) ||
-    pathMatches(
-      pathname,
-      "/api/health",
-    )
+    pathMatches(pathname, "/maintenance") ||
+    pathMatches(pathname, "/contact") ||
+    pathMatches(pathname, "/api/contact") ||
+    pathMatches(pathname, "/api/health")
   );
 }
 
 function getRetryAfterValue() {
-  const returnDate =
-    new Date(
-      SITE_STATUS
-        .maintenance
-        .expectedReturnAt,
-    );
+  const returnDate = new Date(SITE_STATUS.maintenance.expectedReturnAt);
 
-  if (
-    Number.isNaN(
-      returnDate.getTime(),
-    )
-  ) {
+  if (Number.isNaN(returnDate.getTime())) {
     return "3600";
   }
 
   return returnDate.toUTCString();
 }
 
-function applyMaintenanceHeaders(
-  response: NextResponse,
-) {
-  response.headers.set(
-    "Cache-Control",
-    "no-store",
-  );
-
-  response.headers.set(
-    "Retry-After",
-    getRetryAfterValue(),
-  );
-
-  response.headers.set(
-    "X-Robots-Tag",
-    "noindex, noarchive",
-  );
+function applyMaintenanceHeaders(response: NextResponse) {
+  response.headers.set("Cache-Control", "no-store");
+  response.headers.set("Retry-After", getRetryAfterValue());
+  response.headers.set("X-Robots-Tag", "noindex, noarchive");
 
   return response;
 }
 
-export async function proxy(
-  request: NextRequest,
-) {
-  const hostname =
-    getHostname(
-      request,
-    );
-
-  const pathname =
-    request.nextUrl
-      .pathname;
+export async function proxy(request: NextRequest) {
+  const hostname = getHostname(request);
+  const pathname = request.nextUrl.pathname;
 
   const isDriveDomain =
-    hostname ===
-      DRIVE_HOSTNAME ||
-    hostname ===
-      "drive.localhost";
+    hostname === DRIVE_HOSTNAME || hostname === "drive.localhost";
 
-  const isMeetShawonDomain =
-    hostname ===
-      "meetshawon.com" ||
-    hostname ===
-      "www.meetshawon.com" ||
-    isDriveDomain;
+  const isLabDomain =
+    hostname === LAB_HOSTNAME || hostname === "lab.localhost";
+
+  const isServiceDomain = isDriveDomain || isLabDomain;
+
+  const usesSharedProductionCookies =
+    hostname === "meetshawon.com" ||
+    hostname === "www.meetshawon.com" ||
+    hostname === DRIVE_HOSTNAME ||
+    hostname === LAB_HOSTNAME;
 
   // --------------------------------------------------
   // HIDE MAINTENANCE PAGE DURING NORMAL OPERATION
   // --------------------------------------------------
-  //
-  // When the website is operating normally, visitors
-  // should not be able to open /maintenance directly.
-  //
-  // Proxy performs a real HTTP 307 redirect to the
-  // homepage before the maintenance page is rendered.
-  // --------------------------------------------------
 
   if (
-    SITE_STATUS.mode ===
-      "normal" &&
-    !isDriveDomain &&
-    pathMatches(
-      pathname,
-      "/maintenance",
-    )
+    SITE_STATUS.mode === "normal" &&
+    !isServiceDomain &&
+    pathMatches(pathname, "/maintenance")
   ) {
-    const homeUrl =
-      request.nextUrl.clone();
+    const homeUrl = request.nextUrl.clone();
+    homeUrl.pathname = "/";
+    homeUrl.search = "";
 
-    homeUrl.pathname =
-      "/";
-
-    homeUrl.search =
-      "";
-
-    return NextResponse.redirect(
-      homeUrl,
-      {
-        status:
-          307,
-      },
-    );
+    return NextResponse.redirect(homeUrl, { status: 307 });
   }
 
   // --------------------------------------------------
-  // FULL WEBSITE MAINTENANCE
+  // FULL MAIN-WEBSITE MAINTENANCE
   // --------------------------------------------------
-  //
-  // This block operates only when:
-  //
-  //   SITE_STATUS.mode === "maintenance"
-  //
-  // Drive is excluded because it uses a separate
-  // subdomain and separate infrastructure.
-  //
-  // Contact and health checks remain available.
-  //
-  // Newsletter routes, account routes, content pages
-  // and all other main-site features are unavailable.
-  // --------------------------------------------------
+  // Drive and Lab are separate service subdomains and
+  // remain outside main-site maintenance handling.
 
   if (
-    SITE_STATUS.mode ===
-      "maintenance" &&
-    !isDriveDomain &&
-    !maintenancePathIsAllowed(
-      pathname,
-    )
+    SITE_STATUS.mode === "maintenance" &&
+    !isServiceDomain &&
+    !maintenancePathIsAllowed(pathname)
   ) {
-    // API requests receive a structured maintenance
-    // response instead of maintenance-page HTML.
-
-    if (
-      pathname.startsWith(
-        "/api/",
-      )
-    ) {
-      const apiResponse =
-        NextResponse.json(
-          {
-            error:
-              "The website is temporarily unavailable for scheduled maintenance.",
-
-            maintenance:
-              true,
-
-            expectedReturnAt:
-              SITE_STATUS
-                .maintenance
-                .expectedReturnAt,
-          },
-          {
-            status:
-              503,
-          },
-        );
-
-      return applyMaintenanceHeaders(
-        apiResponse,
+    if (pathname.startsWith("/api/")) {
+      const apiResponse = NextResponse.json(
+        {
+          error:
+            "The website is temporarily unavailable for scheduled maintenance.",
+          maintenance: true,
+          expectedReturnAt: SITE_STATUS.maintenance.expectedReturnAt,
+        },
+        { status: 503 },
       );
+
+      return applyMaintenanceHeaders(apiResponse);
     }
 
-    // Website pages are internally rewritten to the
-    // maintenance page while keeping a 503 response.
+    const maintenanceUrl = request.nextUrl.clone();
+    maintenanceUrl.pathname = "/maintenance";
+    maintenanceUrl.search = "";
 
-    const maintenanceUrl =
-      request.nextUrl.clone();
+    const maintenanceResponse = NextResponse.rewrite(maintenanceUrl, {
+      status: 503,
+    });
 
-    maintenanceUrl.pathname =
-      "/maintenance";
-
-    maintenanceUrl.search =
-      "";
-
-    const maintenanceResponse =
-      NextResponse.rewrite(
-        maintenanceUrl,
-        {
-          status:
-            503,
-        },
-      );
-
-    return applyMaintenanceHeaders(
-      maintenanceResponse,
-    );
+    return applyMaintenanceHeaders(maintenanceResponse);
   }
 
   // --------------------------------------------------
-  // INITIAL RESPONSE
+  // SERVICE-SUBDOMAIN REWRITES
   // --------------------------------------------------
 
-  let response:
-    NextResponse;
+  let response: NextResponse;
 
-  const driveRewritePath =
-    isDriveDomain
-      ? getDriveRewritePath(
-          pathname,
-        )
-      : null;
+  const driveRewritePath = isDriveDomain
+    ? getDriveRewritePath(pathname)
+    : null;
 
-  if (
-    driveRewritePath
-  ) {
-    const rewriteUrl =
-      request.nextUrl.clone();
+  const labRewritePath = isLabDomain ? getLabRewritePath(pathname) : null;
 
-    rewriteUrl.pathname =
-      driveRewritePath;
+  const serviceRewritePath = driveRewritePath ?? labRewritePath;
 
-    response =
-      NextResponse.rewrite(
-        rewriteUrl,
-      );
+  if (serviceRewritePath) {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = serviceRewritePath;
+
+    response = NextResponse.rewrite(rewriteUrl);
   } else {
-    response =
-      NextResponse.next({
-        request,
-      });
+    response = NextResponse.next({ request });
   }
 
   // --------------------------------------------------
   // SUPABASE ENVIRONMENT
   // --------------------------------------------------
 
-  const supabaseUrl =
-    process.env
-      .NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-  const supabaseKey =
-    process.env
-      .NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-  if (
-    !supabaseUrl ||
-    !supabaseKey
-  ) {
+  if (!supabaseUrl || !supabaseKey) {
     return response;
   }
 
@@ -340,84 +184,44 @@ export async function proxy(
   // SUPABASE SESSION REFRESH
   // --------------------------------------------------
 
-  const supabase =
-    createServerClient(
-      supabaseUrl,
-      supabaseKey,
-      {
-        ...(isMeetShawonDomain
-          ? {
-              cookieOptions: {
-                domain:
-                  ".meetshawon.com",
-
-                path:
-                  "/",
-
-                sameSite:
-                  "lax" as const,
-
-                secure:
-                  true,
-              },
-            }
-          : {}),
-
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    ...(usesSharedProductionCookies
+      ? {
+          cookieOptions: {
+            domain: ".meetshawon.com",
+            path: "/",
+            sameSite: "lax" as const,
+            secure: true,
           },
+        }
+      : {}),
 
-          setAll(
-            cookiesToSet,
-          ) {
-            cookiesToSet.forEach(
-              ({
-                name,
-                value,
-              }) => {
-                request.cookies.set(
-                  name,
-                  value,
-                );
-              },
-            );
-
-            cookiesToSet.forEach(
-              ({
-                name,
-                value,
-                options,
-              }) => {
-                response.cookies.set(
-                  name,
-                  value,
-                  {
-                    ...options,
-
-                    ...(isMeetShawonDomain
-                      ? {
-                          domain:
-                            ".meetshawon.com",
-
-                          path:
-                            "/",
-
-                          sameSite:
-                            "lax" as const,
-
-                          secure:
-                            true,
-                        }
-                      : {}),
-                  },
-                );
-              },
-            );
-          },
-        },
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
       },
-    );
+
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => {
+          request.cookies.set(name, value);
+        });
+
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, {
+            ...options,
+            ...(usesSharedProductionCookies
+              ? {
+                  domain: ".meetshawon.com",
+                  path: "/",
+                  sameSite: "lax" as const,
+                  secure: true,
+                }
+              : {}),
+          });
+        });
+      },
+    },
+  });
 
   await supabase.auth.getUser();
 

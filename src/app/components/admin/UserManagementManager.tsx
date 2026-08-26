@@ -16,6 +16,9 @@ import {
 } from "react";
 import Image from "next/image";
 import VerifiedBadge from "../ui/VerifiedBadge";
+import LabAccessControl, {
+  type LabAccessMembership,
+} from "./LabAccessControl";
 import { createClient } from "../../lib/supabase/client";
 
 interface UserProfile {
@@ -26,6 +29,7 @@ interface UserProfile {
   avatar_url: string | null;
   role: string | null;
   verified: boolean;
+  lab_access: LabAccessMembership | null;
 }
 
 interface UserManagementManagerProps {
@@ -929,6 +933,16 @@ export default function UserManagementManager({
                             : "Verify User"}
                       </button>
                     </div>
+                  </div>
+
+                  <div className="mt-5 border-t border-white/10 pt-5">
+                    <LabAccessControl
+                      userId={user.id}
+                      identity={getUserIdentity(user)}
+                      currentUserId={currentUserId}
+                      automaticAdminAccess={user.role === "admin"}
+                      initialMembership={user.lab_access}
+                    />
                   </div>
                 </article>
               );

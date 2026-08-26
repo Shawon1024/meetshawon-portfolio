@@ -10,6 +10,7 @@ import {
   Bookmark,
   ChevronDown,
   Clock3,
+  FlaskConical,
   HardDrive,
   LogOut,
   Menu,
@@ -160,6 +161,11 @@ export default function Navbar() {
   ] = useState<ProfileData | null>(
     null,
   );
+
+  const [
+    hasLabAccess,
+    setHasLabAccess,
+  ] = useState(false);
 
   const [
     unreadNotifications,
@@ -467,6 +473,44 @@ export default function Navbar() {
   // LOAD AUTH + PROFILE
   // --------------------------------------------------
 
+  const loadLabAccess =
+    useCallback(
+      async (
+        userId: string,
+        role: string | null,
+      ) => {
+        if (role === "admin") {
+          setHasLabAccess(true);
+          return;
+        }
+
+        const {
+          data,
+          error,
+        } = await supabase
+          .from("lab_access_members")
+          .select("status")
+          .eq("user_id", userId)
+          .eq("status", "active")
+          .maybeSingle();
+
+        if (error) {
+          console.error(
+            "Navbar Lab access could not be checked:",
+            error,
+          );
+
+          setHasLabAccess(false);
+          return;
+        }
+
+        setHasLabAccess(
+          data?.status === "active",
+        );
+      },
+      [supabase],
+    );
+
   useEffect(() => {
     let cancelled = false;
 
@@ -484,6 +528,7 @@ export default function Navbar() {
 
           if (!user) {
             setProfile(null);
+            setHasLabAccess(false);
             setUnreadNotifications(0);
             setRecentNotifications([]);
             setNotificationOpen(false);
@@ -518,6 +563,7 @@ export default function Navbar() {
             );
 
             setProfile(null);
+            setHasLabAccess(false);
             return;
           }
 
@@ -528,6 +574,15 @@ export default function Navbar() {
           setProfile(
             data ?? null,
           );
+
+          if (data) {
+            void loadLabAccess(
+              user.id,
+              data.role,
+            );
+          } else {
+            setHasLabAccess(false);
+          }
 
           void loadNotifications(
             user.id,
@@ -556,6 +611,7 @@ export default function Navbar() {
         ) => {
           if (!session?.user) {
             setProfile(null);
+            setHasLabAccess(false);
             setUnreadNotifications(0);
             setRecentNotifications([]);
             setNotificationOpen(false);
@@ -590,6 +646,7 @@ export default function Navbar() {
             );
 
             setProfile(null);
+            setHasLabAccess(false);
             setLoadingAuth(false);
             return;
           }
@@ -597,6 +654,15 @@ export default function Navbar() {
           setProfile(
             data ?? null,
           );
+
+          if (data) {
+            void loadLabAccess(
+              session.user.id,
+              data.role,
+            );
+          } else {
+            setHasLabAccess(false);
+          }
 
           void loadNotifications(
             session.user.id,
@@ -613,6 +679,7 @@ export default function Navbar() {
     };
   }, [
     loadNotifications,
+    loadLabAccess,
     supabase,
   ]);
 
@@ -1914,6 +1981,27 @@ export default function Navbar() {
                     </div>
                   )}
 
+                  {hasLabAccess && (
+                    <div className="border-t border-white/10 p-2">
+                      <a
+                        href="https://lab.meetshawon.com"
+                        role="menuitem"
+                        onClick={() =>
+                          setAccountOpen(
+                            false,
+                          )
+                        }
+                        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-emerald-300 transition hover:bg-emerald-400/10"
+                      >
+                        <FlaskConical
+                          size={17}
+                        />
+
+                        Cybersecurity Lab
+                      </a>
+                    </div>
+                  )}
+
                   {(profile.role ===
                     "admin" ||
                     profile.role ===
@@ -2522,6 +2610,22 @@ export default function Navbar() {
 
                             Moderation Dashboard
                           </Link>
+                        )}
+
+                        {hasLabAccess && (
+                          <a
+                            href="https://lab.meetshawon.com"
+                            onClick={
+                              closeMobileMenu
+                            }
+                            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-emerald-300 transition duration-200 hover:bg-emerald-400/10"
+                          >
+                            <FlaskConical
+                              size={17}
+                            />
+
+                            Cybersecurity Lab
+                          </a>
                         )}
 
                         {(profile.role ===
