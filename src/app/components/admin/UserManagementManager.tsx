@@ -6,6 +6,7 @@ import {
   BadgeX,
   Search,
   ShieldCheck,
+  Trash2,
   UserCog,
   UserRound,
   Users,
@@ -68,6 +69,10 @@ interface PendingRoleChange {
 interface PendingVerificationChange {
   user: UserProfile;
   nextVerified: boolean;
+}
+
+interface PendingUserDeletion {
+  user: UserProfile;
 }
 
 function getFullName(
@@ -146,6 +151,18 @@ export default function UserManagementManager({
     useState<PendingVerificationChange | null>(
       null,
     );
+
+  const [
+    pendingUserDeletion,
+    setPendingUserDeletion,
+  ] = useState<PendingUserDeletion | null>(
+    null,
+  );
+
+  const [
+    deletionConfirmation,
+    setDeletionConfirmation,
+  ] = useState("");
 
   // --------------------------------------------------
   // FILTER USERS
@@ -415,6 +432,126 @@ export default function UserManagementManager({
           error instanceof Error
             ? error.message
             : "User role could not be updated.",
+        );
+      } finally {
+        setWorkingUserId(
+          null,
+        );
+      }
+    };
+
+  // --------------------------------------------------
+  // USER DELETION
+  // --------------------------------------------------
+
+  const requestUserDeletion =
+    (user: UserProfile) => {
+      if (
+        user.id === currentUserId ||
+        !user.username
+      ) {
+        return;
+      }
+
+      setError("");
+      setDeletionConfirmation("");
+      setPendingUserDeletion({
+        user,
+      });
+    };
+
+  const confirmUserDeletion =
+    async () => {
+      if (!pendingUserDeletion) {
+        return;
+      }
+
+      const targetUser =
+        pendingUserDeletion.user;
+
+      const expectedUsername =
+        targetUser.username
+          ?.trim()
+          .toLowerCase() ??
+        "";
+
+      if (
+        !expectedUsername ||
+        deletionConfirmation
+          .trim()
+          .toLowerCase() !==
+          expectedUsername
+      ) {
+        return;
+      }
+
+      try {
+        setWorkingUserId(
+          targetUser.id,
+        );
+
+        setError("");
+
+        const response =
+          await fetch(
+            "/api/admin/users/delete",
+            {
+              method:
+                "DELETE",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify({
+                  userId:
+                    targetUser.id,
+
+                  confirmationUsername:
+                    deletionConfirmation.trim(),
+                }),
+            },
+          );
+
+        const result =
+          (await response.json()) as {
+            success?: boolean;
+            error?: string;
+          };
+
+        if (
+          !response.ok ||
+          !result.success
+        ) {
+          throw new Error(
+            result.error ??
+              "The user account could not be deleted.",
+          );
+        }
+
+        setUsers(
+          (current) =>
+            current.filter(
+              (user) =>
+                user.id !==
+                targetUser.id,
+            ),
+        );
+
+        setPendingUserDeletion(
+          null,
+        );
+
+        setDeletionConfirmation(
+          "",
+        );
+      } catch (unexpectedError) {
+        setError(
+          unexpectedError instanceof Error
+            ? unexpectedError.message
+            : "The user account could not be deleted.",
         );
       } finally {
         setWorkingUserId(
@@ -932,6 +1069,37 @@ export default function UserManagementManager({
                             ? "Remove Verification"
                             : "Verify User"}
                       </button>
+
+                      {/* Permanent account deletion */}
+
+                      <button
+                        type="button"
+                        disabled={
+                          working ||
+                          isYou ||
+                          !user.username
+                        }
+                        onClick={() => {
+                          requestUserDeletion(
+                            user,
+                          );
+                        }}
+                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-400/20 px-4 py-2.5 text-sm font-medium text-red-300 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50"
+                        title={
+                          isYou
+                            ? "You cannot delete your own administrator account here."
+                            : !user.username
+                              ? "A username is required before this account can be deleted."
+                              : "Permanently delete user"
+                        }
+                      >
+                        <Trash2
+                          size={17}
+                          aria-hidden="true"
+                        />
+
+                        Delete User
+                      </button>
                     </div>
                   </div>
 
@@ -1200,6 +1368,168 @@ export default function UserManagementManager({
                         1,
                       )
                     }`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =================================================
+          PERMANENT USER DELETION CONFIRMATION
+      ================================================= */}
+
+      {pendingUserDeletion && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm"
+          onMouseDown={(event) => {
+            if (
+              event.target ===
+                event.currentTarget &&
+              !workingUserId
+            ) {
+              setPendingUserDeletion(
+                null,
+              );
+
+              setDeletionConfirmation(
+                "",
+              );
+            }
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="user-deletion-title"
+            aria-describedby="user-deletion-description"
+            className="w-full max-w-lg overflow-hidden rounded-3xl border border-red-400/20 bg-[#102A2A] shadow-2xl"
+          >
+            <div className="p-6 md:p-7">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-red-400/20 bg-red-400/10 text-red-300">
+                <Trash2
+                  size={22}
+                  aria-hidden="true"
+                />
+              </div>
+
+              <h2
+                id="user-deletion-title"
+                className="mt-5 text-2xl font-semibold text-white"
+              >
+                Permanently delete this user?
+              </h2>
+
+              <p
+                id="user-deletion-description"
+                className="mt-3 leading-7 text-gray-400"
+              >
+                You are about to permanently delete{" "}
+                <span className="font-medium text-white">
+                  {getUserIdentity(
+                    pendingUserDeletion.user,
+                  )}
+                </span>
+                . This action cannot be undone.
+              </p>
+
+              <div className="mt-5 space-y-2 rounded-2xl border border-red-400/15 bg-red-400/[0.06] p-4 text-sm leading-6 text-red-100/80">
+                <p>
+                  Deletion is blocked if this user owns blog posts or has any
+                  Drive account or retained Drive records.
+                </p>
+
+                <p>
+                  Reassign or remove authored posts first. Drive users must
+                  complete the existing retention and cleanup workflow first.
+                </p>
+              </div>
+
+              <label
+                htmlFor="delete-user-confirmation"
+                className="mt-6 block text-sm font-medium text-gray-300"
+              >
+                Type{" "}
+                <span className="font-semibold text-red-300">
+                  {pendingUserDeletion.user.username}
+                </span>{" "}
+                to confirm
+              </label>
+
+              <input
+                id="delete-user-confirmation"
+                type="text"
+                autoComplete="off"
+                spellCheck={false}
+                value={
+                  deletionConfirmation
+                }
+                disabled={
+                  Boolean(
+                    workingUserId,
+                  )
+                }
+                onChange={(event) => {
+                  setDeletionConfirmation(
+                    event.target.value,
+                  );
+                }}
+                className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-red-400/50 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder={
+                  pendingUserDeletion.user.username ??
+                  "username"
+                }
+              />
+            </div>
+
+            <div className="flex flex-col-reverse gap-3 border-t border-white/10 p-4 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                disabled={
+                  Boolean(
+                    workingUserId,
+                  )
+                }
+                onClick={() => {
+                  setPendingUserDeletion(
+                    null,
+                  );
+
+                  setDeletionConfirmation(
+                    "",
+                  );
+                }}
+                className="cursor-pointer rounded-xl border border-white/10 px-5 py-2.5 text-sm font-medium text-gray-300 transition hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                disabled={
+                  Boolean(
+                    workingUserId,
+                  ) ||
+                  deletionConfirmation
+                    .trim()
+                    .toLowerCase() !==
+                    (pendingUserDeletion.user.username
+                      ?.trim()
+                      .toLowerCase() ??
+                      "")
+                }
+                onClick={() => {
+                  void confirmUserDeletion();
+                }}
+                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Trash2
+                  size={16}
+                  aria-hidden="true"
+                />
+
+                {workingUserId
+                  ? "Deleting..."
+                  : "Delete Permanently"}
               </button>
             </div>
           </div>
