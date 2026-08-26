@@ -1,38 +1,28 @@
-import {
-  createBrowserClient,
-} from "@supabase/ssr";
+import { createBrowserClient } from "@supabase/ssr";
 
 export function createClient() {
   const supabaseUrl =
-    process.env
-      .NEXT_PUBLIC_SUPABASE_URL;
+    process.env.NEXT_PUBLIC_SUPABASE_URL;
 
   const supabaseKey =
-    process.env
-      .NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-  if (
-    !supabaseUrl ||
-    !supabaseKey
-  ) {
+  if (!supabaseUrl || !supabaseKey) {
     throw new Error(
       "Missing Supabase browser environment variables.",
     );
   }
 
   const hostname =
-    typeof window !==
-    "undefined"
+    typeof window !== "undefined"
       ? window.location.hostname
       : "";
 
   const isMeetShawonDomain =
-    hostname ===
-      "meetshawon.com" ||
-    hostname ===
-      "www.meetshawon.com" ||
-    hostname ===
-      "drive.meetshawon.com";
+    hostname === "meetshawon.com" ||
+    hostname === "www.meetshawon.com" ||
+    hostname === "drive.meetshawon.com" ||
+    hostname === "lab.meetshawon.com";
 
   return createBrowserClient(
     supabaseUrl,
@@ -40,8 +30,7 @@ export function createClient() {
     isMeetShawonDomain
       ? {
           cookieOptions: {
-            domain:
-              ".meetshawon.com",
+            domain: ".meetshawon.com",
             path: "/",
             sameSite: "lax",
             secure: true,

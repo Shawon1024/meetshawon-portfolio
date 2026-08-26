@@ -71,12 +71,22 @@ export default function ResetPasswordForm() {
   );
 
   // --------------------------------------------------
-  // REQUIRE REAL PASSWORD RECOVERY EVENT
+  // VALIDATE PASSWORD RECOVERY SESSION
   // --------------------------------------------------
 
   useEffect(() => {
-    let recoveryDetected =
-      false;
+    let active = true;
+    let recoveryDetected = false;
+
+    const acceptRecoverySession = () => {
+      if (!active) {
+        return;
+      }
+
+      recoveryDetected = true;
+      setRecoveryReady(true);
+      setCheckingRecovery(false);
+    };
 
     const {
       data:
@@ -90,48 +100,68 @@ export default function ResetPasswordForm() {
             event ===
             "PASSWORD_RECOVERY"
           ) {
-            recoveryDetected =
-              true;
-
-            setRecoveryReady(
-              true,
-            );
-
-            setCheckingRecovery(
-              false,
-            );
+            acceptRecoverySession();
           }
         },
       );
 
     /*
-     * Give Supabase a short amount of time to process
-     * the recovery URL and emit PASSWORD_RECOVERY.
+     * The recovery token may already have been verified
+     * by /auth/confirm before this Client Component is
+     * mounted. In that flow, Supabase stores the recovery
+     * session in cookies and this component can miss the
+     * PASSWORD_RECOVERY event entirely.
      *
-     * A normal signed-in session is NOT enough.
+     * getUser() validates the session with Supabase rather
+     * than trusting locally stored session data.
      */
-    const timeout =
-      window.setTimeout(
-        () => {
-          if (
-            !recoveryDetected
-          ) {
-            setRecoveryReady(
-              false,
-            );
+    const validateExistingSession = async () => {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
 
-            setCheckingRecovery(
-              false,
-            );
-          }
-        },
-        2000,
-      );
+      if (!active || recoveryDetected) {
+        return;
+      }
+
+      if (!error && user) {
+        acceptRecoverySession();
+        return;
+      }
+
+      /*
+       * Allow a brief period for Supabase to process an
+       * implicit-flow recovery URL and emit its auth event.
+       */
+      window.setTimeout(async () => {
+        if (!active || recoveryDetected) {
+          return;
+        }
+
+        const {
+          data: { user: delayedUser },
+          error: delayedError,
+        } = await supabase.auth.getUser();
+
+        if (!active || recoveryDetected) {
+          return;
+        }
+
+        if (!delayedError && delayedUser) {
+          acceptRecoverySession();
+          return;
+        }
+
+        setRecoveryReady(false);
+        setCheckingRecovery(false);
+      }, 1200);
+    };
+
+    void validateExistingSession();
 
     return () => {
-      window.clearTimeout(
-        timeout,
-      );
+      active = false;
 
       authListener
         .subscription
@@ -255,6 +285,14 @@ export default function ResetPasswordForm() {
 
           message:
             "Your password has been reset successfully. You can now sign in using your new password.",
+        });
+
+        /*
+         * End the temporary recovery session after the
+         * password has been changed successfully.
+         */
+        await supabase.auth.signOut({
+          scope: "local",
         });
       } catch (
         error
