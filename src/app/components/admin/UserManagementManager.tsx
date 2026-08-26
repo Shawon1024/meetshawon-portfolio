@@ -1070,7 +1070,44 @@ export default function UserManagementManager({
                             : "Verify User"}
                       </button>
 
-                      {/* Permanent account deletion */}
+                    </div>
+                  </div>
+
+                  <div className="mt-5 border-t border-white/10 pt-5">
+                    <LabAccessControl
+                      userId={user.id}
+                      identity={getUserIdentity(user)}
+                      currentUserId={currentUserId}
+                      automaticAdminAccess={user.role === "admin"}
+                      initialMembership={user.lab_access}
+                    />
+                  </div>
+
+                  {/* Danger zone */}
+
+                  <div className="mt-5 rounded-2xl border border-red-400/15 bg-red-400/[0.04] p-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="max-w-2xl">
+                        <div className="flex items-center gap-2 text-red-300">
+                          <AlertTriangle
+                            size={17}
+                            aria-hidden="true"
+                          />
+
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+                            Danger Zone
+                          </p>
+                        </div>
+
+                        <p className="mt-2 text-sm font-medium text-white">
+                          Permanently delete this website account
+                        </p>
+
+                        <p className="mt-1 text-xs leading-5 text-gray-500">
+                          This action is irreversible and is blocked while the
+                          user owns posts or has Drive records.
+                        </p>
+                      </div>
 
                       <button
                         type="button"
@@ -1084,7 +1121,7 @@ export default function UserManagementManager({
                             user,
                           );
                         }}
-                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-400/20 px-4 py-2.5 text-sm font-medium text-red-300 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-400/25 bg-red-400/[0.06] px-4 py-2.5 text-sm font-medium text-red-300 transition hover:border-red-400/40 hover:bg-red-400/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-50"
                         title={
                           isYou
                             ? "You cannot delete your own administrator account here."
@@ -1101,16 +1138,6 @@ export default function UserManagementManager({
                         Delete User
                       </button>
                     </div>
-                  </div>
-
-                  <div className="mt-5 border-t border-white/10 pt-5">
-                    <LabAccessControl
-                      userId={user.id}
-                      identity={getUserIdentity(user)}
-                      currentUserId={currentUserId}
-                      automaticAdminAccess={user.role === "admin"}
-                      initialMembership={user.lab_access}
-                    />
                   </div>
                 </article>
               );
