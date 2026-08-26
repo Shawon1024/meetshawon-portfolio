@@ -1,10 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  FilePlus2,
-  FileText,
-  Pencil,
-} from "lucide-react";
+import { FilePlus2, FileText, Pencil } from "lucide-react";
 
 import Container from "../../components/Container";
 import { createClient } from "../../lib/supabase/server";
@@ -35,40 +31,35 @@ export default async function AdminPostsPage() {
     redirect("/account");
   }
 
-  let postsQuery = supabase
-    .from("posts")
-    .select(`
-      id,
-      title,
-      slug,
-      status,
-      featured,
-      published_at,
-      created_at,
-      updated_at,
-      author_id
-    `);
+  const studioBasePath =
+    profile.role === "moderator"
+      ? "/moderator/posts"
+      : profile.role === "author"
+        ? "/author/posts"
+        : "/admin/posts";
 
-  if (
-    profile?.role ===
-    "author"
-  ) {
-    postsQuery =
-      postsQuery.eq(
-        "author_id",
-        user.id,
-      );
+  let postsQuery = supabase.from("posts").select(`
+    id,
+    title,
+    slug,
+    status,
+    featured,
+    published_at,
+    created_at,
+    updated_at,
+    author_id
+  `);
+
+  if (profile.role === "author") {
+    postsQuery = postsQuery.eq("author_id", user.id);
   }
 
-  const {
-    data: posts,
-    error,
-  } = await postsQuery.order(
-    "created_at",
-    {
-      ascending: false,
-    },
-  );
+  const { data: posts, error } = await postsQuery.order("created_at", {
+    ascending: false,
+  });
+
+  const canManageAllPosts =
+    profile.role === "admin" || profile.role === "moderator";
 
   return (
     <main>
@@ -81,9 +72,7 @@ export default async function AdminPostsPage() {
               </p>
 
               <h1 className="mt-3 text-4xl font-bold text-white md:text-5xl">
-                {profile?.role === "admin"
-                  ? "Manage Posts"
-                  : "My Posts"}
+                {canManageAllPosts ? "Manage Posts" : "My Posts"}
               </h1>
 
               <p className="mt-4 max-w-2xl leading-7 text-gray-400">
@@ -92,10 +81,10 @@ export default async function AdminPostsPage() {
             </div>
 
             <Link
-              href="/admin/posts/new"
+              href={`${studioBasePath}/new`}
               className="inline-flex w-fit items-center gap-2 rounded-xl bg-green-500 px-5 py-3 font-medium text-black transition hover:bg-green-400"
             >
-              <FilePlus2 size={18} />
+              <FilePlus2 size={18} aria-hidden="true" />
               New Post
             </Link>
           </div>
@@ -110,10 +99,7 @@ export default async function AdminPostsPage() {
             </p>
           ) : !posts || posts.length === 0 ? (
             <div className="rounded-2xl border border-white/10 bg-[var(--surface)]/70 p-10 text-center">
-              <FileText
-                size={40}
-                className="mx-auto text-green-300"
-              />
+              <FileText size={40} className="mx-auto text-green-300" aria-hidden="true" />
 
               <h2 className="mt-5 text-2xl font-semibold text-white">
                 No posts yet
@@ -124,10 +110,10 @@ export default async function AdminPostsPage() {
               </p>
 
               <Link
-                href="/admin/posts/new"
+                href={`${studioBasePath}/new`}
                 className="mt-6 inline-flex items-center gap-2 rounded-xl bg-green-500 px-5 py-3 font-medium text-black"
               >
-                <FilePlus2 size={18} />
+                <FilePlus2 size={18} aria-hidden="true" />
                 Create First Post
               </Link>
             </div>
@@ -169,10 +155,10 @@ export default async function AdminPostsPage() {
                   </div>
 
                   <Link
-                    href={`/admin/posts/${post.id}/edit`}
+                    href={`${studioBasePath}/${post.id}/edit`}
                     className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-white transition hover:border-green-400 hover:text-green-300"
                   >
-                    <Pencil size={16} />
+                    <Pencil size={16} aria-hidden="true" />
                     Edit
                   </Link>
                 </article>

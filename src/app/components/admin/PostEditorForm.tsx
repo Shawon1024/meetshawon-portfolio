@@ -77,7 +77,16 @@ export default function PostEditorForm({
   const isEditing = Boolean(post);
 
   const isAdmin =
-  currentRole === "admin";
+    currentRole === "admin";
+
+  const studioBasePath =
+    currentRole ===
+    "moderator"
+      ? "/moderator/posts"
+      : currentRole ===
+          "author"
+        ? "/author/posts"
+        : "/admin/posts";
 
   const [title, setTitle] = useState(
     post?.title ?? "",
@@ -534,7 +543,7 @@ export default function PostEditorForm({
       );
 
       router.push(
-        "/admin/posts",
+        studioBasePath,
       );
 
       router.refresh();
@@ -589,7 +598,7 @@ export default function PostEditorForm({
         );
 
         router.push(
-          "/admin/posts",
+          studioBasePath,
         );
 
         router.refresh();
@@ -638,7 +647,7 @@ export default function PostEditorForm({
         );
 
         router.push(
-          "/admin/posts",
+          studioBasePath,
         );
 
         router.refresh();

@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import {
-  notFound,
-  redirect,
-} from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import PostEditorForm from "../../../../components/admin/PostEditorForm";
 import Container from "../../../../components/Container";
@@ -15,16 +12,9 @@ interface EditPostPageProps {
   }>;
 }
 
-export default async function EditPostPage({
-  params,
-}: EditPostPageProps) {
+export default async function EditPostPage({ params }: EditPostPageProps) {
   const { id } = await params;
-
   const supabase = await createClient();
-
-  // --------------------------------------------------
-  // AUTHENTICATION
-  // --------------------------------------------------
 
   const {
     data: { user },
@@ -34,14 +24,7 @@ export default async function EditPostPage({
     redirect("/auth/sign-in");
   }
 
-  // --------------------------------------------------
-  // BLOR WRITER ROLE CHECK
-  // --------------------------------------------------
-
-  const {
-    data: profile,
-    error: profileError,
-  } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
@@ -52,21 +35,18 @@ export default async function EditPostPage({
     profile?.role === "author" ||
     profile?.role === "moderator";
 
-  if (
-    profileError ||
-    !canWriteBlog
-  ) {
+  if (profileError || !canWriteBlog) {
     redirect("/account");
   }
 
-  // --------------------------------------------------
-  // LOAD POST
-  // --------------------------------------------------
+  const studioBasePath =
+    profile.role === "moderator"
+      ? "/moderator/posts"
+      : profile.role === "author"
+        ? "/author/posts"
+        : "/admin/posts";
 
-  const {
-    data: post,
-    error: postError,
-  } = await supabase
+  const { data: post, error: postError } = await supabase
     .from("posts")
     .select(`
       id,
@@ -84,80 +64,38 @@ export default async function EditPostPage({
     .eq("id", id)
     .single();
 
-  if (
-    postError ||
-    !post
-  ) {
+  if (postError || !post) {
     notFound();
   }
 
-  if (
-    profile?.role !== "admin" &&
-    profile?.role !== "moderator" &&
-    post.author_id !== user.id
-  ) {
-    redirect("/admin/posts");
+  if (profile.role === "author" && post.author_id !== user.id) {
+    redirect(studioBasePath);
   }
 
-  // --------------------------------------------------
-  // LOAD CATEGORIES
-  // --------------------------------------------------
-
-  const {
-    data: categories,
-    error: categoryError,
-  } = await supabase
-    .from("categories")
-    .select(`
-      id,
-      name,
-      slug
-    `)
-    .order("name", {
-      ascending: true,
-    });
-
-  // --------------------------------------------------
-  // LOAD TAGS
-  // --------------------------------------------------
-
-  const {
-    data: tags,
-    error: tagError,
-  } = await supabase
-    .from("tags")
-    .select(`
-      id,
-      name,
-      slug
-    `)
-    .order("name", {
-      ascending: true,
-    });
-
-  // --------------------------------------------------
-  // LOAD TAGS ALREADY ATTACHED TO THIS POST
-  // --------------------------------------------------
-
-  const {
-    data: postTags,
-    error: postTagsError,
-  } = await supabase
-    .from("post_tags")
-    .select("tag_id")
-    .eq(
-      "post_id",
-      post.id,
-    );
-
-  // --------------------------------------------------
-  // METADATA ERROR
-  // --------------------------------------------------
+  const [categoriesResult, tagsResult, postTagsResult] = await Promise.all([
+    supabase
+      .from("categories")
+      .select(`
+        id,
+        name,
+        slug
+      `)
+      .order("name", { ascending: true }),
+    supabase
+      .from("tags")
+      .select(`
+        id,
+        name,
+        slug
+      `)
+      .order("name", { ascending: true }),
+    supabase.from("post_tags").select("tag_id").eq("post_id", post.id),
+  ]);
 
   if (
-    categoryError ||
-    tagError ||
-    postTagsError
+    categoriesResult.error ||
+    tagsResult.error ||
+    postTagsResult.error
   ) {
     return (
       <main className="px-6 py-24">
@@ -168,29 +106,18 @@ export default async function EditPostPage({
     );
   }
 
-  // --------------------------------------------------
-  // PRESELECT CURRENT TAGS
-  // --------------------------------------------------
-
   const initialTagIds =
-    postTags?.map(
-      (item) => item.tag_id,
-    ) ?? [];
-
-  // --------------------------------------------------
-  // PAGE
-  // --------------------------------------------------
+    postTagsResult.data?.map((item) => item.tag_id) ?? [];
 
   return (
     <main>
-      {/* Header */}
       <section className="px-6 pb-10 pt-16 md:pt-24">
         <div className="mx-auto max-w-5xl">
           <Link
-            href="/admin/posts"
+            href={studioBasePath}
             className="inline-flex items-center gap-2 text-sm text-gray-400 transition hover:text-green-400"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={16} aria-hidden="true" />
             Back to Posts
           </Link>
 
@@ -209,7 +136,6 @@ export default async function EditPostPage({
         </div>
       </section>
 
-      {/* Editor */}
       <section className="border-t border-white/5 py-16">
         <Container>
           <div className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-6 md:p-8">
@@ -217,8 +143,8 @@ export default async function EditPostPage({
               authorId={user.id}
               currentRole={profile.role}
               post={post}
-              categories={categories ?? []}
-              tags={tags ?? []}
+              categories={categoriesResult.data ?? []}
+              tags={tagsResult.data ?? []}
               initialTagIds={initialTagIds}
             />
           </div>

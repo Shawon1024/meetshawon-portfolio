@@ -1887,7 +1887,15 @@ export default function Navbar() {
                         profile.role ===
                           "moderator") && (
                         <Link
-                          href={mainSiteHref("/admin/posts")}
+                          href={mainSiteHref(
+                            profile.role ===
+                              "moderator"
+                              ? "/moderator/posts"
+                              : profile.role ===
+                                  "author"
+                                ? "/author/posts"
+                                : "/admin/posts",
+                          )}
                           role="menuitem"
                           onClick={() =>
                             setAccountOpen(
@@ -2454,7 +2462,15 @@ export default function Navbar() {
                           profile.role ===
                             "moderator") && (
                           <Link
-                            href={mainSiteHref("/admin/posts")}
+                            href={mainSiteHref(
+                              profile.role ===
+                                "moderator"
+                                ? "/moderator/posts"
+                                : profile.role ===
+                                    "author"
+                                  ? "/author/posts"
+                                  : "/admin/posts",
+                            )}
                             onClick={
                               closeMobileMenu
                             }
