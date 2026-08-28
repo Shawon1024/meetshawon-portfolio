@@ -2034,7 +2034,7 @@ export default function Navbar() {
       ================================================= */}
 
       <div
-        className={`fixed inset-x-0 bottom-0 top-[72px] z-40 overflow-y-auto overscroll-contain border-t bg-[var(--background)]/98 shadow-2xl backdrop-blur-xl transition duration-300 ease-out lg:hidden ${
+        className={`absolute inset-x-0 top-full z-40 h-[calc(100dvh-72px)] overflow-y-auto overscroll-contain border-t bg-[var(--background)]/98 shadow-2xl backdrop-blur-xl transition duration-300 ease-out lg:hidden ${
           mobileOpen
             ? "visible translate-y-0 border-white/5 opacity-100"
             : "invisible pointer-events-none -translate-y-2 border-transparent opacity-0"
