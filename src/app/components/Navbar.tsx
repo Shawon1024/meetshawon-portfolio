@@ -10,7 +10,6 @@ import {
   Bookmark,
   ChevronDown,
   Clock3,
-  FlaskConical,
   HardDrive,
   LogOut,
   Menu,
@@ -146,6 +145,11 @@ export default function Navbar() {
   ] = useState(false);
 
   const [
+    scrolled,
+    setScrolled,
+  ] = useState(false);
+
+  const [
     accountOpen,
     setAccountOpen,
   ] = useState(false);
@@ -161,11 +165,6 @@ export default function Navbar() {
   ] = useState<ProfileData | null>(
     null,
   );
-
-  const [
-    hasLabAccess,
-    setHasLabAccess,
-  ] = useState(false);
 
   const [
     unreadNotifications,
@@ -208,6 +207,29 @@ export default function Navbar() {
     useRef<HTMLDivElement | null>(
       null,
     );
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(
+        window.scrollY > 12,
+      );
+    };
+
+    handleScroll();
+
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      { passive: true },
+    );
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+      );
+    };
+  }, []);
 
   // --------------------------------------------------
   // LOAD RECENT + UNREAD NOTIFICATIONS
@@ -473,44 +495,6 @@ export default function Navbar() {
   // LOAD AUTH + PROFILE
   // --------------------------------------------------
 
-  const loadLabAccess =
-    useCallback(
-      async (
-        userId: string,
-        role: string | null,
-      ) => {
-        if (role === "admin") {
-          setHasLabAccess(true);
-          return;
-        }
-
-        const {
-          data,
-          error,
-        } = await supabase
-          .from("lab_access_members")
-          .select("status")
-          .eq("user_id", userId)
-          .eq("status", "active")
-          .maybeSingle();
-
-        if (error) {
-          console.error(
-            "Navbar Lab access could not be checked:",
-            error,
-          );
-
-          setHasLabAccess(false);
-          return;
-        }
-
-        setHasLabAccess(
-          data?.status === "active",
-        );
-      },
-      [supabase],
-    );
-
   useEffect(() => {
     let cancelled = false;
 
@@ -528,7 +512,6 @@ export default function Navbar() {
 
           if (!user) {
             setProfile(null);
-            setHasLabAccess(false);
             setUnreadNotifications(0);
             setRecentNotifications([]);
             setNotificationOpen(false);
@@ -563,7 +546,6 @@ export default function Navbar() {
             );
 
             setProfile(null);
-            setHasLabAccess(false);
             return;
           }
 
@@ -574,15 +556,6 @@ export default function Navbar() {
           setProfile(
             data ?? null,
           );
-
-          if (data) {
-            void loadLabAccess(
-              user.id,
-              data.role,
-            );
-          } else {
-            setHasLabAccess(false);
-          }
 
           void loadNotifications(
             user.id,
@@ -611,7 +584,6 @@ export default function Navbar() {
         ) => {
           if (!session?.user) {
             setProfile(null);
-            setHasLabAccess(false);
             setUnreadNotifications(0);
             setRecentNotifications([]);
             setNotificationOpen(false);
@@ -646,7 +618,6 @@ export default function Navbar() {
             );
 
             setProfile(null);
-            setHasLabAccess(false);
             setLoadingAuth(false);
             return;
           }
@@ -654,15 +625,6 @@ export default function Navbar() {
           setProfile(
             data ?? null,
           );
-
-          if (data) {
-            void loadLabAccess(
-              session.user.id,
-              data.role,
-            );
-          } else {
-            setHasLabAccess(false);
-          }
 
           void loadNotifications(
             session.user.id,
@@ -679,7 +641,6 @@ export default function Navbar() {
     };
   }, [
     loadNotifications,
-    loadLabAccess,
     supabase,
   ]);
 
@@ -1316,12 +1277,13 @@ export default function Navbar() {
   // --------------------------------------------------
 
   return (
+    <div className="contents">
     <header
-      className={`top-0 z-50 border-b border-white/5 bg-[var(--background)]/95 backdrop-blur-xl ${
-        mobileOpen
-          ? "fixed inset-x-0"
-          : "sticky"
-      } lg:sticky`}
+      className={`fixed inset-x-0 top-0 z-50 border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 ${
+        scrolled
+          ? "border-white/10 bg-[var(--background)]/[0.78] shadow-[0_10px_30px_rgba(0,0,0,0.22)]"
+          : "border-transparent bg-[var(--background)]/[0.96] shadow-none"
+      }`}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
         {/* =================================================
@@ -1954,15 +1916,7 @@ export default function Navbar() {
                         profile.role ===
                           "moderator") && (
                         <Link
-                          href={mainSiteHref(
-                            profile.role ===
-                              "moderator"
-                              ? "/moderator/posts"
-                              : profile.role ===
-                                  "author"
-                                ? "/author/posts"
-                                : "/admin/posts",
-                          )}
+                          href={mainSiteHref("/admin/posts")}
                           role="menuitem"
                           onClick={() =>
                             setAccountOpen(
@@ -1978,27 +1932,6 @@ export default function Navbar() {
                           Blog Studio
                         </Link>
                       )}
-                    </div>
-                  )}
-
-                  {hasLabAccess && (
-                    <div className="border-t border-white/10 p-2">
-                      <a
-                        href="https://lab.meetshawon.com"
-                        role="menuitem"
-                        onClick={() =>
-                          setAccountOpen(
-                            false,
-                          )
-                        }
-                        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-emerald-300 transition hover:bg-emerald-400/10"
-                      >
-                        <FlaskConical
-                          size={17}
-                        />
-
-                        Cybersecurity Lab
-                      </a>
                     </div>
                   )}
 
@@ -2101,10 +2034,10 @@ export default function Navbar() {
       ================================================= */}
 
       <div
-        className={`absolute inset-x-0 top-full border-t bg-[var(--background)]/98 shadow-2xl shadow-black/30 transition-all duration-300 ease-out lg:hidden ${
+        className={`fixed inset-x-0 bottom-0 top-[72px] z-40 overflow-y-auto overscroll-contain border-t bg-[var(--background)]/98 shadow-2xl backdrop-blur-xl transition duration-300 ease-out lg:hidden ${
           mobileOpen
-            ? "h-[calc(100dvh-4.5rem)] translate-y-0 touch-pan-y overflow-y-auto overscroll-contain border-white/5 opacity-100 [-webkit-overflow-scrolling:touch]"
-            : "pointer-events-none h-0 -translate-y-2 overflow-hidden border-transparent opacity-0"
+            ? "visible translate-y-0 border-white/5 opacity-100"
+            : "invisible pointer-events-none -translate-y-2 border-transparent opacity-0"
         }`}
       >
         <div className="px-6 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5">
@@ -2550,15 +2483,7 @@ export default function Navbar() {
                           profile.role ===
                             "moderator") && (
                           <Link
-                            href={mainSiteHref(
-                              profile.role ===
-                                "moderator"
-                                ? "/moderator/posts"
-                                : profile.role ===
-                                    "author"
-                                  ? "/author/posts"
-                                  : "/admin/posts",
-                            )}
+                            href={mainSiteHref("/admin/posts")}
                             onClick={
                               closeMobileMenu
                             }
@@ -2612,22 +2537,6 @@ export default function Navbar() {
                           </Link>
                         )}
 
-                        {hasLabAccess && (
-                          <a
-                            href="https://lab.meetshawon.com"
-                            onClick={
-                              closeMobileMenu
-                            }
-                            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-emerald-300 transition duration-200 hover:bg-emerald-400/10"
-                          >
-                            <FlaskConical
-                              size={17}
-                            />
-
-                            Cybersecurity Lab
-                          </a>
-                        )}
-
                         {(profile.role ===
                           "admin" ||
                           profile.role ===
@@ -2677,5 +2586,9 @@ export default function Navbar() {
         </div>
       </div>
     </header>
+
+    {/* Preserve the fixed header's place in the page flow on every screen size. */}
+    <div className="h-[72px]" aria-hidden="true" />
+    </div>
   );
 }
