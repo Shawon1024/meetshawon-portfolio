@@ -8,6 +8,8 @@ import {
   CheckCircle2,
   Cloud,
   Database,
+  ExternalLink,
+  FileText,
   Gauge,
   HardDrive,
   LockKeyhole,
@@ -546,6 +548,22 @@ export default function PrivateCloudProjectPage() {
               )}
             </div>
 
+            <div className="mt-8 flex flex-wrap gap-4">
+              <a
+                href="/documents/private-cloud-infrastructure-technical-documentation.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[0.06] px-5 py-3 font-medium text-cyan-200 transition hover:border-cyan-400/50 hover:bg-cyan-400/10 hover:text-cyan-100"
+              >
+                View Technical Documentation
+
+                <FileText
+                  size={17}
+                  aria-hidden="true"
+                />
+              </a>
+            </div>
+
             <dl className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
               {projectFacts.map(
                 (
@@ -588,6 +606,62 @@ export default function PrivateCloudProjectPage() {
             className="h-auto w-full rounded-2xl object-cover"
           />
         </div>
+      </section>
+
+      <section className="border-t border-white/5 py-20">
+        <Container>
+          <div className="overflow-hidden rounded-3xl border border-cyan-400/15 bg-cyan-400/[0.04]">
+            <div className="grid gap-8 p-8 md:p-10 lg:grid-cols-[1fr_auto] lg:items-center lg:p-12">
+              <div className="max-w-3xl">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
+                  <FileText
+                    size={24}
+                    aria-hidden="true"
+                  />
+                </div>
+
+                <p className="mt-6 text-sm font-medium uppercase tracking-[0.25em] text-cyan-300">
+                  Public Technical Documentation
+                </p>
+
+                <h2 className="mt-3 text-3xl font-bold text-white">
+                  Explore the infrastructure in greater technical depth
+                </h2>
+
+                <p className="mt-5 leading-7 text-gray-300">
+                  The public documentation provides a structured overview of
+                  the requirements, final hardware, ZFS storage topology,
+                  architecture, identity and access model, automated
+                  provisioning, remote connectivity, security engineering,
+                  recovery planning, monitoring, validation, operational
+                  procedures, risks, lessons learned, and future roadmap.
+                </p>
+
+                <p className="mt-4 text-sm leading-6 text-gray-500">
+                  Credentials, tokens, private addresses, internal paths,
+                  dataset identifiers, and sensitive recovery details are
+                  intentionally excluded from the public edition.
+                </p>
+              </div>
+
+              <div className="lg:text-right">
+                <a
+                  href="/documents/private-cloud-infrastructure-technical-documentation.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-400 px-6 py-3 font-semibold text-[#06211d] transition hover:bg-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]"
+                >
+                  Read Documentation
+
+                  <ExternalLink
+                    size={17}
+                    aria-hidden="true"
+                  />
+                </a>
+              </div>
+            </div>
+          </div>
+        </Container>
       </section>
 
       <section className="border-t border-white/5 py-20">
