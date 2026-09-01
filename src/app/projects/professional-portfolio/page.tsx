@@ -950,7 +950,7 @@ export default function ProfessionalPortfolioPage() {
 
               <div className="lg:text-right">
                 <a
-                  href="/documents/professional-portfolio-platform-documentation.pdf"
+                  href="/documents/Professional-Portfolio-Platform-Documentation.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-400 px-6 py-3 font-semibold text-[#06211d] transition hover:bg-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]"
