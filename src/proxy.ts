@@ -46,10 +46,12 @@ function getLabRewritePath(pathname: string) {
 }
 
 function pathMatches(pathname: string, allowedPath: string) {
-  return pathname === allowedPath || pathname.startsWith(`${allowedPath}/`);
+  return (
+    pathname === allowedPath || pathname.startsWith(`${allowedPath}/`)
+  );
 }
 
-function maintenancePathIsAllowed(pathname: string) {
+function mainMaintenancePathIsAllowed(pathname: string) {
   return (
     pathMatches(pathname, "/maintenance") ||
     pathMatches(pathname, "/contact") ||
@@ -59,7 +61,9 @@ function maintenancePathIsAllowed(pathname: string) {
 }
 
 function getRetryAfterValue() {
-  const returnDate = new Date(SITE_STATUS.maintenance.expectedReturnAt);
+  const returnDate = new Date(
+    SITE_STATUS.maintenance.expectedReturnAt,
+  );
 
   if (Number.isNaN(returnDate.getTime())) {
     return "3600";
@@ -76,6 +80,49 @@ function applyMaintenanceHeaders(response: NextResponse) {
   return response;
 }
 
+function getMaintenanceMessage(
+  scope: "website" | "drive" | "all",
+) {
+  if (scope === "all") {
+    return "The website and Drive are temporarily unavailable for scheduled maintenance.";
+  }
+
+  if (scope === "drive") {
+    return "Meet Shawon Drive is temporarily unavailable for scheduled maintenance.";
+  }
+
+  return "The website is temporarily unavailable for scheduled maintenance.";
+}
+
+function createMaintenanceResponse(
+  request: NextRequest,
+  scope: "website" | "drive" | "all",
+) {
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    const apiResponse = NextResponse.json(
+      {
+        error: getMaintenanceMessage(scope),
+        maintenance: true,
+        scope,
+        expectedReturnAt: SITE_STATUS.maintenance.expectedReturnAt,
+      },
+      { status: 503 },
+    );
+
+    return applyMaintenanceHeaders(apiResponse);
+  }
+
+  const maintenanceUrl = request.nextUrl.clone();
+  maintenanceUrl.pathname = "/maintenance";
+  maintenanceUrl.search = "";
+
+  const maintenanceResponse = NextResponse.rewrite(maintenanceUrl, {
+    status: 503,
+  });
+
+  return applyMaintenanceHeaders(maintenanceResponse);
+}
+
 export async function proxy(request: NextRequest) {
   const hostname = getHostname(request);
   const pathname = request.nextUrl.pathname;
@@ -88,6 +135,17 @@ export async function proxy(request: NextRequest) {
 
   const isServiceDomain = isDriveDomain || isLabDomain;
 
+  const mainWebsiteUnderMaintenance =
+    SITE_STATUS.mode === "site_maintenance" ||
+    SITE_STATUS.mode === "full_maintenance";
+
+  const driveUnderMaintenance =
+    SITE_STATUS.mode === "drive_maintenance" ||
+    SITE_STATUS.mode === "full_maintenance";
+
+  const currentServiceUnderMaintenance =
+    isDriveDomain && driveUnderMaintenance;
+
   const usesSharedProductionCookies =
     hostname === "meetshawon.com" ||
     hostname === "www.meetshawon.com" ||
@@ -95,13 +153,15 @@ export async function proxy(request: NextRequest) {
     hostname === LAB_HOSTNAME;
 
   // --------------------------------------------------
-  // HIDE MAINTENANCE PAGE DURING NORMAL OPERATION
+  // HIDE THE MAINTENANCE PAGE WHEN THIS HOST IS LIVE
   // --------------------------------------------------
 
   if (
-    SITE_STATUS.mode === "normal" &&
-    !isServiceDomain &&
-    pathMatches(pathname, "/maintenance")
+    pathMatches(pathname, "/maintenance") &&
+    ((isServiceDomain && !currentServiceUnderMaintenance) ||
+      (!isServiceDomain &&
+        !mainWebsiteUnderMaintenance &&
+        SITE_STATUS.mode !== "scheduled"))
   ) {
     const homeUrl = request.nextUrl.clone();
     homeUrl.pathname = "/";
@@ -111,39 +171,31 @@ export async function proxy(request: NextRequest) {
   }
 
   // --------------------------------------------------
-  // FULL MAIN-WEBSITE MAINTENANCE
+  // DRIVE OR LAB MAINTENANCE
   // --------------------------------------------------
-  // Drive and Lab are separate service subdomains and
-  // remain outside main-site maintenance handling.
+
+  if (currentServiceUnderMaintenance) {
+    const scope =
+      SITE_STATUS.mode === "full_maintenance"
+        ? "all"
+        : "drive";
+
+    return createMaintenanceResponse(request, scope);
+  }
+
+  // --------------------------------------------------
+  // MAIN-WEBSITE MAINTENANCE
+  // --------------------------------------------------
 
   if (
-    SITE_STATUS.mode === "maintenance" &&
+    mainWebsiteUnderMaintenance &&
     !isServiceDomain &&
-    !maintenancePathIsAllowed(pathname)
+    !mainMaintenancePathIsAllowed(pathname)
   ) {
-    if (pathname.startsWith("/api/")) {
-      const apiResponse = NextResponse.json(
-        {
-          error:
-            "The website is temporarily unavailable for scheduled maintenance.",
-          maintenance: true,
-          expectedReturnAt: SITE_STATUS.maintenance.expectedReturnAt,
-        },
-        { status: 503 },
-      );
+    const scope =
+      SITE_STATUS.mode === "full_maintenance" ? "all" : "website";
 
-      return applyMaintenanceHeaders(apiResponse);
-    }
-
-    const maintenanceUrl = request.nextUrl.clone();
-    maintenanceUrl.pathname = "/maintenance";
-    maintenanceUrl.search = "";
-
-    const maintenanceResponse = NextResponse.rewrite(maintenanceUrl, {
-      status: 503,
-    });
-
-    return applyMaintenanceHeaders(maintenanceResponse);
+    return createMaintenanceResponse(request, scope);
   }
 
   // --------------------------------------------------
@@ -156,7 +208,9 @@ export async function proxy(request: NextRequest) {
     ? getDriveRewritePath(pathname)
     : null;
 
-  const labRewritePath = isLabDomain ? getLabRewritePath(pathname) : null;
+  const labRewritePath = isLabDomain
+    ? getLabRewritePath(pathname)
+    : null;
 
   const serviceRewritePath = driveRewritePath ?? labRewritePath;
 
@@ -174,7 +228,8 @@ export async function proxy(request: NextRequest) {
   // --------------------------------------------------
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
     return response;

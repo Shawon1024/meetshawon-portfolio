@@ -1,234 +1,127 @@
 export type SiteOperatingMode =
   | "normal"
   | "scheduled"
-  | "maintenance";
+  | "site_maintenance"
+  | "drive_maintenance"
+  | "full_maintenance";
 
 interface SiteStatusConfiguration {
-  mode:
-    SiteOperatingMode;
+  mode: SiteOperatingMode;
 
-  constructionNotice: {
-    enabled:
-      boolean;
-
-    label:
-      string;
-
-    message:
-      string;
+  generalNotice: {
+    enabled: boolean;
+    label: string;
+    message: string;
   };
 
   maintenance: {
-    title:
-      string;
-
-    summary:
-      string;
-
-    startsAt:
-      string;
-
-    expectedReturnAt:
-      string;
-
-    timezone:
-      string;
-
-    reason:
-      string;
-
-    progressMessage:
-      string;
-
-    plannedChanges:
-      string[];
-
-    availableServices:
-      string[];
-
-    contactPath:
-      string;
+    title: string;
+    summary: string;
+    startsAt: string;
+    expectedReturnAt: string;
+    timezone: string;
+    reason: string;
+    progressMessage: string;
+    plannedChanges: string[];
+    contactPath: string;
   };
 }
 
 // ==================================================
-// WEBSITE STATUS — COMPLETE OPERATING GUIDE
+// WEBSITE AND SERVICE STATUS — OPERATING GUIDE
 // ==================================================
 //
-// This is the main control file for website notices
-// and maintenance mode.
+// Change only `mode` to select the operating state:
 //
-// You normally only need to edit this file.
+// "normal"
+//   Website and Drive are available.
 //
-// ==================================================
-// MODE 1: NORMAL OPERATION
-// ==================================================
+// "scheduled"
+//   Everything remains available and a scheduled
+//   website-maintenance announcement is displayed.
 //
-// Use:
+// "site_maintenance"
+//   The main website is under maintenance.
+//   Drive remains available.
 //
-//   mode: "normal",
+// "drive_maintenance"
+//   Drive is under maintenance.
+//   The main website remains available.
 //
-// Result:
+// "full_maintenance"
+//   The website and Drive are under maintenance.
 //
-// - The complete website is available.
-// - The construction notice is controlled by
-//   `constructionNotice.enabled`.
-// - The maintenance page is not shown.
+// The General Notice is controlled independently:
 //
-// ==================================================
-// MODE 2: ANNOUNCE SCHEDULED MAINTENANCE
-// ==================================================
+//   generalNotice.enabled: true
 //
-// Use:
-//
-//   mode: "scheduled",
-//
-// Before deploying:
-//
-// 1. Enter the real maintenance start time.
-// 2. Enter the expected return time.
-// 3. Update the reason.
-// 4. Update the planned changes.
-// 5. Commit and deploy.
-//
-// Result:
-//
-// - The complete website remains available.
-// - A scheduled-maintenance notice appears.
-// - Visitors can see when maintenance will begin.
-// - Visitors can see the expected return time.
-//
-// ==================================================
-// MODE 3: START FULL MAINTENANCE
-// ==================================================
-//
-// At the scheduled maintenance time, change:
-//
-//   mode: "scheduled",
-//
-// to:
-//
-//   mode: "maintenance",
-//
-// Then commit and deploy.
-//
-// Result:
-//
-// - Main website pages become unavailable.
-// - Visitors see the maintenance page.
-// - Newsletter features become unavailable.
-// - Contact and the urgent contact form remain active.
-// - drive.meetshawon.com remains unaffected.
-// - The health endpoint remains available for checks.
-//
-// ==================================================
-// FINISH MAINTENANCE
-// ==================================================
-//
-// When maintenance is complete, change:
-//
-//   mode: "maintenance",
-//
-// to:
-//
-//   mode: "normal",
-//
-// Update any information that changed, then commit
-// and deploy.
-//
-// The complete website becomes available again.
+// displays the website update and responsible-use
+// notice whenever the main website is available.
+// Change it to false to hide only that notice.
 //
 // ==================================================
 // DATE AND TIME FORMAT
 // ==================================================
 //
-// Use an ISO date with the correct UK time offset.
-//
 // British Summer Time example:
-//
 //   2026-09-12T22:00:00+01:00
 //
 // Greenwich Mean Time example:
-//
 //   2026-12-12T22:00:00+00:00
-//
-// Check whether the scheduled date falls under BST
-// or GMT before entering it.
-//
-// ==================================================
-// CONSTRUCTION NOTICE
-// ==================================================
-//
-// In normal mode:
-//
-//   enabled: true,
-//
-// displays the temporary website-refinement notice.
-//
-// Change it to:
-//
-//   enabled: false,
-//
-// when that notice is no longer needed.
 //
 // ==================================================
 // QUICK WORKFLOW
 // ==================================================
 //
-// ANNOUNCE:
-// mode = "scheduled" → commit → deploy
+// Normal operation:
+//   mode: "normal"
 //
-// START:
-// mode = "maintenance" → commit → deploy
+// Announce planned website work:
+//   mode: "scheduled"
 //
-// FINISH:
-// mode = "normal" → commit → deploy
+// Start maintenance for one scope:
+//   mode: "site_maintenance"
+//   mode: "drive_maintenance"
 //
-// Search for "WEBSITE STATUS" to find this file.
+// Start maintenance everywhere:
+//   mode: "full_maintenance"
 //
+// Finish any maintenance:
+//   mode: "normal"
+//
+// After changing the configuration, commit and deploy.
 // ==================================================
 
-export const SITE_STATUS:
-  SiteStatusConfiguration = {
-  // "normal"      = complete website available
-  // "scheduled"   = website available with announcement
-  // "maintenance" = maintenance page replaces main site
-  mode:
-    "normal",
+export const SITE_STATUS: SiteStatusConfiguration = {
+  mode: "normal",
 
-  constructionNotice: {
-    // Used only while mode is "normal".
-    enabled:
-      true,
+  generalNotice: {
+    // Independent General Notice switch.
+    enabled: true,
 
-    label:
-      "Website update notice:",
+    label: "Website update notice:",
 
     message:
       "This website is undergoing continued refinement, so some content may be incomplete or change. Cybersecurity material is provided for educational and authorised defensive use only.",
   },
 
   maintenance: {
-    title:
-      "Scheduled website maintenance",
+    title: "Scheduled website maintenance",
 
     summary:
-      "Meet Shawon is temporarily unavailable while planned improvements are being completed.",
+      "The selected Meet Shawon service is temporarily unavailable while planned improvements are being completed.",
 
-    startsAt:
-      "2026-09-12T22:00:00+01:00",
+    startsAt: "2026-09-12T22:00:00+01:00",
 
-    expectedReturnAt:
-      "2026-09-13T01:00:00+01:00",
+    expectedReturnAt: "2026-09-13T01:00:00+01:00",
 
-    timezone:
-      "Europe/London",
+    timezone: "Europe/London",
 
     reason:
-      "Planned maintenance is being carried out to improve website reliability, security, and functionality.",
+      "Planned maintenance is being carried out to improve reliability, security, and functionality.",
 
     progressMessage:
-      "Work is currently in progress. I will restore the website as quickly and safely as possible.",
+      "Work is currently in progress. The affected service will be restored as quickly and safely as possible.",
 
     plannedChanges: [
       "Security and dependency updates",
@@ -236,16 +129,11 @@ export const SITE_STATUS:
       "Application and infrastructure maintenance",
     ],
 
-    availableServices: [
-      "Urgent contact form",
-      "Meet Shawon Drive for authorised users",
-    ],
-
-    contactPath:
-      "/contact",
+    // Absolute URL so it also works from service subdomains.
+    contactPath: "https://meetshawon.com/contact",
   },
 };
 
 // ==================================================
-// END WEBSITE STATUS CONFIGURATION
+// END WEBSITE AND SERVICE STATUS CONFIGURATION
 // ==================================================

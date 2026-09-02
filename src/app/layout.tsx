@@ -6,14 +6,21 @@ import AnimatedBackground from "./components/background/AnimatedBackground";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import SiteNotice from "./components/SiteNotice";
-import { SITE_STATUS } from "./config/siteStatus";
 import "./globals.css";
 import "highlight.js/styles/github-dark.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -80,25 +87,19 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full">
         <AnimatedBackground />
 
-        {SITE_STATUS.mode === "maintenance" ? (
-          <div className="relative z-10 flex min-h-screen flex-col">
-            <div className="flex-1">{children}</div>
+        <div className="relative z-10 flex min-h-screen flex-col">
+          <div className="portfolio-global-chrome">
+            <Navbar />
+            <SiteNotice />
+            <FloatingNotifications />
           </div>
-        ) : (
-          <div className="relative z-10 flex min-h-screen flex-col">
-            <div className="portfolio-global-chrome">
-              <Navbar />
-              <SiteNotice />
-              <FloatingNotifications />
-            </div>
 
-            <div className="flex-1">{children}</div>
+          <div className="flex-1">{children}</div>
 
-            <div className="portfolio-global-chrome">
-              <Footer />
-            </div>
+          <div className="portfolio-global-chrome">
+            <Footer />
           </div>
-        )}
+        </div>
       </body>
     </html>
   );
