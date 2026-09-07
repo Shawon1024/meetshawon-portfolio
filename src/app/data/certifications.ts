@@ -70,6 +70,24 @@ export const certifications: Certification[] = [
       "/certificates/cisco-computer-hardware-basics.pdf",
   },
   {
+    title: "Ethical Hacker",
+    provider: "Cisco Networking Academy",
+    status: "Completed",
+    description:
+      "A practical offensive-security course covering vulnerability assessment, attacker techniques, exploitation fundamentals, ethical-hacking methodology, and responsible security testing.",
+    focus: [
+      "Ethical hacking",
+      "Vulnerability assessment",
+      "Offensive security",
+      "Security methodology",
+    ],
+    issueDate: "7 September 2026",
+    credentialId: "6a036b6f-6717-4b1a-b7ec-1c847a0560b0",
+    credentialUrl:
+      "https://www.credly.com/badges/290b28e8-5d01-4d83-9a0a-3e49ff237ef9",
+    certificateUrl: "/certificates/cisco-ethical-hacker.pdf",
+  },
+  {
     title: "Networking Basics",
     provider: "Cisco Networking Academy",
     status: "In Progress",
@@ -80,20 +98,6 @@ export const certifications: Certification[] = [
       "Network devices",
       "Protocols",
       "IP connectivity",
-    ],
-    target: "Current NetAcad course",
-  },
-  {
-    title: "Ethical Hacker",
-    provider: "Cisco Networking Academy",
-    status: "In Progress",
-    description:
-      "Developing practical offensive-security knowledge for identifying vulnerabilities, assessing systems, understanding attacker techniques, and applying ethical-hacking methodology.",
-    focus: [
-      "Ethical hacking",
-      "Vulnerability assessment",
-      "Offensive security",
-      "Security methodology",
     ],
     target: "Current NetAcad course",
   },
