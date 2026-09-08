@@ -242,6 +242,7 @@ export async function POST(request: Request) {
       from:
         "Meet Shawon Portfolio <contact@meetshawon.com>",
       to: [destination],
+      replyTo: email,
       subject: `Meet Shawon: ${cleanSubject}`,
 
       text: [
