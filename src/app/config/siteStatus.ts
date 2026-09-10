@@ -111,9 +111,9 @@ export const SITE_STATUS: SiteStatusConfiguration = {
     summary:
       "The selected Meet Shawon service is temporarily unavailable while planned improvements are being completed.",
 
-    startsAt: "2026-09-12T22:00:00+01:00",
+    startsAt: "2026-09-10T12:00:00+01:00",
 
-    expectedReturnAt: "2026-09-13T01:00:00+01:00",
+    expectedReturnAt: "2026-09-11T00:00:00+01:00",
 
     timezone: "Europe/London",
 
