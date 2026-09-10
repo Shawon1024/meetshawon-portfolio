@@ -93,7 +93,7 @@ interface SiteStatusConfiguration {
 // ==================================================
 
 export const SITE_STATUS: SiteStatusConfiguration = {
-  mode: "drive_maintenance",
+  mode: "normal",
 
   generalNotice: {
     // Independent General Notice switch.
