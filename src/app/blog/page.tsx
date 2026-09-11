@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Clock3,
   Eye,
+  FilePlus2,
   Heart,
   MessageCircle,
   RotateCcw,
@@ -192,6 +193,55 @@ export default async function BlogPage({
 
   const supabase =
     await createClient();
+
+  // --------------------------------------------------
+  // AUTHOR ACTION
+  // --------------------------------------------------
+
+  const {
+    data: {
+      user,
+    },
+  } =
+    await supabase.auth.getUser();
+
+  let createPostPath:
+    string | null =
+    null;
+
+  if (user) {
+    const {
+      data: profile,
+    } =
+      await supabase
+        .from("profiles")
+        .select("role")
+        .eq(
+          "id",
+          user.id,
+        )
+        .maybeSingle();
+
+    if (
+      profile?.role ===
+      "admin"
+    ) {
+      createPostPath =
+        "/admin/posts/new";
+    } else if (
+      profile?.role ===
+      "moderator"
+    ) {
+      createPostPath =
+        "/moderator/posts/new";
+    } else if (
+      profile?.role ===
+      "author"
+    ) {
+      createPostPath =
+        "/author/posts/new";
+    }
+  }
 
   // --------------------------------------------------
 // POPULAR ARTICLES
@@ -637,9 +687,33 @@ if (popularPostsError) {
             journey.
           </p>
 
+          {createPostPath && (
+            <div className="mt-8 flex justify-center">
+              <Link
+                href={
+                  createPostPath
+                }
+                className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-5 py-3 font-medium text-black shadow-lg shadow-green-500/10 transition hover:-translate-y-0.5 hover:bg-green-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              >
+                <FilePlus2
+                  size={18}
+                  aria-hidden="true"
+                />
+
+                Create Post
+              </Link>
+            </div>
+          )}
+
           {/* Search */}
 
-          <div className="mx-auto mt-9 max-w-3xl">
+          <div
+            className={`mx-auto max-w-3xl ${
+              createPostPath
+                ? "mt-8"
+                : "mt-9"
+            }`}
+          >
             <form
               action="/blog"
               method="get"
