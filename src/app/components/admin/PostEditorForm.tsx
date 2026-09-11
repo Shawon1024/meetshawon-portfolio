@@ -1,17 +1,34 @@
 "use client";
 
-import { ChangeEvent, useState } from "react";
+import {
+  type ChangeEvent,
+  type KeyboardEvent,
+  type ReactNode,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   Archive,
+  Bold,
+  Code2,
   Eye,
   FileImage,
   FileText,
+  Heading2,
+  Heading3,
   ImagePlus,
+  Italic,
+  Link2,
+  List,
+  ListOrdered,
+  Quote,
   Save,
   Send,
+  Strikethrough,
   Trash2,
   TriangleAlert,
+  Underline,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -63,6 +80,39 @@ type SubmitAction =
   | "archive"
   | "delete"
   | null;
+
+interface ToolbarButtonProps {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+  disabled?: boolean;
+}
+
+function ToolbarButton({
+  label,
+  onClick,
+  children,
+  disabled = false,
+}: ToolbarButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className="group relative inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-300 transition hover:bg-green-400/10 hover:text-green-300 focus-visible:bg-green-400/10 focus-visible:text-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-300 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {children}
+
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-[#071411] px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-xl transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+      >
+        {label}
+      </span>
+    </button>
+  );
+}
 
 export default function PostEditorForm({
   authorId,
@@ -124,6 +174,21 @@ export default function PostEditorForm({
   const [uploadingImage, setUploadingImage] =
     useState(false);
 
+  const [uploadingInlineImage, setUploadingInlineImage] =
+    useState(false);
+
+  const [showInlineImagePanel, setShowInlineImagePanel] =
+    useState(false);
+
+  const [inlineImageAlt, setInlineImageAlt] =
+    useState("");
+
+  const [inlineImageCaption, setInlineImageCaption] =
+    useState("");
+
+  const contentTextareaRef =
+    useRef<HTMLTextAreaElement>(null);
+
   const [editorMode, setEditorMode] = useState<
     "write" | "preview"
   >("write");
@@ -181,6 +246,184 @@ export default function PostEditorForm({
         ];
       },
     );
+  };
+
+  const replaceContentSelection = (
+    replacement: string,
+    selectionStart: number,
+    selectionEnd: number,
+  ) => {
+    const nextContent =
+      content.slice(
+        0,
+        selectionStart,
+      ) +
+      replacement +
+      content.slice(
+        selectionEnd,
+      );
+
+    setContent(nextContent);
+
+    requestAnimationFrame(
+      () => {
+        const textarea =
+          contentTextareaRef.current;
+
+        if (!textarea) {
+          return;
+        }
+
+        const nextCursor =
+          selectionStart +
+          replacement.length;
+
+        textarea.focus();
+        textarea.setSelectionRange(
+          nextCursor,
+          nextCursor,
+        );
+      },
+    );
+  };
+
+  const insertWrappedText = (
+    opening: string,
+    closing: string,
+    placeholder: string,
+  ) => {
+    const textarea =
+      contentTextareaRef.current;
+
+    if (!textarea) {
+      return;
+    }
+
+    const start =
+      textarea.selectionStart;
+    const end =
+      textarea.selectionEnd;
+    const selectedText =
+      content.slice(
+        start,
+        end,
+      ) || placeholder;
+    const replacement =
+      `${opening}${selectedText}${closing}`;
+
+    replaceContentSelection(
+      replacement,
+      start,
+      end,
+    );
+
+    requestAnimationFrame(
+      () => {
+        const currentTextarea =
+          contentTextareaRef.current;
+
+        if (!currentTextarea) {
+          return;
+        }
+
+        const selectionStart =
+          start + opening.length;
+
+        currentTextarea.setSelectionRange(
+          selectionStart,
+          selectionStart +
+            selectedText.length,
+        );
+      },
+    );
+  };
+
+  const insertBlock = (
+    before: string,
+    placeholder: string,
+    after = "",
+  ) => {
+    const textarea =
+      contentTextareaRef.current;
+
+    if (!textarea) {
+      return;
+    }
+
+    const start =
+      textarea.selectionStart;
+    const end =
+      textarea.selectionEnd;
+    const selectedText =
+      content.slice(
+        start,
+        end,
+      ) || placeholder;
+    const needsLeadingBreak =
+      start > 0 &&
+      content[start - 1] !== "\n";
+    const needsTrailingBreak =
+      end < content.length &&
+      content[end] !== "\n";
+    const replacement = `${
+      needsLeadingBreak ? "\n\n" : ""
+    }${before}${selectedText}${after}${
+      needsTrailingBreak ? "\n\n" : ""
+    }`;
+
+    replaceContentSelection(
+      replacement,
+      start,
+      end,
+    );
+  };
+
+  const insertLink = () => {
+    insertWrappedText(
+      "[",
+      "](https://example.com)",
+      "link text",
+    );
+  };
+
+  const handleContentKeyDown = (
+    event: KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
+    if (
+      !event.metaKey &&
+      !event.ctrlKey
+    ) {
+      return;
+    }
+
+    const key =
+      event.key.toLowerCase();
+
+    if (key === "b") {
+      event.preventDefault();
+      insertWrappedText(
+        "**",
+        "**",
+        "bold text",
+      );
+    } else if (key === "i") {
+      event.preventDefault();
+      insertWrappedText(
+        "*",
+        "*",
+        "italic text",
+      );
+    } else if (key === "u") {
+      event.preventDefault();
+      insertWrappedText(
+        "<u>",
+        "</u>",
+        "underlined text",
+      );
+    } else if (key === "k") {
+      event.preventDefault();
+      insertLink();
+    }
   };
 
   const validatePost = () => {
@@ -349,6 +592,157 @@ export default function PostEditorForm({
       );
     } finally {
       setUploadingImage(false);
+
+      event.target.value = "";
+    }
+  };
+
+  const uploadInlineImage = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file =
+      event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setError("");
+
+    const cleanAltText =
+      inlineImageAlt.trim();
+
+    if (!cleanAltText) {
+      setError(
+        "Add descriptive alt text before uploading an inline image.",
+      );
+
+      event.target.value = "";
+      return;
+    }
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ];
+
+    if (
+      !allowedTypes.includes(
+        file.type,
+      )
+    ) {
+      setError(
+        "Please upload a JPG, PNG, or WebP image.",
+      );
+
+      event.target.value = "";
+      return;
+    }
+
+    if (
+      file.size >
+      5 * 1024 * 1024
+    ) {
+      setError(
+        "The inline image must be 5 MB or smaller.",
+      );
+
+      event.target.value = "";
+      return;
+    }
+
+    const textarea =
+      contentTextareaRef.current;
+    const selectionStart =
+      textarea?.selectionStart ??
+      content.length;
+    const selectionEnd =
+      textarea?.selectionEnd ??
+      content.length;
+
+    try {
+      setUploadingInlineImage(
+        true,
+      );
+
+      const supabase =
+        createClient();
+      const extension =
+        file.name
+          .split(".")
+          .pop()
+          ?.toLowerCase() ??
+        "jpg";
+      const storagePath =
+        `${authorId}/inline/${crypto.randomUUID()}.${extension}`;
+
+      const {
+        error: uploadError,
+      } = await supabase.storage
+        .from("blog-image")
+        .upload(
+          storagePath,
+          file,
+          {
+            cacheControl:
+              "3600",
+            upsert: false,
+            contentType:
+              file.type,
+          },
+        );
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const {
+        data: publicUrlData,
+      } = supabase.storage
+        .from("blog-image")
+        .getPublicUrl(
+          storagePath,
+        );
+
+      if (
+        !publicUrlData.publicUrl
+      ) {
+        throw new Error(
+          "The image was uploaded, but its public URL could not be created.",
+        );
+      }
+
+      const caption =
+        inlineImageCaption.trim();
+      const imageMarkdown =
+        `\n\n![${cleanAltText}](${publicUrlData.publicUrl})${
+          caption
+            ? `\n*${caption}*`
+            : ""
+        }\n\n`;
+
+      replaceContentSelection(
+        imageMarkdown,
+        selectionStart,
+        selectionEnd,
+      );
+
+      setInlineImageAlt("");
+      setInlineImageCaption("");
+      setShowInlineImagePanel(
+        false,
+      );
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "The inline image could not be uploaded.",
+      );
+    } finally {
+      setUploadingInlineImage(
+        false,
+      );
 
       event.target.value = "";
     }
@@ -682,7 +1076,7 @@ export default function PostEditorForm({
   return (
     <>
       <form
-        className="space-y-7"
+        className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
         onSubmit={(
           event,
         ) => {
@@ -693,60 +1087,27 @@ export default function PostEditorForm({
           );
         }}
       >
-        {/* TITLE */}
+        <div className="min-w-0 space-y-6">
+  {/* TITLE */}
 
-        <label className="block text-sm font-medium text-gray-300">
-          Title
-
-          <input
-            type="text"
-            value={title}
-            onChange={(
-              event,
-            ) =>
-              handleTitleChange(
-                event.target
-                  .value,
-              )
-            }
-            className={
-              inputStyles
-            }
-            placeholder="Article title"
-            maxLength={200}
-            disabled={
-              submitting !==
-              null
-            }
-            required
-          />
-        </label>
-
-        {/* SLUG */}
-
-        <label className="block text-sm font-medium text-gray-300">
-          Slug
-
-          <div className="mt-2 flex overflow-hidden rounded-xl border border-white/10 bg-black/10 transition focus-within:border-green-400">
-            <span className="flex items-center border-r border-white/10 px-3 text-sm text-gray-500">
-              /blog/
-            </span>
+          <label className="block text-sm font-medium text-gray-300">
+            Title
 
             <input
               type="text"
-              value={slug}
+              value={title}
               onChange={(
                 event,
               ) =>
-                setSlug(
-                  createSlug(
-                    event.target
-                      .value,
-                  ),
+                handleTitleChange(
+                  event.target
+                    .value,
                 )
               }
-              className="min-w-0 flex-1 bg-transparent px-4 py-3 text-white outline-none disabled:cursor-not-allowed disabled:opacity-60"
-              placeholder="article-slug"
+              className={
+                inputStyles
+              }
+              placeholder="Article title"
               maxLength={200}
               disabled={
                 submitting !==
@@ -754,384 +1115,34 @@ export default function PostEditorForm({
               }
               required
             />
-          </div>
-
-          <p className="mt-2 text-xs text-gray-500">
-            Public URL:
-            {" "}
-            /blog/
-            {slug ||
-              "article-slug"}
-          </p>
-        </label>
-
-        {/* EXCERPT */}
-
-        <label className="block text-sm font-medium text-gray-300">
-          Excerpt
-
-          <textarea
-            value={excerpt}
-            onChange={(
-              event,
-            ) =>
-              setExcerpt(
-                event.target
-                  .value,
-              )
-            }
-            rows={3}
-            maxLength={500}
-            className={`${inputStyles} resize-y`}
-            placeholder="Short description shown on blog cards..."
-            disabled={
-              submitting !==
-              null
-            }
-          />
-
-          <p className="mt-2 text-right text-xs text-gray-500">
-            {excerpt.length}
-            /500
-          </p>
-        </label>
-
-        {/* CATEGORY */}
-
-        <label className="block text-sm font-medium text-gray-300">
-          Category
-
-          <select
-            value={
-              categoryId
-            }
-            onChange={(
-              event,
-            ) =>
-              setCategoryId(
-                event.target
-                  .value,
-              )
-            }
-            disabled={
-              submitting !==
-              null
-            }
-            className={inputStyles}
-          >
-            <option value="">
-              No category
-            </option>
-
-            {categories.map(
-              (category) => (
-                <option
-                  key={
-                    category.id
-                  }
-                  value={
-                    category.id
-                  }
-                >
-                  {
-                    category.name
-                  }
-                </option>
-              ),
-            )}
-          </select>
-        </label>
-
-        {/* TAGS */}
-
-        <div>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-sm font-medium text-gray-300">
-                Tags
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Select all topics
-                relevant to this
-                article.
-              </p>
-            </div>
-
-            <p className="text-xs text-gray-500">
-              {
-                selectedTagIds.length
-              }{" "}
-              selected
-            </p>
-          </div>
-
-          {tags.length ===
-          0 ? (
-            <div className="mt-3 rounded-xl border border-white/10 bg-black/10 p-4 text-sm text-gray-500">
-              No tags are
-              available yet.
-            </div>
-          ) : (
-            <div className="mt-3 flex flex-wrap gap-3">
-              {tags.map(
-                (tag) => {
-                  const selected =
-                    selectedTagIds.includes(
-                      tag.id,
-                    );
-
-                  return (
-                    <button
-                      key={
-                        tag.id
-                      }
-                      type="button"
-                      onClick={() =>
-                        toggleTag(
-                          tag.id,
-                        )
-                      }
-                      disabled={
-                        submitting !==
-                        null
-                      }
-                      className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-                        selected
-                          ? "border-green-400/30 bg-green-400/10 text-green-300"
-                          : "border-white/10 bg-black/10 text-gray-400 hover:border-green-400/30 hover:text-white"
-                      }`}
-                    >
-                      {selected
-                        ? "✓ "
-                        : ""}
-                      {
-                        tag.name
-                      }
-                    </button>
-                  );
-                },
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* COVER IMAGE */}
-
-        <div>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-sm font-medium text-gray-300">
-                Cover Image
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                JPG, PNG, or WebP.
-                Maximum size 5 MB.
-              </p>
-            </div>
-
-            {coverImageUrl && (
-              <button
-                type="button"
-                onClick={() => {
-                  setCoverImageUrl(
-                    "",
-                  );
-
-                  setCoverImageAlt(
-                    "",
-                  );
-                }}
-                disabled={
-                  submitting !==
-                    null ||
-                  uploadingImage
-                }
-                className="text-sm font-medium text-red-300 transition hover:text-red-200"
-              >
-                Remove image
-              </button>
-            )}
-          </div>
-
-          <label className="mt-4 flex cursor-pointer items-center justify-center gap-3 rounded-2xl border border-dashed border-white/15 bg-black/10 px-6 py-8 text-center transition hover:border-green-400/40 hover:bg-green-400/5">
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={
-                uploadCoverImage
-              }
-              disabled={
-                submitting !==
-                  null ||
-                uploadingImage
-              }
-              className="hidden"
-            />
-
-            <ImagePlus
-              size={22}
-              className="text-green-300"
-            />
-
-            <span className="text-sm font-medium text-gray-300">
-              {uploadingImage
-                ? "Uploading image..."
-                : coverImageUrl
-                  ? "Choose a different image"
-                  : "Choose cover image"}
-            </span>
           </label>
 
-          {coverImageUrl && (
-            <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-black/10">
-              <Image
-                src={
-                  coverImageUrl
-                }
-                alt={
-                  coverImageAlt ||
-                  "Cover image preview"
-                }
-                width={1200}
-                height={675}
-                sizes="(min-width: 1024px) 800px, 100vw"
-                className="aspect-[16/9] w-full object-cover"
-              />
-            </div>
-          )}
+  {/* SLUG */}
 
-          {coverImageUrl && (
-            <label className="mt-5 block text-sm font-medium text-gray-300">
-              Cover image alt text
+          <label className="block text-sm font-medium text-gray-300">
+            Slug
+
+            <div className="mt-2 flex overflow-hidden rounded-xl border border-white/10 bg-black/10 transition focus-within:border-green-400">
+              <span className="flex items-center border-r border-white/10 px-3 text-sm text-gray-500">
+                /blog/
+              </span>
 
               <input
                 type="text"
-                value={
-                  coverImageAlt
-                }
+                value={slug}
                 onChange={(
                   event,
                 ) =>
-                  setCoverImageAlt(
-                    event.target
-                      .value,
+                  setSlug(
+                    createSlug(
+                      event.target
+                        .value,
+                    ),
                   )
                 }
-                maxLength={250}
-                disabled={
-                  submitting !==
-                    null ||
-                  uploadingImage
-                }
-                className={
-                  inputStyles
-                }
-                placeholder="Describe the image for accessibility"
-              />
-
-              <p className="mt-2 text-right text-xs text-gray-500">
-                {
-                  coverImageAlt.length
-                }
-                /250
-              </p>
-            </label>
-          )}
-        </div>
-
-        {/* MARKDOWN EDITOR */}
-
-        <div>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium text-gray-300">
-                Article Content
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Markdown formatting
-                is supported.
-              </p>
-            </div>
-
-            <div className="flex rounded-xl border border-white/10 bg-black/10 p-1">
-              <button
-                type="button"
-                onClick={() =>
-                  setEditorMode(
-                    "write",
-                  )
-                }
-                className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
-                  editorMode ===
-                  "write"
-                    ? "bg-green-400/10 text-green-300"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                <FileText
-                  size={16}
-                />
-                Write
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setEditorMode(
-                    "preview",
-                  )
-                }
-                className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
-                  editorMode ===
-                  "preview"
-                    ? "bg-green-400/10 text-green-300"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                <Eye
-                  size={16}
-                />
-                Preview
-              </button>
-            </div>
-          </div>
-
-          {editorMode ===
-          "write" ? (
-            <div>
-              <textarea
-                value={
-                  content
-                }
-                onChange={(
-                  event,
-                ) =>
-                  setContent(
-                    event.target
-                      .value,
-                  )
-                }
-                rows={22}
-                className={`${inputStyles} resize-y font-mono leading-7`}
-                placeholder={`# Article heading
-
-Write your introduction here.
-
-## Section heading
-
-Add paragraphs, **bold text**, *italic text*, links, lists, quotes, and code.
-
-### Example code
-
-\`\`\`bash
-nmap -sV 192.168.1.10
-\`\`\`
-
-> Add useful notes here.
-`}
+                className="min-w-0 flex-1 bg-transparent px-4 py-3 text-white outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                placeholder="article-slug"
+                maxLength={200}
                 disabled={
                   submitting !==
                   null
@@ -1139,164 +1150,724 @@ nmap -sV 192.168.1.10
                 required
               />
             </div>
-          ) : (
-            <div className="min-h-[500px] rounded-2xl border border-white/10 bg-black/10 p-6 md:p-8">
-              {content.trim() ? (
-                <MarkdownRenderer
-                  content={
-                    content
-                  }
-                />
-              ) : (
-                <div className="flex min-h-[400px] items-center justify-center">
-                  <div className="text-center">
-                    <FileImage
-                      size={30}
-                      className="mx-auto text-gray-600"
-                    />
 
-                    <p className="mt-4 text-gray-500">
-                      Nothing to
-                      preview yet.
-                    </p>
+            <p className="mt-2 text-xs text-gray-500">
+              Public URL:
+              {" "}
+              /blog/
+              {slug ||
+                "article-slug"}
+            </p>
+          </label>
+
+  {/* EXCERPT */}
+
+          <label className="block text-sm font-medium text-gray-300">
+            Excerpt
+
+            <textarea
+              value={excerpt}
+              onChange={(
+                event,
+              ) =>
+                setExcerpt(
+                  event.target
+                    .value,
+                )
+              }
+              rows={3}
+              maxLength={500}
+              className={`${inputStyles} resize-y`}
+              placeholder="Short description shown on blog cards..."
+              disabled={
+                submitting !==
+                null
+              }
+            />
+
+            <p className="mt-2 text-right text-xs text-gray-500">
+              {excerpt.length}
+              /500
+            </p>
+          </label>
+
+  {/* MARKDOWN EDITOR */}
+
+          <div className="min-w-0 rounded-2xl border border-white/10 bg-black/5 p-4 md:p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-300">
+                  Article Content
+                </p>
+
+                <p className="mt-1 text-xs text-gray-500">
+                  Markdown formatting
+                  is supported.
+                </p>
+              </div>
+
+              <div className="flex rounded-xl border border-white/10 bg-black/10 p-1">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditorMode(
+                      "write",
+                    )
+                  }
+                  className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
+                    editorMode ===
+                    "write"
+                      ? "bg-green-400/10 text-green-300"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  <FileText
+                    size={16}
+                  />
+                  Write
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditorMode(
+                      "preview",
+                    )
+                  }
+                  className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
+                    editorMode ===
+                    "preview"
+                      ? "bg-green-400/10 text-green-300"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  <Eye
+                    size={16}
+                  />
+                  Preview
+                </button>
+              </div>
+            </div>
+
+            {editorMode ===
+            "write" ? (
+              <div>
+                <div className="mb-3 rounded-2xl border border-white/10 bg-black/10 p-3">
+                  <div
+                    className="flex flex-wrap gap-1"
+                    role="toolbar"
+                    aria-label="Article formatting"
+                  >
+                    <ToolbarButton label="Bold (Ctrl/Cmd+B)" onClick={() => insertWrappedText("**", "**", "bold text")} disabled={submitting !== null}>
+                      <Bold size={17} />
+                    </ToolbarButton>
+
+                    <ToolbarButton label="Italic (Ctrl/Cmd+I)" onClick={() => insertWrappedText("*", "*", "italic text")} disabled={submitting !== null}>
+                      <Italic size={17} />
+                    </ToolbarButton>
+
+                    <ToolbarButton label="Underline (Ctrl/Cmd+U)" onClick={() => insertWrappedText("<u>", "</u>", "underlined text")} disabled={submitting !== null}>
+                      <Underline size={17} />
+                    </ToolbarButton>
+
+                    <ToolbarButton label="Strikethrough" onClick={() => insertWrappedText("~~", "~~", "struck text")} disabled={submitting !== null}>
+                      <Strikethrough size={17} />
+                    </ToolbarButton>
+
+                    <span className="mx-1 h-9 w-px bg-white/10" aria-hidden="true" />
+
+                    <ToolbarButton label="Heading 2" onClick={() => insertBlock("## ", "Section heading")} disabled={submitting !== null}>
+                      <Heading2 size={18} />
+                    </ToolbarButton>
+
+                    <ToolbarButton label="Heading 3" onClick={() => insertBlock("### ", "Subsection heading")} disabled={submitting !== null}>
+                      <Heading3 size={18} />
+                    </ToolbarButton>
+
+                    <ToolbarButton label="Bulleted list" onClick={() => insertBlock("- ", "List item")} disabled={submitting !== null}>
+                      <List size={18} />
+                    </ToolbarButton>
+
+                    <ToolbarButton label="Numbered list" onClick={() => insertBlock("1. ", "List item")} disabled={submitting !== null}>
+                      <ListOrdered size={18} />
+                    </ToolbarButton>
+
+                    <ToolbarButton label="Blockquote" onClick={() => insertBlock("> ", "Quoted text")} disabled={submitting !== null}>
+                      <Quote size={18} />
+                    </ToolbarButton>
+
+                    <span className="mx-1 h-9 w-px bg-white/10" aria-hidden="true" />
+                  </div>
+
+                  <div className="mt-1 flex flex-wrap gap-1 border-t border-white/10 pt-2">
+                    <ToolbarButton label="Insert image" onClick={() => setShowInlineImagePanel((current) => !current)} disabled={submitting !== null || uploadingInlineImage}>
+                      <ImagePlus size={18} />
+                    </ToolbarButton>
+
+                    <ToolbarButton label="Inline code" onClick={() => insertWrappedText("`", "`", "code")} disabled={submitting !== null}>
+                      <Code2 size={18} />
+                    </ToolbarButton>
+
+                    <ToolbarButton label="Code block" onClick={() => insertBlock("```text\n", "code", "\n```")} disabled={submitting !== null}>
+                      <FileText size={17} />
+                    </ToolbarButton>
+
+                    <ToolbarButton label="Insert link (Ctrl/Cmd+K)" onClick={insertLink} disabled={submitting !== null}>
+                      <Link2 size={18} />
+                    </ToolbarButton>
+
+                    <ToolbarButton label="Insert table" onClick={() => insertBlock("| Column 1 | Column 2 |\n| --- | --- |\n| Value 1 | Value 2 |\n", "")} disabled={submitting !== null}>
+                      <span className="text-xs font-bold">Tbl</span>
+                    </ToolbarButton>
+
+                    <ToolbarButton label="Horizontal divider" onClick={() => insertBlock("---\n", "")} disabled={submitting !== null}>
+                      <span className="text-lg leading-none">—</span>
+                    </ToolbarButton>
                   </div>
                 </div>
+
+                {showInlineImagePanel && (
+                  <div className="mb-3 grid gap-3 rounded-2xl border border-green-400/15 bg-green-400/[0.04] p-4 md:grid-cols-2">
+                  <label className="text-xs font-medium text-gray-400">
+                    Inline image alt text
+                    <input
+                      type="text"
+                      value={inlineImageAlt}
+                      onChange={(event) => setInlineImageAlt(event.target.value)}
+                      maxLength={250}
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none transition placeholder:text-gray-600 focus:border-green-400"
+                      placeholder="Describe the image for accessibility"
+                      disabled={submitting !== null || uploadingInlineImage}
+                    />
+                  </label>
+
+                  <label className="text-xs font-medium text-gray-400">
+                    Caption (optional)
+                    <input
+                      type="text"
+                      value={inlineImageCaption}
+                      onChange={(event) => setInlineImageCaption(event.target.value)}
+                      maxLength={250}
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none transition placeholder:text-gray-600 focus:border-green-400"
+                      placeholder="Source, context, or explanatory caption"
+                      disabled={submitting !== null || uploadingInlineImage}
+                    />
+                  </label>
+
+                  <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-green-400/20 bg-green-400/10 px-4 py-2.5 text-sm font-medium text-green-300 transition hover:border-green-400/40 hover:bg-green-400/15 md:col-span-2">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={uploadInlineImage}
+                      disabled={submitting !== null || uploadingInlineImage}
+                      className="hidden"
+                    />
+
+                    <ImagePlus size={17} />
+
+                    {uploadingInlineImage
+                      ? "Uploading and inserting image..."
+                      : "Upload Image at Cursor"}
+                  </label>
+                  </div>
+                )}
+
+                <textarea
+                  ref={
+                    contentTextareaRef
+                  }
+                  value={
+                    content
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    setContent(
+                      event.target
+                        .value,
+                    )
+                  }
+                  onKeyDown={
+                    handleContentKeyDown
+                  }
+                  rows={22}
+                  className={`${inputStyles} resize-y font-mono leading-7`}
+                  placeholder={`# Article heading
+
+  Write your introduction here.
+
+  ## Section heading
+
+  Add paragraphs, **bold text**, *italic text*, links, lists, quotes, and code.
+
+  ### Example code
+
+  \`\`\`bash
+  nmap -sV 192.168.1.10
+  \`\`\`
+
+  > Add useful notes here.
+  `}
+                  disabled={
+                    submitting !==
+                    null
+                  }
+                  required
+                />
+              </div>
+            ) : (
+              <div className="min-h-[500px] rounded-2xl border border-white/10 bg-black/10 p-6 md:p-8">
+                {content.trim() ? (
+                  <MarkdownRenderer
+                    content={
+                      content
+                    }
+                  />
+                ) : (
+                  <div className="flex min-h-[400px] items-center justify-center">
+                    <div className="text-center">
+                      <FileImage
+                        size={30}
+                        className="mx-auto text-gray-600"
+                      />
+
+                      <p className="mt-4 text-gray-500">
+                        Nothing to
+                        preview yet.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+  {/* ERROR */}
+
+          {error && (
+            <p
+              role="alert"
+              className="rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-300"
+            >
+              {error}
+            </p>
+          )}
+        </div>
+
+        <aside className="space-y-5">
+  {/* ACTIONS */}
+
+          <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/10 p-5">
+            <div>
+              <p className="text-sm font-semibold text-white">
+                Publishing
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-gray-500">
+                Save your work privately or publish it when it is ready.
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={
+                submitting !==
+                  null ||
+                uploadingImage ||
+                uploadingInlineImage
+              }
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 px-5 py-3 font-medium text-white transition hover:border-green-400 hover:text-green-300 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Save
+                size={18}
+              />
+
+              {submitting ===
+              "draft"
+                ? "Saving..."
+                : isEditing
+                  ? "Save as Draft"
+                  : "Save Draft"}
+            </button>
+
+            <button
+              type="button"
+              disabled={
+                submitting !==
+                  null ||
+                uploadingImage ||
+                uploadingInlineImage
+              }
+              onClick={() => {
+                void savePost(
+                  "published",
+                );
+              }}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-green-500 px-5 py-3 font-medium text-black transition hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Send
+                size={18}
+              />
+
+              {submitting ===
+              "publish"
+                ? "Publishing..."
+                : isEditing
+                  ? "Save & Publish"
+                  : "Publish"}
+            </button>
+
+            <button
+              type="button"
+              disabled={
+                submitting !==
+                  null ||
+                uploadingImage ||
+                uploadingInlineImage
+              }
+              onClick={() => {
+                router.push(
+                  studioBasePath,
+                );
+              }}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-5 py-3 font-medium text-gray-300 transition hover:border-white/20 hover:bg-white/[0.03] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <X
+                size={18}
+                aria-hidden="true"
+              />
+
+              {isEditing
+                ? "Cancel Editing"
+                : "Cancel Post"}
+            </button>
+
+            {isEditing && (
+              <div className="mt-2 space-y-3 border-t border-red-400/15 pt-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-300">
+                    Danger Zone
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-gray-500">
+                    Archive the article or permanently delete it.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={
+                    submitting !==
+                    null
+                  }
+                  onClick={() =>
+                    setConfirmAction(
+                      "archive",
+                    )
+                  }
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-amber-400/20 px-5 py-3 font-medium text-amber-300 transition hover:bg-amber-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Archive
+                    size={18}
+                  />
+                  Archive
+                </button>
+
+                <button
+                  type="button"
+                  disabled={
+                    submitting !==
+                    null
+                  }
+                  onClick={() =>
+                    setConfirmAction(
+                      "delete",
+                    )
+                  }
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-400/20 px-5 py-3 font-medium text-red-300 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Trash2
+                    size={18}
+                  />
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+
+  {/* CATEGORY */}
+
+          <label className="block rounded-2xl border border-white/10 bg-black/10 p-5 text-sm font-medium text-gray-300">
+            Category
+
+            <select
+              value={
+                categoryId
+              }
+              onChange={(
+                event,
+              ) =>
+                setCategoryId(
+                  event.target
+                    .value,
+                )
+              }
+              disabled={
+                submitting !==
+                null
+              }
+              className={inputStyles}
+            >
+              <option value="">
+                No category
+              </option>
+
+              {categories.map(
+                (category) => (
+                  <option
+                    key={
+                      category.id
+                    }
+                    value={
+                      category.id
+                    }
+                  >
+                    {
+                      category.name
+                    }
+                  </option>
+                ),
+              )}
+            </select>
+          </label>
+
+  {/* TAGS */}
+
+          <div className="rounded-2xl border border-white/10 bg-black/10 p-5">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-gray-300">
+                  Tags
+                </p>
+
+                <p className="mt-1 text-xs text-gray-500">
+                  Select all topics
+                  relevant to this
+                  article.
+                </p>
+              </div>
+
+              <p className="text-xs text-gray-500">
+                {
+                  selectedTagIds.length
+                }{" "}
+                selected
+              </p>
+            </div>
+
+            {tags.length ===
+            0 ? (
+              <div className="mt-3 rounded-xl border border-white/10 bg-black/10 p-4 text-sm text-gray-500">
+                No tags are
+                available yet.
+              </div>
+            ) : (
+              <div className="mt-3 flex flex-wrap gap-3">
+                {tags.map(
+                  (tag) => {
+                    const selected =
+                      selectedTagIds.includes(
+                        tag.id,
+                      );
+
+                    return (
+                      <button
+                        key={
+                          tag.id
+                        }
+                        type="button"
+                        onClick={() =>
+                          toggleTag(
+                            tag.id,
+                          )
+                        }
+                        disabled={
+                          submitting !==
+                          null
+                        }
+                        className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                          selected
+                            ? "border-green-400/30 bg-green-400/10 text-green-300"
+                            : "border-white/10 bg-black/10 text-gray-400 hover:border-green-400/30 hover:text-white"
+                        }`}
+                      >
+                        {selected
+                          ? "✓ "
+                          : ""}
+                        {
+                          tag.name
+                        }
+                      </button>
+                    );
+                  },
+                )}
+              </div>
+            )}
+          </div>
+
+  {/* COVER IMAGE */}
+
+          <div className="rounded-2xl border border-white/10 bg-black/10 p-5">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-gray-300">
+                  Cover Image
+                </p>
+
+                <p className="mt-1 text-xs text-gray-500">
+                  JPG, PNG, or WebP.
+                  Maximum size 5 MB.
+                </p>
+              </div>
+
+              {coverImageUrl && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCoverImageUrl(
+                      "",
+                    );
+
+                    setCoverImageAlt(
+                      "",
+                    );
+                  }}
+                  disabled={
+                    submitting !==
+                      null ||
+                    uploadingImage
+                  }
+                  className="text-sm font-medium text-red-300 transition hover:text-red-200"
+                >
+                  Remove image
+                </button>
               )}
             </div>
-          )}
-        </div>
 
-        {/* FEATURED */}
+            <label className="mt-4 flex cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-white/15 bg-black/10 px-4 py-5 text-center transition hover:border-green-400/40 hover:bg-green-400/5">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={
+                  uploadCoverImage
+                }
+                disabled={
+                  submitting !==
+                    null ||
+                  uploadingImage
+                }
+                className="hidden"
+              />
 
-              {isAdmin && (
-        <label className="flex w-fit cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-sm text-gray-300 transition hover:border-green-400/30">
-          <input
-            type="checkbox"
-            checked={
-              featured
-            }
-            onChange={(
-              event,
-            ) =>
-              setFeatured(
-                event.target
-                  .checked,
-              )
-            }
-            className="h-4 w-4 accent-green-400"
-            disabled={
-              submitting !==
-              null
-            }
-          />
+              <ImagePlus
+                size={22}
+                className="text-green-300"
+              />
 
-          Feature this article
-        </label>
-      )}
+              <span className="text-sm font-medium text-gray-300">
+                {uploadingImage
+                  ? "Uploading image..."
+                  : coverImageUrl
+                    ? "Choose a different image"
+                    : "Choose cover image"}
+              </span>
+            </label>
 
-        {/* ERROR */}
+            {coverImageUrl && (
+              <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-black/10">
+                <Image
+                  src={
+                    coverImageUrl
+                  }
+                  alt={
+                    coverImageAlt ||
+                    "Cover image preview"
+                  }
+                  width={1200}
+                  height={675}
+                  sizes="(min-width: 1024px) 800px, 100vw"
+                  className="aspect-[16/9] w-full object-cover"
+                />
+              </div>
+            )}
 
-        {error && (
-          <p
-            role="alert"
-            className="rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-300"
-          >
-            {error}
-          </p>
+            {coverImageUrl && (
+              <label className="mt-5 block text-sm font-medium text-gray-300">
+                Cover image alt text
+
+                <input
+                  type="text"
+                  value={
+                    coverImageAlt
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    setCoverImageAlt(
+                      event.target
+                        .value,
+                    )
+                  }
+                  maxLength={250}
+                  disabled={
+                    submitting !==
+                      null ||
+                    uploadingImage
+                  }
+                  className={
+                    inputStyles
+                  }
+                  placeholder="Describe the image for accessibility"
+                />
+
+                <p className="mt-2 text-right text-xs text-gray-500">
+                  {
+                    coverImageAlt.length
+                  }
+                  /250
+                </p>
+              </label>
+            )}
+          </div>
+
+  {/* FEATURED */}
+
+          {isAdmin && (
+          <label className="flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-black/10 px-5 py-4 text-sm text-gray-300 transition hover:border-green-400/30">
+            <input
+              type="checkbox"
+              checked={
+                featured
+              }
+              onChange={(
+                event,
+              ) =>
+                setFeatured(
+                  event.target
+                    .checked,
+                )
+              }
+              className="h-4 w-4 accent-green-400"
+              disabled={
+                submitting !==
+                null
+              }
+            />
+
+            Feature this article
+          </label>
         )}
-
-        {/* ACTIONS */}
-
-        <div className="flex flex-wrap gap-4 border-t border-white/10 pt-6">
-          <button
-            type="submit"
-            disabled={
-              submitting !==
-                null ||
-              uploadingImage
-            }
-            className="inline-flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 font-medium text-white transition hover:border-green-400 hover:text-green-300 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <Save
-              size={18}
-            />
-
-            {submitting ===
-            "draft"
-              ? "Saving..."
-              : isEditing
-                ? "Save as Draft"
-                : "Save Draft"}
-          </button>
-
-          <button
-            type="button"
-            disabled={
-              submitting !==
-                null ||
-              uploadingImage
-            }
-            onClick={() => {
-              void savePost(
-                "published",
-              );
-            }}
-            className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-5 py-3 font-medium text-black transition hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <Send
-              size={18}
-            />
-
-            {submitting ===
-            "publish"
-              ? "Publishing..."
-              : isEditing
-                ? "Save & Publish"
-                : "Publish"}
-          </button>
-
-          {isEditing && (
-            <>
-              <button
-                type="button"
-                disabled={
-                  submitting !==
-                  null
-                }
-                onClick={() =>
-                  setConfirmAction(
-                    "archive",
-                  )
-                }
-                className="inline-flex items-center gap-2 rounded-xl border border-amber-400/20 px-5 py-3 font-medium text-amber-300 transition hover:bg-amber-400/10 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <Archive
-                  size={18}
-                />
-                Archive
-              </button>
-
-              <button
-                type="button"
-                disabled={
-                  submitting !==
-                  null
-                }
-                onClick={() =>
-                  setConfirmAction(
-                    "delete",
-                  )
-                }
-                className="inline-flex items-center gap-2 rounded-xl border border-red-400/20 px-5 py-3 font-medium text-red-300 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <Trash2
-                  size={18}
-                />
-                Delete
-              </button>
-            </>
-          )}
-        </div>
+        </aside>
       </form>
 
       {/* CUSTOM CONFIRMATION MODAL */}
