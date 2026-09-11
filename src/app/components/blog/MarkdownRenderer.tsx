@@ -1,10 +1,30 @@
+import Image from "next/image";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize, {
+  defaultSchema,
+} from "rehype-sanitize";
+import remarkGfm from "remark-gfm";
 
 interface MarkdownRendererProps {
   content: string;
 }
+
+const markdownSanitizeSchema = {
+  ...defaultSchema,
+  tagNames: [
+    ...(defaultSchema.tagNames ?? []),
+    "u",
+  ],
+  attributes: {
+    ...defaultSchema.attributes,
+    code: [
+      ...(defaultSchema.attributes?.code ?? []),
+      ["className", /^language-./],
+    ],
+  },
+};
 
 export default function MarkdownRenderer({
   content,
@@ -12,8 +32,17 @@ export default function MarkdownRenderer({
   return (
     <div className="markdown-content">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
+        remarkPlugins={[
+          remarkGfm,
+        ]}
+        rehypePlugins={[
+          rehypeRaw,
+          [
+            rehypeSanitize,
+            markdownSanitizeSchema,
+          ],
+          rehypeHighlight,
+        ]}
         components={{
           h1: ({ children }) => (
             <h1 className="mb-6 mt-10 text-4xl font-bold text-white">
@@ -45,6 +74,24 @@ export default function MarkdownRenderer({
             </strong>
           ),
 
+          em: ({ children }) => (
+            <em className="italic text-gray-300">
+              {children}
+            </em>
+          ),
+
+          del: ({ children }) => (
+            <del className="text-gray-400 decoration-red-300/70">
+              {children}
+            </del>
+          ),
+
+          u: ({ children }) => (
+            <u className="decoration-green-400/60 underline-offset-4">
+              {children}
+            </u>
+          ),
+
           a: ({ href, children }) => (
             <a
               href={href}
@@ -55,6 +102,26 @@ export default function MarkdownRenderer({
               {children}
             </a>
           ),
+
+          img: ({ src, alt }) => {
+            if (
+              !src ||
+              typeof src !== "string"
+            ) {
+              return null;
+            }
+
+            return (
+              <Image
+                src={src}
+                alt={alt ?? "Article image"}
+                width={1600}
+                height={900}
+                sizes="(min-width: 1024px) 800px, 100vw"
+                className="my-8 h-auto w-full rounded-2xl border border-white/10 object-cover shadow-xl shadow-black/20"
+              />
+            );
+          },
 
           ul: ({ children }) => (
             <ul className="mb-6 list-disc space-y-2 pl-6 text-gray-300">
@@ -76,7 +143,9 @@ export default function MarkdownRenderer({
 
           code: ({ className, children, ...props }) => {
             const isBlockCode =
-              className?.startsWith("language-");
+              className?.startsWith(
+                "language-",
+              );
 
             if (isBlockCode) {
               return (

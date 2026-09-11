@@ -76,7 +76,7 @@ export default async function NewPostPage() {
   return (
     <main>
       <section className="px-6 pb-10 pt-16 md:pt-24">
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-7xl">
           <Link
             href={studioBasePath}
             className="inline-flex items-center gap-2 text-sm text-gray-400 transition hover:text-green-400"
@@ -102,7 +102,7 @@ export default async function NewPostPage() {
 
       <section className="border-t border-white/5 py-16">
         <Container>
-          <div className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-6 md:p-8">
+          <div className="mx-auto max-w-7xl rounded-3xl border border-white/10 bg-[var(--surface)]/70 p-5 md:p-7 lg:p-8">
             <PostEditorForm
               authorId={user.id}
               currentRole={profile.role}
