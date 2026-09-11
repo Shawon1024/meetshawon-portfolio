@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   CalendarDays,
   Clock3,
+  PencilLine,
   UserRound,
 } from "lucide-react";
 import { notFound } from "next/navigation";
@@ -236,6 +237,53 @@ export default async function BlogPostPage({
   if (error || !post) {
     notFound();
   }
+
+  // --------------------------------------------------
+  // LOAD CURRENT EDITOR PERMISSIONS
+  // --------------------------------------------------
+
+  const {
+    data: {
+      user: currentUser,
+    },
+  } = await supabase.auth.getUser();
+
+  let currentRole:
+    | string
+    | null = null;
+
+  if (currentUser) {
+    const {
+      data: currentProfile,
+    } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq(
+        "id",
+        currentUser.id,
+      )
+      .maybeSingle();
+
+    currentRole =
+      currentProfile?.role ??
+      null;
+  }
+
+  const canEditArticle =
+    currentRole === "admin" ||
+    currentRole === "moderator" ||
+    (
+      currentRole === "author" &&
+      currentUser?.id ===
+        post.author_id
+    );
+
+  const editArticlePath =
+    currentRole === "moderator"
+      ? `/moderator/posts/${post.id}/edit`
+      : currentRole === "author"
+        ? `/author/posts/${post.id}/edit`
+        : `/admin/posts/${post.id}/edit`;
 
   // --------------------------------------------------
 // RELATED ARTICLES
@@ -485,6 +533,7 @@ const {
           >
             <ArrowLeft
               size={16}
+              aria-hidden="true"
             />
 
             Back to Blog
@@ -645,13 +694,29 @@ const {
                 )}
               </div>
             )}
-            {/* Save article */}
+            {/* Article actions */}
 
-<div className="mt-7">
-  <BookmarkButton
-    postId={post.id}
-  />
-</div>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <BookmarkButton
+                postId={post.id}
+              />
+
+              {canEditArticle && (
+                <Link
+                  href={
+                    editArticlePath
+                  }
+                  className="inline-flex items-center gap-2 rounded-xl border border-green-400/20 bg-green-400/[0.06] px-4 py-2 text-sm font-medium text-green-300 transition hover:border-green-400/40 hover:bg-green-400/10 hover:text-green-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-300"
+                >
+                  <PencilLine
+                    size={16}
+                    aria-hidden="true"
+                  />
+
+                  Edit Article
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </section>
