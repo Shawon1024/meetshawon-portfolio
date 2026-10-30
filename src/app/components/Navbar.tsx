@@ -127,6 +127,13 @@ const MAIN_SITE_URL =
 const mainSiteHref = (
   href: string,
 ) => {
+  if (
+    href.startsWith("https://") ||
+    href.startsWith("http://")
+  ) {
+    return href;
+  }
+
   if (href === "/") {
     return MAIN_SITE_URL;
   }

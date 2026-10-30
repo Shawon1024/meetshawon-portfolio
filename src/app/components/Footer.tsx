@@ -182,6 +182,7 @@ export default function Footer() {
               className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-green-300 transition hover:text-green-200"
             >
               Available for professional opportunities
+
               <span aria-hidden="true">
                 →
               </span>
@@ -208,7 +209,9 @@ export default function Footer() {
                     }
                     className="w-fit text-gray-400 transition hover:translate-x-1 hover:text-green-300"
                   >
-                    {link.name}
+                    {
+                      link.name
+                    }
                   </Link>
                 ),
               )}
@@ -253,7 +256,9 @@ export default function Footer() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
             <p>
               Copyright ©{" "}
-              {new Date().getFullYear()}{" "}
+              {
+                new Date().getFullYear()
+              }{" "}
               Md Samsudduha Shawon. All rights reserved.
             </p>
 
