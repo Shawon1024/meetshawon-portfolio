@@ -6,6 +6,7 @@ import { SITE_STATUS } from "./app/config/siteStatus";
 
 const DRIVE_HOSTNAME = "drive.meetshawon.com";
 const LAB_HOSTNAME = "lab.meetshawon.com";
+const STORE_HOSTNAME = "store.meetshawon.com";
 
 function getHostname(request: NextRequest) {
   return (
@@ -40,6 +41,14 @@ function getLabRewritePath(pathname: string) {
 
   if (pathname === "/access-denied") {
     return "/lab/access-denied";
+  }
+
+  return null;
+}
+
+function getStoreRewritePath(pathname: string) {
+  if (pathname === "/") {
+    return "/store";
   }
 
   return null;
@@ -133,6 +142,20 @@ export async function proxy(request: NextRequest) {
   const isLabDomain =
     hostname === LAB_HOSTNAME || hostname === "lab.localhost";
 
+  const isStoreDomain =
+    hostname === STORE_HOSTNAME || hostname === "store.localhost";
+
+  const isProductionStoreDomain =
+    hostname === STORE_HOSTNAME;
+
+  const isMainProductionDomain =
+    hostname === "meetshawon.com" ||
+    hostname === "www.meetshawon.com";
+
+  const isMainLocalDomain =
+    hostname === "localhost" ||
+    hostname === "127.0.0.1";
+
   const isServiceDomain = isDriveDomain || isLabDomain;
 
   const mainWebsiteUnderMaintenance =
@@ -150,7 +173,8 @@ export async function proxy(request: NextRequest) {
     hostname === "meetshawon.com" ||
     hostname === "www.meetshawon.com" ||
     hostname === DRIVE_HOSTNAME ||
-    hostname === LAB_HOSTNAME;
+    hostname === LAB_HOSTNAME ||
+    hostname === STORE_HOSTNAME;
 
   // --------------------------------------------------
   // HIDE THE MAINTENANCE PAGE WHEN THIS HOST IS LIVE
@@ -199,7 +223,55 @@ export async function proxy(request: NextRequest) {
   }
 
   // --------------------------------------------------
-  // SERVICE-SUBDOMAIN REWRITES
+  // STOREFRONT CANONICAL ROUTING
+  // --------------------------------------------------
+
+  if (
+    isMainLocalDomain &&
+    (
+      pathMatches(pathname, "/store") ||
+      pathMatches(pathname, "/resources")
+    )
+  ) {
+    const notFoundUrl = request.nextUrl.clone();
+    notFoundUrl.pathname = "/_not-found";
+    notFoundUrl.search = "";
+
+    return NextResponse.rewrite(notFoundUrl, {
+      status: 404,
+    });
+  }
+
+  if (
+    isMainProductionDomain &&
+    (
+      pathMatches(pathname, "/store") ||
+      pathMatches(pathname, "/resources")
+    )
+  ) {
+    return NextResponse.redirect(
+      "https://store.meetshawon.com",
+      { status: 308 },
+    );
+  }
+
+  if (
+    isProductionStoreDomain &&
+    pathname !== "/"
+  ) {
+    const mainWebsiteUrl = request.nextUrl.clone();
+    mainWebsiteUrl.protocol = "https:";
+    mainWebsiteUrl.hostname = "meetshawon.com";
+    mainWebsiteUrl.port = "";
+
+    return NextResponse.redirect(
+      mainWebsiteUrl,
+      { status: 308 },
+    );
+  }
+
+  // --------------------------------------------------
+  // HOSTNAME REWRITES
   // --------------------------------------------------
 
   let response: NextResponse;
@@ -212,11 +284,18 @@ export async function proxy(request: NextRequest) {
     ? getLabRewritePath(pathname)
     : null;
 
-  const serviceRewritePath = driveRewritePath ?? labRewritePath;
+  const storeRewritePath = isStoreDomain
+    ? getStoreRewritePath(pathname)
+    : null;
 
-  if (serviceRewritePath) {
+  const hostnameRewritePath =
+    driveRewritePath ??
+    labRewritePath ??
+    storeRewritePath;
+
+  if (hostnameRewritePath) {
     const rewriteUrl = request.nextUrl.clone();
-    rewriteUrl.pathname = serviceRewritePath;
+    rewriteUrl.pathname = hostnameRewritePath;
 
     response = NextResponse.rewrite(rewriteUrl);
   } else {

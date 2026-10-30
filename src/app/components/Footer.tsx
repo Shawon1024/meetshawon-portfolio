@@ -55,6 +55,13 @@ const footerLinks = [
     href:
       "/blog",
   },
+  {
+    name:
+      "Store",
+
+    href:
+      "https://store.meetshawon.com",
+  },
 ];
 
 function GitHubIcon({

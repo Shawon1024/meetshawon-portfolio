@@ -141,6 +141,20 @@ export default async function sitemap(): Promise<
 
     {
       url:
+        "https://store.meetshawon.com",
+
+      lastModified:
+        new Date("2026-10-30"),
+
+      changeFrequency:
+        "weekly",
+
+      priority:
+        0.7,
+    },
+
+    {
+      url:
         `${siteUrl}/privacy`,
 
       lastModified:

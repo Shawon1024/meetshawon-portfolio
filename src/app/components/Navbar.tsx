@@ -105,6 +105,14 @@ const navLinks = [
   },
 
   {
+    label: 
+      "Store",
+
+    href: 
+      "https://store.meetshawon.com",
+  },
+
+  {
     label:
       "Contact",
 
